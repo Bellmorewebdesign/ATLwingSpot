@@ -1,0 +1,75 @@
+/* ============================================================
+   ATL WING SPOT — DESIGN TOKENS
+   Sampled from the supplied logo. Cyan is the differentiator;
+   orange drives every ordering action; near-black is the ground.
+   ============================================================ */
+:root {
+  /* Brand core */
+  --atl-cyan: #28c0d8;
+  --atl-cyan-bright: #34d6f0;
+  --atl-cyan-deep: #128ca3;
+  --atl-orange: #f07820;
+  --atl-orange-bright: #ff8c30;
+  --atl-orange-deep: #d6600f;
+  --atl-red: #e23a2e; /* heat extreme only */
+
+  /* Neutrals */
+  --atl-black: #0a0a0b;
+  --atl-charcoal: #141417;
+  --atl-charcoal-2: #1c1c20;
+  --atl-graphite: #26262b;
+  --atl-cream: #f6f1e7;
+  --atl-cream-dim: #e9e2d3;
+  --atl-white: #ffffff;
+  --atl-muted: #9a9aa2;
+  --atl-muted-dim: #6a6a72;
+  --atl-border: rgba(246, 241, 231, 0.12);
+  --atl-border-strong: rgba(246, 241, 231, 0.22);
+
+  /* Semantic surfaces */
+  --bg: var(--atl-black);
+  --bg-raised: var(--atl-charcoal);
+  --ink: var(--atl-cream);
+  --ink-strong: var(--atl-white);
+
+  /* Type families */
+  --font-display: 'Anton', 'Archivo', system-ui, sans-serif;
+  --font-body: 'Manrope Variable', 'Archivo', system-ui, sans-serif;
+
+  /* Fluid display scale */
+  --step--1: clamp(0.82rem, 0.78rem + 0.2vw, 0.95rem);
+  --step-0: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --step-1: clamp(1.2rem, 1.1rem + 0.5vw, 1.5rem);
+  --step-2: clamp(1.6rem, 1.35rem + 1.2vw, 2.4rem);
+  --step-3: clamp(2.2rem, 1.7rem + 2.4vw, 3.6rem);
+  --display-sm: clamp(2.8rem, 1.9rem + 4.4vw, 5.5rem);
+  --display: clamp(3.6rem, 1.6rem + 9vw, 11rem);
+  --display-xl: clamp(4.2rem, 1rem + 14vw, 15rem);
+
+  /* Layout */
+  --container: 1360px;
+  --container-wide: 1560px;
+  --gutter: clamp(1.25rem, 4vw, 4rem);
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 0.28s;
+  --dur: 0.55s;
+  --dur-slow: 0.9s;
+
+  /* Elevation */
+  --shadow-food: 0 40px 80px -30px rgba(0, 0, 0, 0.85);
+  --shadow-card: 0 24px 60px -32px rgba(0, 0, 0, 0.7);
+
+  --nav-h: 76px;
+  color-scheme: dark;
+}
+
+@media (max-width: 640px) {
+  :root { --nav-h: 64px; }
+}

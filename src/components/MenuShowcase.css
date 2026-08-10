@@ -1,0 +1,163 @@
+.craving { background: var(--atl-black); }
+.craving__head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: end;
+  gap: 1.2rem 2rem;
+  margin-bottom: clamp(1.8rem, 4vw, 3rem);
+}
+.craving__head .eyebrow { grid-column: 1 / -1; }
+.craving__heading { grid-column: 1; }
+.craving__all { grid-column: 3; justify-self: end; }
+
+.craving__grid {
+  display: grid;
+  gap: clamp(0.7rem, 1.2vw, 1rem);
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(200px, auto);
+  grid-template-areas:
+    'wings wings waffles waffles'
+    'wings wings waffles waffles'
+    'tenders boneless sand sand'
+    'shakes shakes fries fries';
+}
+.craving__tile--wings { grid-area: wings; }
+.craving__tile--waffles { grid-area: waffles; }
+.craving__tile--tenders { grid-area: tenders; }
+.craving__tile--boneless { grid-area: boneless; }
+.craving__tile--sand { grid-area: sand; }
+.craving__tile--shakes { grid-area: shakes; }
+.craving__tile--fries { grid-area: fries; }
+
+.craving__tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--atl-border);
+  background: var(--atl-charcoal);
+  display: flex;
+  align-items: flex-end;
+  min-height: 200px;
+  isolation: isolate;
+}
+.craving__tile.is-lg { min-height: 340px; }
+
+.craving__media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.craving__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+.craving__tile--photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, transparent 30%, rgba(8,8,9,0.35) 55%, rgba(8,8,9,0.92));
+}
+.craving__tile:hover .craving__media img { transform: scale(1.06); }
+
+/* Cutout tile (shakes) */
+.craving__tile--cutout {
+  background:
+    radial-gradient(120% 100% at 80% 0%, rgba(40,192,216,0.18), transparent 60%),
+    linear-gradient(180deg, var(--atl-charcoal-2), var(--atl-charcoal));
+  align-items: center;
+}
+.craving__tile--cutout .craving__media { inset: 0 0 auto 0; height: 100%; display: flex; align-items: center; justify-content: flex-end; padding: 1.2rem; }
+.craving__tile--cutout .craving__media img { width: auto; height: 78%; max-width: 62%; object-fit: contain; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5)); }
+.craving__tile--cutout .craving__body { position: relative; max-width: 60%; }
+
+/* Type tile (loaded fries) */
+.craving__tile--type {
+  background: linear-gradient(150deg, var(--atl-orange), var(--atl-orange-deep));
+  color: var(--atl-black);
+}
+.craving__tile--type .craving__copy { color: rgba(10,10,11,0.7); }
+.craving__tile--type .craving__go { color: var(--atl-black); }
+.craving__tile--type .craving__title { color: var(--atl-black); }
+.craving__tile--type::before {
+  content: 'FRIES';
+  position: absolute;
+  right: -0.1em; bottom: -0.22em;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 12vw, 9rem);
+  color: rgba(10,10,11,0.12);
+  pointer-events: none;
+  line-height: 0.8;
+}
+
+.craving__body {
+  position: relative;
+  z-index: 1;
+  padding: clamp(1rem, 2vw, 1.6rem);
+}
+.craving__badge {
+  display: inline-block;
+  margin-bottom: 0.6rem;
+  padding: 0.3em 0.7em;
+  border-radius: var(--radius-pill);
+  background: var(--atl-cyan);
+  color: var(--atl-black);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.craving__title {
+  font-size: clamp(1.5rem, 3.2vw, 2.6rem);
+  color: var(--atl-cream);
+  line-height: 0.9;
+  margin-bottom: 0.35rem;
+}
+.craving__tile.is-lg .craving__title { font-size: clamp(2rem, 5vw, 3.6rem); }
+.craving__copy {
+  color: var(--atl-muted);
+  font-size: var(--step--1);
+  max-width: 28ch;
+}
+.craving__go {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--atl-cyan);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity var(--dur-fast), transform var(--dur-fast);
+}
+.craving__tile:hover .craving__go,
+.craving__tile:focus-visible .craving__go { opacity: 1; transform: none; }
+
+@media (max-width: 900px) {
+  .craving__grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(180px, auto);
+    grid-template-areas:
+      'wings wings'
+      'waffles waffles'
+      'tenders boneless'
+      'sand sand'
+      'shakes shakes'
+      'fries fries';
+  }
+  .craving__go { opacity: 1; transform: none; }  /* touch: no hover needed */
+}
+@media (max-width: 620px) {
+  .craving__head { grid-template-columns: 1fr; }
+  .craving__all { grid-column: 1; justify-self: start; }
+  .craving__grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'wings' 'waffles' 'tenders' 'boneless' 'sand' 'shakes' 'fries';
+  }
+  .craving__tile--cutout .craving__body { max-width: 100%; }
+}

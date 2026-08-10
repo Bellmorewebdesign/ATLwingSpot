@@ -1,0 +1,193 @@
+.finder {
+  position: relative;
+  background: var(--atl-black);
+  overflow: hidden;
+  transition: background var(--dur-slow) var(--ease-out);
+}
+.finder__glow {
+  position: absolute;
+  right: -5%; top: 30%;
+  width: min(60vw, 700px);
+  aspect-ratio: 1;
+  background: radial-gradient(circle, color-mix(in srgb, var(--heat) 26%, transparent), transparent 62%);
+  transition: background var(--dur-slow) var(--ease-out);
+  pointer-events: none;
+}
+.finder__head { margin-bottom: clamp(2rem, 5vw, 3.4rem); max-width: 640px; }
+.finder__lead { margin-top: 0.8rem; }
+
+.finder__stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.6rem, 4vw, 3.5rem);
+  align-items: center;
+}
+
+/* Controls */
+.finder__controls { display: flex; flex-direction: column; gap: 1.6rem; }
+.finder__step { border: 0; padding: 0; margin: 0; }
+.finder__q {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  color: var(--atl-cream);
+  text-transform: uppercase;
+  margin-bottom: 0.9rem;
+}
+.finder__q-n {
+  display: grid; place-items: center;
+  width: 1.7em; height: 1.7em;
+  font-size: 0.62em;
+  border-radius: 50%;
+  background: var(--atl-graphite);
+  color: var(--atl-cyan);
+}
+
+.heatbar {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 5px;
+  background: var(--atl-charcoal);
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.heatbar__fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  border-radius: var(--radius);
+  opacity: 0.16;
+  transition: width var(--dur) var(--ease-out), background var(--dur) var(--ease-out);
+  pointer-events: none;
+}
+.heatbar__seg {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.85rem 0.3rem;
+  border-radius: calc(var(--radius) - 4px);
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--atl-muted);
+  transition: color var(--dur-fast), background var(--dur-fast);
+}
+.heatbar__flame { opacity: 0.4; transition: opacity var(--dur-fast), color var(--dur-fast); }
+.heatbar__seg.is-active { color: var(--atl-white); background: rgba(255,255,255,0.05); }
+.heatbar__seg.is-active .heatbar__flame { opacity: 1; color: var(--heat); }
+.heatbar__seg:hover { color: var(--atl-cream); }
+.finder__hint {
+  margin-top: 0.6rem;
+  font-size: var(--step--1);
+  color: var(--heat);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: color var(--dur);
+}
+
+.styletoggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.styletoggle__btn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: flex-start;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius);
+  background: var(--atl-charcoal);
+  transition: border-color var(--dur-fast), background var(--dur-fast), transform var(--dur-fast);
+}
+.styletoggle__btn strong { font-size: 1.05rem; color: var(--atl-cream); }
+.styletoggle__btn span { font-size: 0.72rem; color: var(--atl-muted); }
+.styletoggle__btn.is-active {
+  border-color: var(--heat);
+  background: color-mix(in srgb, var(--heat) 12%, var(--atl-charcoal));
+}
+.styletoggle__btn.is-active strong { color: var(--atl-white); }
+
+.finder__cta { margin-top: 0.4rem; }
+.finder__note { font-size: 0.74rem; color: var(--atl-muted-dim); text-align: center; }
+
+/* Result */
+.finder__result { position: relative; }
+.finder__ring {
+  position: relative;
+  width: min(80%, 360px);
+  aspect-ratio: 1;
+  margin: 0 auto 1.2rem;
+  border: 2px dashed;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: border-color var(--dur-slow) var(--ease-out);
+}
+.finder__ring::before {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--heat) 22%, transparent), transparent 70%);
+  transition: background var(--dur-slow);
+}
+.finder__product {
+  position: relative;
+  width: 118%;
+  max-width: none;
+  filter: drop-shadow(0 24px 30px rgba(0,0,0,0.55));
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.finder__cards { display: flex; flex-direction: column; gap: 0.7rem; }
+.flavor-card {
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius);
+  background: var(--atl-charcoal);
+  padding: 1.1rem 1.3rem;
+  animation: fc-in var(--dur) var(--ease-out) both;
+}
+.flavor-card--hero {
+  border-color: color-mix(in srgb, var(--fc) 45%, var(--atl-border));
+  background: linear-gradient(150deg, color-mix(in srgb, var(--fc) 14%, var(--atl-charcoal)), var(--atl-charcoal));
+}
+.flavor-card__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.flavor-card__style {
+  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--atl-cyan);
+}
+.flavor-card__name { font-size: clamp(1.6rem, 4vw, 2.4rem); color: var(--atl-white); line-height: 0.92; }
+.flavor-card__desc { color: var(--atl-cream); font-style: italic; margin-top: 0.3rem; }
+.finder__alts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.flavor-card--alt { padding: 0.85rem 1rem; animation-delay: 0.08s; }
+.flavor-card__row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.flavor-card__name-sm { font-size: 0.98rem; color: var(--atl-cream); }
+.flavor-card__desc-sm { font-size: 0.78rem; color: var(--atl-muted); margin-top: 0.2rem; }
+
+.pips { display: inline-flex; gap: 4px; }
+.pips__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--atl-graphite); }
+
+@keyframes fc-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 860px) {
+  .finder__stage { grid-template-columns: 1fr; }
+  .finder__result { order: -1; }
+  .finder__ring { width: min(62%, 280px); }
+}
+@media (max-width: 460px) {
+  .finder__alts { grid-template-columns: 1fr; }
+  .heatbar__seg { padding-inline: 0.15rem; font-size: 0.64rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flavor-card { animation: none; }
+  .finder__product { transition: none; }
+}

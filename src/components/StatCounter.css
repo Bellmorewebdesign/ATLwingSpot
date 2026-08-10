@@ -1,0 +1,23 @@
+.stat { display: flex; flex-direction: column; gap: 0.2rem; }
+.stat__value {
+  font-size: clamp(2.4rem, 6vw, 4.4rem);
+  line-height: 0.9;
+  color: var(--atl-cream);
+  letter-spacing: 0.005em;
+}
+.stat--orange .stat__value { color: var(--atl-orange); }
+.stat--cyan .stat__value { color: var(--atl-cyan); }
+.stat--cream .stat__value { color: var(--atl-cream); }
+.stat__label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--atl-cream);
+}
+.stat__sub {
+  font-size: 0.74rem;
+  color: var(--atl-muted-dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
