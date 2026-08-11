@@ -1,0 +1,33 @@
+.flavors-page { background: var(--atl-black); }
+.flavors-grid-section { background: var(--atl-charcoal); }
+.flavors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: clamp(0.7rem, 1.5vw, 1rem);
+}
+.fl-card {
+  padding: 1.3rem;
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius);
+  background: var(--atl-black);
+  border-top: 3px solid var(--fc);
+  transition: transform var(--dur-fast), border-color var(--dur-fast);
+}
+.fl-card:hover { transform: translateY(-3px); }
+.fl-card__top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.7rem; }
+.fl-card__style {
+  font-size: 0.66rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--atl-cyan);
+}
+.fl-card__name { font-size: clamp(1.5rem, 3vw, 2rem); color: var(--atl-white); line-height: 0.94; margin-bottom: 0.4rem; }
+.fl-card__desc { color: var(--atl-cream); font-style: italic; font-size: var(--step--1); margin-bottom: 0.9rem; }
+.fl-card__heat {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--fc);
+}
+
+.fl-pips { display: inline-flex; gap: 4px; }
+.fl-pips__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--atl-graphite); }
+
+.flavors-note { margin-top: 1.6rem; color: var(--atl-muted-dim); font-size: 0.82rem; max-width: 60ch; }
+.flavors-cta { margin-top: 1.6rem; }

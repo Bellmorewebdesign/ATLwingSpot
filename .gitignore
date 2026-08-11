@@ -1,9 +1,14 @@
+# Dependencies & build caches (source lives in /app)
+app/node_modules
+app/dist
+app/.vite
 node_modules
-dist
-dist-ssr
-*.local
-.DS_Store
-.vite
+
+# Logs / OS
+*.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.DS_Store
+
+# NOTE: the compiled production site IS committed at the repo root
+# (index.html, 404.html, .nojekyll, /assets, /static) so GitHub Pages can
+# serve main:/root directly. Do not ignore those.

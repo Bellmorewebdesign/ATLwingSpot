@@ -1,0 +1,56 @@
+.catering-page { background: var(--atl-black); }
+.catering-hero__scenes {
+  font-size: clamp(2.8rem, 10vw, 7rem);
+  line-height: 0.9;
+  color: var(--atl-cream);
+  margin: 0.6rem 0 1.2rem;
+}
+.catering-hero__scene { display: block; overflow: hidden; }
+.catering-hero__scene.is-punch { color: var(--atl-orange); }
+.catering-hero__cta { margin-top: 1.6rem; }
+
+.catering-trays { background: var(--atl-charcoal); }
+.catering-trays__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: clamp(0.7rem, 1.5vw, 1rem);
+}
+.tray-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.3rem;
+  background: var(--atl-black);
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius);
+  transition: transform var(--dur-fast), border-color var(--dur-fast);
+}
+.tray-card:hover { transform: translateY(-3px); border-color: var(--atl-border-strong); }
+.tray-card__tag {
+  align-self: flex-start;
+  font-size: 0.62rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--atl-black); background: var(--atl-cyan);
+  padding: 0.25em 0.6em; border-radius: var(--radius-pill);
+}
+.tray-card__name { font-size: 1.05rem; font-weight: 800; color: var(--atl-cream); }
+.tray-card__qty { color: var(--atl-muted); font-weight: 600; }
+.tray-card__price { font-size: 1.8rem; color: var(--atl-orange); margin-top: auto; }
+.catering-trays__note { margin-top: 1.4rem; color: var(--atl-muted-dim); font-size: 0.82rem; }
+
+.catering-form-section { background: var(--atl-black); scroll-margin-top: var(--nav-h); }
+.catering-form-wrap {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+}
+.catering-form__card {
+  background: var(--atl-charcoal);
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.4rem, 3vw, 2.2rem);
+}
+
+@media (max-width: 860px) {
+  .catering-form-wrap { grid-template-columns: 1fr; }
+}

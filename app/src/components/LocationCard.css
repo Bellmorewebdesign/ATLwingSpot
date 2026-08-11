@@ -1,0 +1,46 @@
+.loc-card {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.2rem, 2.4vw, 1.7rem);
+  background: var(--atl-charcoal);
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius);
+  transition: border-color var(--dur-fast), transform var(--dur-fast), background var(--dur-fast);
+}
+.loc-card:hover { border-color: var(--atl-border-strong); transform: translateY(-3px); }
+.loc-card__top { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.8rem; }
+.loc-card__state {
+  display: grid; place-items: center;
+  min-width: 2.4em; height: 2.4em;
+  padding-inline: 0.5em;
+  border-radius: var(--radius-sm);
+  background: var(--atl-cyan);
+  color: var(--atl-black);
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+.loc-card__region {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--atl-muted);
+}
+.loc-card__name { font-size: clamp(1.4rem, 3vw, 1.9rem); color: var(--atl-white); margin-bottom: 0.5rem; }
+.loc-card__addr {
+  font-style: normal;
+  color: var(--atl-muted);
+  font-size: var(--step--1);
+  line-height: 1.5;
+  margin-bottom: 1.2rem;
+}
+.loc-card__actions {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+.loc-card__dir { color: var(--atl-cyan); }

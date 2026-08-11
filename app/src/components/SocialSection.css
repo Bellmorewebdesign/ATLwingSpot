@@ -1,0 +1,68 @@
+.social { background: var(--atl-black); overflow: hidden; }
+.social__grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+.social__title {
+  font-size: clamp(2.6rem, 7vw, 5rem);
+  line-height: 0.88;
+  color: var(--atl-cream);
+  margin: 0.6rem 0 1.3rem;
+}
+.social__lead { margin-bottom: 1.8rem; }
+.social__actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+
+.social__wall {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(0.6rem, 1.4vw, 1rem);
+  align-items: start;
+}
+.social__col { display: flex; flex-direction: column; gap: clamp(0.6rem, 1.4vw, 1rem); will-change: transform; }
+.social__col:nth-child(2) { margin-top: 2.4rem; }
+
+.social__frame {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--atl-border);
+  aspect-ratio: 4 / 5;
+}
+.social__frame img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--dur-slow) var(--ease-out); }
+.social__frame:hover img { transform: scale(1.05); }
+
+.social__callout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1.2rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--atl-border);
+  background: var(--atl-charcoal);
+  aspect-ratio: 4 / 5;
+  justify-content: center;
+}
+.social__callout.is-accent { background: linear-gradient(150deg, var(--atl-cyan), var(--atl-cyan-deep)); border-color: transparent; }
+.social__callout-kicker {
+  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--atl-cyan);
+}
+.social__callout.is-accent .social__callout-kicker { color: rgba(10,10,11,0.65); }
+.social__callout-big { font-size: clamp(1.8rem, 4vw, 2.8rem); color: var(--atl-white); line-height: 1; margin: 0.2rem 0; word-break: break-word; }
+.social__callout.is-accent .social__callout-big { color: var(--atl-black); }
+.social__callout-sub { font-size: 0.8rem; color: var(--atl-muted); }
+.social__callout.is-accent .social__callout-sub { color: rgba(10,10,11,0.7); }
+
+@media (max-width: 860px) {
+  .social__grid { grid-template-columns: 1fr; }
+  .social__col:nth-child(2) { margin-top: 0; }
+  .social__col { transform: none !important; }
+}
+@media (max-width: 480px) {
+  .social__wall { grid-template-columns: repeat(2, 1fr); }
+  .social__col:nth-child(3) { grid-column: 1 / -1; flex-direction: row; }
+  .social__col:nth-child(3) > * { flex: 1; }
+  .social__actions .btn { flex: 1 1 auto; justify-content: center; }
+}

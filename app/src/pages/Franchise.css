@@ -1,0 +1,152 @@
+.franchise-page { background: var(--atl-black); }
+
+.franchise-hero {
+  position: relative;
+  padding-top: var(--nav-h);
+  overflow: hidden;
+  background:
+    radial-gradient(70% 60% at 90% 10%, rgba(240,120,32,0.14), transparent 55%),
+    var(--atl-black);
+}
+.franchise-hero__inner {
+  display: grid;
+  grid-template-columns: 1.4fr 0.6fr;
+  gap: 2rem;
+  align-items: center;
+  padding-block: clamp(3rem, 7vw, 6rem);
+}
+.franchise-hero__title {
+  font-size: clamp(3.2rem, 11vw, 8rem);
+  line-height: 0.84;
+  color: var(--atl-cream);
+  margin: 0.6rem 0 1.2rem;
+}
+.franchise-hero__sub {
+  font-size: var(--step-2);
+  color: var(--atl-white);
+  font-weight: 600;
+  max-width: 30ch;
+  margin-bottom: 1.8rem;
+}
+.franchise-hero__award {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  text-align: center;
+  padding: 1.6rem;
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius-lg);
+  background: var(--atl-charcoal);
+}
+.franchise-hero__award img { width: 96px; height: auto; }
+.franchise-hero__award span {
+  font-weight: 800; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--atl-cream);
+}
+
+/* Data WOW */
+.franchise-data {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(3.5rem, 8vw, 7rem);
+  background: var(--atl-charcoal);
+  border-block: 1px solid var(--atl-border);
+}
+.franchise-data__food {
+  position: absolute;
+  right: -4%; top: 50%;
+  width: min(40vw, 440px);
+  transform: translateY(-50%) rotate(-6deg);
+  opacity: 0.9;
+  filter: drop-shadow(0 30px 40px rgba(0,0,0,0.5));
+  pointer-events: none;
+}
+.franchise-data__lead {
+  font-size: clamp(2.6rem, 8vw, 6rem);
+  line-height: 0.86;
+  color: var(--atl-cream);
+  margin-bottom: 1.6rem;
+}
+.franchise-data__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  max-width: 780px;
+}
+.franchise-data__big .stat__value { font-size: clamp(3rem, 10vw, 6rem); }
+.franchise-data__caption { margin-top: 1.6rem; color: var(--atl-muted); max-width: 46ch; position: relative; }
+
+/* Claims */
+.franchise-claims { background: var(--atl-black); }
+.franchise-claims__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(0.7rem, 1.5vw, 1rem);
+}
+.claim-card {
+  padding: 1.5rem;
+  background: var(--atl-charcoal);
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius);
+}
+.claim-card__check {
+  display: grid; place-items: center;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(40,192,216,0.14);
+  color: var(--atl-cyan);
+  margin-bottom: 1rem;
+}
+.claim-card__title { font-size: 1.1rem; font-weight: 800; color: var(--atl-white); margin-bottom: 0.4rem; }
+.claim-card__desc { color: var(--atl-muted); font-size: var(--step--1); }
+
+/* Figures */
+.franchise-figures { background: var(--atl-charcoal); }
+.franchise-figures__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: clamp(0.7rem, 1.5vw, 1rem);
+}
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1.5rem;
+  background: var(--atl-black);
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius);
+}
+.figure__value { font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--atl-orange); line-height: 1; }
+.figure__label { font-size: 0.86rem; font-weight: 700; color: var(--atl-cream); }
+.figure__note { font-size: 0.72rem; color: var(--atl-muted-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+.franchise-figures__disclaimer {
+  margin-top: 1.6rem;
+  font-size: 0.8rem;
+  color: var(--atl-muted-dim);
+  line-height: 1.6;
+  max-width: 90ch;
+}
+
+/* Form */
+.franchise-form-section { background: var(--atl-black); scroll-margin-top: var(--nav-h); }
+.franchise-form-wrap {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+}
+.franchise-form__card {
+  background: var(--atl-charcoal);
+  border: 1px solid var(--atl-border);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.4rem, 3vw, 2.2rem);
+}
+
+@media (max-width: 860px) {
+  .franchise-hero__inner { grid-template-columns: 1fr; }
+  .franchise-hero__award { flex-direction: row; justify-content: center; max-width: 340px; }
+  .franchise-claims__grid { grid-template-columns: 1fr; }
+  .franchise-data__stats { grid-template-columns: 1fr; }
+  .franchise-data__food { opacity: 0.25; }
+  .franchise-form-wrap { grid-template-columns: 1fr; }
+}
