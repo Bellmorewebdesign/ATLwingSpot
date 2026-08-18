@@ -29,7 +29,7 @@ export function CrewCalc() {
 
   return (
     <section className="crew ch-orange" id="crew">
-      <img className="crew__food" src={asset('assets/food/crispy-tenders-cutout.png')} alt="" loading="lazy" aria-hidden="true" />
+      <img className="crew__food" src={asset('assets/food/crispy-tenders-cutout.webp')} alt="" loading="lazy" aria-hidden="true" />
 
       <div className="crew__in wrap-tight">
         <h2 className="dsp dsp-sm crew__title">Feeding a crew?</h2>

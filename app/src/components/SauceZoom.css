@@ -1,0 +1,98 @@
+/* Scroll-scrubbed zoom-through. The runway gives the scrub room; the sticky
+   child is the only thing ever painted. */
+.zoom {
+  position: relative;
+  height: 300vh;
+  background: var(--cream);
+}
+.zoom__sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;              /* scaled text must never widen the page */
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+/* Photo and type layer share identical box + cover positioning so the
+   letters sit exactly over the matching part of the image. */
+.zoom__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.zoom__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--cream);
+  will-change: opacity;
+}
+
+/* The slogan is a window onto the same sauce shot */
+.zoom__word {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: calc(clamp(2.4rem, 10vw, 9rem) * var(--k, 1));
+  line-height: 0.84;
+  letter-spacing: -0.02em;
+  background-size: cover;
+  background-position: center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  will-change: opacity;
+  pointer-events: none;
+}
+
+.zoom__cue {
+  position: absolute;
+  z-index: 3;
+  bottom: clamp(1.2rem, 5vh, 3rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 800;
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  white-space: nowrap;
+}
+
+/* shorter runway on phones so the scrub doesn't outstay its welcome */
+@media (max-width: 700px) {
+  .zoom { height: 220vh; }
+  .zoom__word { font-size: calc(clamp(2.2rem, 15vw, 6rem) * var(--k, 1)); }
+}
+
+/* ---------- reduced motion / no-scrub fallback ---------- */
+.zoom--static {
+  height: auto;
+  position: relative;
+  min-height: clamp(320px, 52vh, 560px);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.zoom--static .zoom__bg { position: absolute; inset: 0; }
+.zoom__still {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: var(--cream);
+  font-size: clamp(2.6rem, 11vw, 8rem);
+  line-height: 0.86;
+  text-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}

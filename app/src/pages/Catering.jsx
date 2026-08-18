@@ -33,7 +33,7 @@ export default function Catering() {
 
       {/* Orange takeover masthead with the food at full scale */}
       <header className="cat__mast ch-orange">
-        <img className="cat__food" src={asset('assets/food/wings-basket-cutout.png')} alt="" loading="lazy" aria-hidden="true" />
+        <img className="cat__food" src={asset('assets/food/wings-basket-cutout.webp')} alt="" loading="lazy" aria-hidden="true" />
         <div className="wrap cat__mast-in">
           <h1 className="dsp dsp-lg cat__h1">Feed<br />everybody.</h1>
           <p className="cat__sub">

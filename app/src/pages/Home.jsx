@@ -2,6 +2,7 @@ import { Seo } from '../components/Seo'
 import { Hero } from '../components/Hero'
 import { WordStripe } from '../components/WordStripe'
 import { CraveTrack } from '../components/CraveTrack'
+import { SauceZoom } from '../components/SauceZoom'
 import { FlavorStage } from '../components/FlavorStage'
 import { CrewCalc } from '../components/CrewCalc'
 import { StoryScale } from '../components/StoryScale'
@@ -27,6 +28,8 @@ export default function Home() {
       <WordStripe words={BOX_WORDS} tone="cyan" size="md" />
       {/* dark, horizontal */}
       <CraveTrack />
+      {/* signature scroll moment: fall through the slogan into the sauce */}
+      <SauceZoom />
       {/* reactive colour */}
       <FlavorStage />
       {/* orange */}

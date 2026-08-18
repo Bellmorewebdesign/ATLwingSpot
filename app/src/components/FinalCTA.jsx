@@ -10,7 +10,7 @@ export function FinalCTA() {
     <section className="fcta ch-cyan" id="order">
       <img
         className="fcta__food"
-        src={asset('assets/food/chicken-waffles-cutout.png')}
+        src={asset('assets/food/chicken-waffles-cutout.webp')}
         alt=""
         loading="lazy"
         decoding="async"

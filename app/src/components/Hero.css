@@ -87,18 +87,19 @@
    between the top and bottom of the letterforms. */
 .hero__type--front {
   z-index: 3;
-  clip-path: inset(68% 0 0 0);
+  clip-path: inset(59% 0 0 0);
 }
 
 .hero__food {
   grid-area: 1 / 1;
   z-index: 2;
-  width: min(46vw, 620px);
+  width: min(49vw, 690px);
   height: auto;
   justify-self: center;
   align-self: center;
   margin-top: 4%;
-  filter: drop-shadow(0 34px 44px rgba(60, 28, 6, 0.28));
+  filter: drop-shadow(0 26px 26px rgba(84, 40, 8, 0.26))
+          drop-shadow(0 6px 8px rgba(84, 40, 8, 0.16));
   animation: h-food 0.85s var(--ease) 0.3s both;
   will-change: transform;
 }
@@ -125,8 +126,8 @@
 
 /* ---------- responsive ---------- */
 @media (max-width: 860px) {
-  .hero__food { width: min(72vw, 420px); margin-top: 5%; }
-  .hero__type--front { clip-path: inset(66% 0 0 0); }
+  .hero__food { width: min(80vw, 470px); margin-top: 3%; }
+  .hero__type--front { clip-path: inset(62% 0 0 0); }
 }
 @media (max-width: 560px) {
   .hero { min-height: auto; }
@@ -138,7 +139,9 @@
   /* type carries the composition on a phone; the basket supports it */
   .hero__l1 { font-size: max(1.9rem, min(22vw, 12vh, 6rem)); }
   .hero__l2 { font-size: max(3.4rem, min(34vw, 19vh, 9rem)); }
-  .hero__food { width: min(66vw, 320px); }
+  .hero__food { width: min(74vw, 340px); }
+  /* more of SAUCY. in front so the wordmark still reads on a phone */
+  .hero__type--front { clip-path: inset(52% 0 0 0); }
   .hero__actions { width: 100%; flex-direction: column; align-items: stretch; }
   .hero__actions .btn { width: 100%; }
   .hero__menu { align-self: center; margin-left: 0; margin-top: 0.2rem; }

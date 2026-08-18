@@ -71,9 +71,9 @@ export function Hero() {
           <img
             ref={foodRef}
             className="hero__food"
-            src={asset('assets/food/wings-basket-cutout.png')}
+            src={asset('assets/food/hero-wings-cutout.webp')}
             alt="A basket of ATL Wing Spot wings with ranch"
-            width="1200" height="910"
+            width="1144" height="606"
             fetchpriority="high" decoding="async"
           />
 

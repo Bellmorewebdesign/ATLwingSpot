@@ -11,7 +11,7 @@ const PANELS = [
   { cat: 'tenders',    name: 'Saucy\nTenders',    line: 'Jumbo tenders. Sauced, or sauce on the side.',          img: 'assets/food/saucy-tenders.jpg' },
   { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch.',      img: 'assets/food/fruity-pebbles-chicken-waffles.jpg' },
   { cat: 'fries',      name: 'Sides +\nMunchies', line: 'Cajun corn, loaded waffle fries, mozzarella sticks.',   img: 'assets/food/cajun-corn-cutout.png', contain: true },
-  { cat: 'desserts',   name: 'Shakes +\nSweets',  line: 'Seven shakes, fried Oreos, funnel cake fries.',         img: 'assets/food/shakes-lineup.png', contain: true },
+  { cat: 'desserts',   name: 'Shakes +\nSweets',  line: 'Seven shakes, fried Oreos, funnel cake fries.',         img: 'assets/food/shakes-lineup.webp', contain: true },
 ]
 
 export function CraveTrack() {
