@@ -11,7 +11,7 @@ export const SOCIAL = {
 export const BRAND = {
   name: 'ATL Wing Spot',
   handle: '@atlwingspot',
-  flavorCount: '30+',
+  flavorCount: '25+',
 }
 
 // The repeating word-stripe is lifted from ATL's real cyan takeout box.
@@ -21,7 +21,7 @@ export const BOX_WORDS = ['Wings', 'Tenders', 'Munchies']
 export const TICKER = [
   '100% Halal',
   'Fresh, never frozen',
-  '30+ sauces',
+  '25+ sauces',
   'Fried to order',
   'Pickup + delivery',
   'Best wings on Long Island',

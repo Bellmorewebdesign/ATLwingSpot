@@ -12,7 +12,7 @@ const POINTS = [
   { t: 'Small footprint', d: 'Around 1,000 sq ft on ATL’s published average. The first shop was 800.' },
   { t: 'Vendor pricing already negotiated', d: 'Supply agreements are set at the brand level.' },
   { t: 'Delivery rates already contracted', d: 'Third-party delivery terms negotiated by the brand.' },
-  { t: '30+ sauces and a secret menu', d: 'A board built for regulars who want something different each visit.' },
+  { t: '25+ sauces and a secret menu', d: 'A board built for regulars who want something different each visit.' },
   { t: 'Training and ongoing support', d: 'Onboarding plus continued operational support.' },
 ]
 
@@ -47,7 +47,7 @@ export default function Franchise() {
             <h1 className="dsp dsp-lg fr__h1">Open<br />an <span className="t-orange">ATL.</span></h1>
             <p className="fr__lede">
               Wings, tenders and waffles out of a small kitchen, with a sauce board people drive across
-              the island for. Franchising opened in January 2025.
+              the island for. Now opening in new markets.
             </p>
             <a href="#enquire" className="btn btn-orange btn-lg fr__cta">Request information <ArrowRight /></a>
           </div>

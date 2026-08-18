@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { HEAT_LEVELS, STYLES, FLAVORS, FLAVOR_COUNT } from '../data/flavors'
 import { ORDER_URL } from '../data/site'
-import { asset } from '../lib/asset'
 import { ArrowRight } from './Icons'
 import './FlavorStage.css'
 
@@ -31,7 +30,6 @@ export function FlavorStage({ heading = 'Pick your flavor.' }) {
     >
       {/* Abstract sauce field — colour, not fake product photography */}
       <div className="stage__disc" aria-hidden="true" />
-      <img className="stage__food" src={asset('assets/food/wings-basket-cutout.png')} alt="" loading="lazy" aria-hidden="true" />
 
       <div className="stage__in wrap">
         <header className="stage__head">

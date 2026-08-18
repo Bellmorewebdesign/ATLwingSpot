@@ -1,5 +1,5 @@
 // FLAVOURS — real ATL sauce names only.
-// ATL advertises 30+ sauces and rubs; this is a featured selection, and the
+// ATL advertises 25+ sauces and rubs; this is a featured selection, and the
 // UI says so. Heat tiers mirror ATL's own Mild / Medium / Hot grouping, with
 // a fourth "No Fear" tier for 911. Descriptors stay playful and never claim
 // an ingredient the flavour name doesn't already state.
@@ -34,4 +34,4 @@ export const FLAVORS = [
   { id: '911',           name: '911 Sauce',               heat: 4, style: 'wet', blurb: 'You were warned.' },
 ]
 
-export const FLAVOR_COUNT = '30+'
+export const FLAVOR_COUNT = '25+'

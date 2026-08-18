@@ -41,7 +41,7 @@ export function MobileMenu({ open, onClose }) {
             <TikTok size={18} /> <span>TikTok</span> <ArrowUpRight size={13} />
           </a>
         </div>
-        <p className="mm__facts">100% Halal · Fresh, never frozen · 30+ sauces</p>
+        <p className="mm__facts">100% Halal · Fresh, never frozen · 25+ sauces</p>
       </div>
     </div>
   )

@@ -7,7 +7,7 @@ import './CraveTrack.css'
 
 const PANELS = [
   { cat: 'wings',      name: 'Bone-In\nWings',    line: 'Fresh, never frozen. Fried to order, sauced to order.', img: 'assets/food/hero-wings.jpg' },
-  { cat: 'boneless',   name: 'Boneless',          line: 'All white meat, hand breaded, same 30+ sauces.',        img: 'assets/food/boneless-combo.jpg' },
+  { cat: 'boneless',   name: 'Boneless',          line: 'All white meat, hand breaded, same 25+ sauces.',        img: 'assets/food/boneless-combo.jpg', focus: '22% 72%' },
   { cat: 'tenders',    name: 'Saucy\nTenders',    line: 'Jumbo tenders. Sauced, or sauce on the side.',          img: 'assets/food/saucy-tenders.jpg' },
   { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch.',      img: 'assets/food/fruity-pebbles-chicken-waffles.jpg' },
   { cat: 'fries',      name: 'Sides +\nMunchies', line: 'Cajun corn, loaded waffle fries, mozzarella sticks.',   img: 'assets/food/cajun-corn-cutout.png', contain: true },
@@ -61,7 +61,8 @@ export function CraveTrack() {
         {PANELS.map((p) => (
           <li className="crave__panel" key={p.cat}>
             <div className={`crave__media ${p.contain ? 'is-contain' : ''}`}>
-              <img src={asset(p.img)} alt={p.name.replace('\n', ' ')} loading="lazy" decoding="async" />
+              <img src={asset(p.img)} alt={p.name.replace('\n', ' ')} loading="lazy" decoding="async"
+                style={p.focus ? { objectPosition: p.focus } : undefined} />
             </div>
             <div className="crave__body">
               <h3 className="dsp crave__name">{p.name.split('\n').map((l, i) => <span key={i}>{l}</span>)}</h3>

@@ -23,16 +23,6 @@
   background: radial-gradient(circle, rgba(255,255,255,0.34), rgba(255,255,255,0.10) 46%, transparent 68%);
   pointer-events: none;
 }
-.stage__food {
-  position: absolute;
-  right: -8%;
-  bottom: -12%;
-  width: min(46vw, 560px);
-  transform: rotate(-9deg);
-  opacity: 0.9;
-  filter: drop-shadow(0 30px 46px rgba(0,0,0,0.26));
-  pointer-events: none;
-}
 
 .stage__in { position: relative; z-index: 1; width: 100%; }
 
@@ -142,8 +132,7 @@
 @keyframes st-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 860px) {
-  .stage__food { width: 70vw; right: -18%; bottom: -8%; opacity: 0.5; }
-}
+  }
 @media (max-width: 560px) {
   .stage { min-height: auto; }
   .stage__controls { flex-direction: column; align-items: center; gap: 1.2rem; }

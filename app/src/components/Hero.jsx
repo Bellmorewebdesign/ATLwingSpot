@@ -59,7 +59,7 @@ export function Hero() {
     <section className="hero">
       <div className="hero__inner wrap-full">
         <p className="hero__facts">
-          <span>100% Halal</span><i /><span>Fresh, never frozen</span><i /><span>30+ sauces</span>
+          <span>100% Halal</span><i /><span>Fresh, never frozen</span><i /><span>25+ sauces</span>
         </p>
 
         <div className="hero__stage">

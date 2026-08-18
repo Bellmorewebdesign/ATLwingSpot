@@ -21,7 +21,7 @@ export function Footer() {
             width="200" height="88"
             loading="lazy"
           />
-          <p className="foot__facts">100% Halal · Fresh, never frozen · 30+ sauces</p>
+          <p className="foot__facts">100% Halal · Fresh, never frozen · 25+ sauces</p>
         </div>
 
         <div className="foot__cols">

@@ -18,7 +18,7 @@ export default function Home() {
       <Seo
         title="Stay Saucy"
         suffix={false}
-        description="Fresh, never frozen wings fried to order in 30+ sauces. 100% halal. Voted best wings on Long Island. Order pickup or delivery across NY, NJ and CA."
+        description="Fresh, never frozen wings fried to order in 25+ sauces. 100% halal. Voted best wings on Long Island. Order pickup or delivery across NY, NJ and CA."
       />
 
       {/* cream */}
@@ -31,10 +31,10 @@ export default function Home() {
       <FlavorStage />
       {/* orange */}
       <CrewCalc />
+      {/* white, split — location step sits early in the ordering path */}
+      <LocationsBand />
       {/* dark, right-led */}
       <StoryScale />
-      {/* white, split */}
-      <LocationsBand />
       {/* full-bleed photography, right-aligned */}
       <CateringBand />
       {/* cyan slim */}

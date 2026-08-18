@@ -20,8 +20,8 @@ export function LocationsBand() {
           <Reveal><h2 className="dsp dsp-md lband__title">Find your<br /><span className="t-cyan">ATL.</span></h2></Reveal>
           <Reveal delay={90}>
             <p className="lband__sub">
-              {LOCATIONS.length} shops open across New York, New Jersey and California. The original is still
-              on Broadway in Lynbrook.
+              {LOCATIONS.length} shops open across New York, New Jersey and California. Pick one and
+              we&rsquo;ll start frying.
             </p>
             <Link to="/locations" className="btn btn-ink lband__cta">All locations <ArrowRight /></Link>
           </Reveal>

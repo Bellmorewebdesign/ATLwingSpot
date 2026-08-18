@@ -71,7 +71,7 @@ export const MENU_ITEMS = [
   // ---------------- BONE-IN WINGS ----------------
   {
     id: 'wings-6-combo', cat: 'wings', name: '6pc Bone-In Wings Combo Meal', price: '$13.99',
-    desc: 'Six fresh, never frozen bone-in wings sauced in your pick of 30+ sauces, plus a side and a drink.',
+    desc: 'Six fresh, never frozen bone-in wings sauced in your pick of 25+ sauces, plus a side and a drink.',
     image: img.wings, feature: true, hero: true,
   },
   {

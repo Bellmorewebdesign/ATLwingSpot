@@ -9,7 +9,7 @@ export default function Flavors() {
     <div className="page flav">
       <Seo
         title="Flavors"
-        description="30+ sauces and rubs at ATL Wing Spot — from Buttery Garlic Parmesan and Lemon Pepper to Mango Habanero and 911 Sauce. Pick your heat, wet or dry."
+        description="25+ sauces and rubs at ATL Wing Spot — from Buttery Garlic Parmesan and Lemon Pepper to Mango Habanero and 911 Sauce. Pick your heat, wet or dry."
       />
 
       <FlavorStage heading="Pick your flavor." />

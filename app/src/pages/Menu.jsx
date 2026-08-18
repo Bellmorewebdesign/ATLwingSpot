@@ -107,12 +107,12 @@ export default function Menu() {
     <div className="page menu ch-cream">
       <Seo
         title="Menu"
-        description="The full ATL Wing Spot menu — bone-in wings, boneless, saucy tenders, chicken n' waffles, loaded fries, shakes and more, in 30+ sauces."
+        description="The full ATL Wing Spot menu — bone-in wings, boneless, saucy tenders, chicken n' waffles, loaded fries, shakes and more, in 25+ sauces."
       />
 
       <header className="mast wrap menu__mast">
         <h1 className="dsp dsp-lg">Menu</h1>
-        <p className="menu__sub">Fried to order. Sauced to order. 30+ sauces and rubs to pick from.</p>
+        <p className="menu__sub">Fried to order. Sauced to order. 25+ sauces and rubs to pick from.</p>
         <p className="fineprint menu__fine">Prices and availability vary by location.</p>
       </header>
 

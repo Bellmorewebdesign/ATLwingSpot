@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { STORY_CHAPTERS, PROOF, FOUNDERS } from '../data/story'
+import { STORY_CHAPTERS, PROOF } from '../data/story'
 import { ORDER_URL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
@@ -12,18 +12,18 @@ export default function Story() {
     <div className="page story-p">
       <Seo
         title="Our Story"
-        description="ATL Wing Spot started in an 800 square foot shop in Lynbrook in May 2023. A month later a TikTok crossed a million views. Here's what happened next."
+        description="ATL Wing Spot opened in May 2023 in a shop of about 800 square feet. A month later a TikTok crossed a million views. Here is what happened next."
       />
 
       {/* Dark, centred opening */}
       <header className="story-p__mast ch-dark">
         <div className="wrap">
-          <p className="story-p__kick">Lynbrook, New York · May 2023</p>
+          <p className="story-p__kick">May 2023</p>
           <h1 className="dsp dsp-lg story-p__h1">
             One shop.<br /><span className="t-orange">800 square feet.</span>
           </h1>
           <p className="story-p__lede">
-            {FOUNDERS} put their savings into a room barely bigger than the kitchen inside it,
+            Two friends put their savings into a room barely bigger than the kitchen inside it,
             and started frying wings to order.
           </p>
         </div>
