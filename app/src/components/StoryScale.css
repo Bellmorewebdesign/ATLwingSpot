@@ -1,0 +1,70 @@
+.story { padding-block: clamp(3.5rem, 8vw, 7rem); overflow: hidden; }
+
+.story__intro { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+.story__kick {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: clamp(1.4rem, 4vw, 3rem);
+  line-height: 0.95;
+  color: var(--cream);
+  max-width: 18ch;
+}
+
+.story__beats { display: flex; flex-direction: column; }
+
+.beat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 1rem 2rem;
+  padding-block: clamp(1.1rem, 2.6vw, 2rem);
+  border-top: 2px solid var(--dark-line);
+}
+.beat__txt { max-width: 34ch; padding-bottom: 0.4rem; }
+.beat__when {
+  display: block;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 0.35rem;
+}
+.beat__line { color: var(--dark-mute); font-size: var(--step-0); }
+
+/* The figures grow beat by beat — the point of the section */
+.beat__fig {
+  justify-self: end;
+  text-align: right;
+  line-height: 0.78;
+  letter-spacing: -0.03em;
+  color: var(--cream);
+  white-space: nowrap;
+}
+.beat--0 .beat__fig { font-size: clamp(3rem, 12vw, 8rem); }
+.beat--1 .beat__fig { font-size: clamp(3.6rem, 15vw, 10.5rem); color: var(--orange); }
+.beat--2 .beat__fig { font-size: clamp(4.2rem, 18vw, 13rem); }
+.beat--3 .beat__fig { font-size: clamp(2.4rem, 9.5vw, 7rem); color: var(--cyan); }
+
+.beat__unit {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dark-mute);
+  margin-top: 0.6rem;
+}
+
+.story__out { margin-top: clamp(1.8rem, 4vw, 3rem); }
+
+@media (max-width: 700px) {
+  .beat {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.5rem;
+  }
+  .beat__fig { justify-self: start; text-align: left; }
+  .beat__txt { order: 2; }
+}

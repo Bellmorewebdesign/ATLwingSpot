@@ -1,67 +1,59 @@
 import { Link } from 'react-router-dom'
 import { FOOTER_LINKS } from '../data/navigation'
-import { SOCIAL } from '../data/site'
+import { SOCIAL, BOX_WORDS } from '../data/site'
 import { asset } from '../lib/asset'
-import { OrderButton } from './OrderButton'
-import { Instagram, TikTok, ArrowUpRight } from './Icons'
+import { WordStripe } from './WordStripe'
+import { Instagram, TikTok } from './Icons'
 import './Footer.css'
 
 export function Footer() {
   const year = new Date().getFullYear()
   return (
-    <footer className="foot grain">
-      <div className="foot__hero container-wide">
-        <div className="foot__word font-display" aria-hidden="true">
-          <span>Stay</span>
-          <span className="foot__word-out">Saucy.</span>
-        </div>
-        <div className="foot__cta">
-          <p className="foot__cta-label">Still reading? The wings aren’t getting any closer.</p>
-          <OrderButton size="lg" className="foot__order">Order ATL</OrderButton>
-        </div>
-      </div>
+    <footer className="foot ch-dark">
+      <WordStripe words={BOX_WORDS} tone="cyan" size="sm" speed={40} />
 
-      <div className="foot__grid container-wide">
-        <div className="foot__brand">
-          <img src={asset('assets/brand/atl-wing-spot-logo.png')} alt="ATL Wing Spot" width="160" height="70" loading="lazy" />
-          <p className="foot__halal">100% Halal · Fresh, Never Frozen · 25+ Flavors</p>
-          <div className="foot__social">
-            <a href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer" aria-label="ATL Wing Spot on Instagram">
-              <Instagram size={20} />
+      <div className="wrap foot__in">
+        <div className="foot__top">
+          <img
+            className="foot__logo"
+            src={asset('assets/brand/atl-wing-spot-logo.png')}
+            alt="ATL Wing Spot"
+            width="200" height="88"
+            loading="lazy"
+          />
+          <p className="foot__facts">100% Halal · Fresh, never frozen · 30+ sauces</p>
+        </div>
+
+        <div className="foot__cols">
+          <nav className="foot__col" aria-label="Footer">
+            <h2 className="foot__h">Menu &amp; more</h2>
+            {FOOTER_LINKS.map((l) => (
+              <Link key={l.to} to={l.to} className="foot__link">{l.label}</Link>
+            ))}
+          </nav>
+
+          <div className="foot__col">
+            <h2 className="foot__h">Find us</h2>
+            <a className="foot__link" href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer">
+              <Instagram size={16} /> Instagram
             </a>
-            <a href={SOCIAL.tiktok} target="_blank" rel="noopener noreferrer" aria-label="ATL Wing Spot on TikTok">
-              <TikTok size={20} />
+            <a className="foot__link" href={SOCIAL.tiktok} target="_blank" rel="noopener noreferrer">
+              <TikTok size={16} /> TikTok
             </a>
+            <Link className="foot__link" to="/locations">All locations</Link>
+            <Link className="foot__link" to="/contact">Contact</Link>
           </div>
+
+          <p className="dsp foot__mark">Stay<br /><span className="t-orange">Saucy.</span></p>
         </div>
 
-        <nav className="foot__nav" aria-label="Footer">
-          <h3 className="foot__nav-title">Explore</h3>
-          {FOOTER_LINKS.map((l) => (
-            <Link key={l.to} to={l.to} className="foot__nav-link">{l.label}</Link>
-          ))}
-        </nav>
-
-        <div className="foot__col">
-          <h3 className="foot__nav-title">Get ATL</h3>
-          <a className="foot__nav-link" href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer">
-            Instagram <ArrowUpRight size={13} />
-          </a>
-          <a className="foot__nav-link" href={SOCIAL.tiktok} target="_blank" rel="noopener noreferrer">
-            TikTok <ArrowUpRight size={13} />
-          </a>
-          <Link className="foot__nav-link" to="/locations">Find a location</Link>
-          <Link className="foot__nav-link" to="/catering">Catering</Link>
-          <Link className="foot__nav-link" to="/franchise">Own a franchise</Link>
+        <div className="foot__legal">
+          <p>© {year} ATL Wing Spot</p>
+          <p className="foot__disc">
+            Website concept. Prices and availability vary by location. Ordering is handled on ATL&rsquo;s
+            own ordering page.
+          </p>
         </div>
-      </div>
-
-      <div className="foot__legal container-wide">
-        <p>© {year} ATL Wing Spot. All rights reserved.</p>
-        <p className="foot__disclaimer">
-          Website redesign concept. Menu pricing &amp; availability vary by location. Ordering is fulfilled on ATL’s
-          third-party platform.
-        </p>
       </div>
     </footer>
   )

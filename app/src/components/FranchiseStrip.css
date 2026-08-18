@@ -1,0 +1,19 @@
+.fstrip { padding-block: clamp(1.4rem, 3vw, 2.2rem); }
+.fstrip__in {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.9rem, 2.5vw, 1.8rem);
+  flex-wrap: wrap;
+  text-align: center;
+}
+.fstrip__award { width: 54px; height: auto; flex-shrink: 0; }
+.fstrip__txt {
+  font-size: clamp(1.3rem, 3.4vw, 2.4rem);
+  line-height: 1;
+  color: var(--ink);
+}
+@media (max-width: 520px) {
+  .fstrip__award { display: none; }
+  .fstrip__in .btn { width: 100%; justify-content: center; }
+}

@@ -1,75 +1,99 @@
 /* ============================================================
    ATL WING SPOT — DESIGN TOKENS
-   Sampled from the supplied logo. Cyan is the differentiator;
-   orange drives every ordering action; near-black is the ground.
+
+   The system is built from ATL's own physical brand, not a
+   generic dark-restaurant palette:
+     · the logo's cyan lozenge  -> pill geometry
+     · their printed basket paper + cyan takeout box
+       ("WINGS TENDERS MUNCHIES") -> word-stripe motif
+     · their "SAUCE IT UP!" round stamp -> seal motif
+   Every ATL photo is shot on white, so CREAM is the primary
+   ground: the food merges into the page instead of floating.
    ============================================================ */
 :root {
-  /* Brand core */
-  --atl-cyan: #28c0d8;
-  --atl-cyan-bright: #34d6f0;
-  --atl-cyan-deep: #128ca3;
-  --atl-orange: #f07820;
-  --atl-orange-bright: #ff8c30;
-  --atl-orange-deep: #d6600f;
-  --atl-red: #e23a2e; /* heat extreme only */
+  /* Brand core (sampled from the supplied logo) */
+  --cyan: #22c1da;
+  --cyan-bright: #45d8ef;
+  --cyan-deep: #0e7f95;
+  --cyan-ink: #06525f;
 
-  /* Neutrals */
-  --atl-black: #0a0a0b;
-  --atl-charcoal: #141417;
-  --atl-charcoal-2: #1c1c20;
-  --atl-graphite: #26262b;
-  --atl-cream: #f6f1e7;
-  --atl-cream-dim: #e9e2d3;
-  --atl-white: #ffffff;
-  --atl-muted: #9a9aa2;
-  --atl-muted-dim: #6a6a72;
-  --atl-border: rgba(246, 241, 231, 0.12);
-  --atl-border-strong: rgba(246, 241, 231, 0.22);
+  --orange: #f47b20;
+  --orange-bright: #ff9440;
+  --orange-deep: #d55f0b;
 
-  /* Semantic surfaces */
-  --bg: var(--atl-black);
-  --bg-raised: var(--atl-charcoal);
-  --ink: var(--atl-cream);
-  --ink-strong: var(--atl-white);
+  --red: #e0342a;
 
-  /* Type families */
+  /* Grounds */
+  --cream: #f6efe1;
+  --cream-warm: #fbf6ec;
+  --cream-deep: #ece1cd;
+  --paper: #ffffff;
+  --ink: #121012;
+  --ink-soft: #1c191c;
+  --ink-mute: #6d6a6d;
+
+  /* On-dark neutrals */
+  --dark-mute: #9a9498;
+  --dark-line: rgba(246, 239, 225, 0.16);
+
+  /* Chapter theming — every section sets these three,
+     so type/lines/CTAs stay correct without bespoke rules. */
+  --bg: var(--cream);
+  --fg: var(--ink);
+  --fg-mute: var(--ink-mute);
+  --line: rgba(18, 16, 18, 0.14);
+
+  /* Type */
   --font-display: 'Anton', 'Archivo', system-ui, sans-serif;
   --font-body: 'Manrope Variable', 'Archivo', system-ui, sans-serif;
 
-  /* Fluid display scale */
-  --step--1: clamp(0.82rem, 0.78rem + 0.2vw, 0.95rem);
-  --step-0: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-  --step-1: clamp(1.2rem, 1.1rem + 0.5vw, 1.5rem);
-  --step-2: clamp(1.6rem, 1.35rem + 1.2vw, 2.4rem);
-  --step-3: clamp(2.2rem, 1.7rem + 2.4vw, 3.6rem);
-  --display-sm: clamp(2.8rem, 1.9rem + 4.4vw, 5.5rem);
-  --display: clamp(3.6rem, 1.6rem + 9vw, 11rem);
-  --display-xl: clamp(4.2rem, 1rem + 14vw, 15rem);
+  --step--1: clamp(0.8rem, 0.77rem + 0.16vw, 0.9rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.1rem);
+  --step-1: clamp(1.15rem, 1.05rem + 0.5vw, 1.45rem);
+  --step-2: clamp(1.5rem, 1.25rem + 1.1vw, 2.2rem);
+
+  /* Display scale — built to go genuinely huge */
+  --d-sm: clamp(2.4rem, 1.7rem + 3.4vw, 4.4rem);
+  --d-md: clamp(3rem, 1.6rem + 6.6vw, 8rem);
+  --d-lg: clamp(3.6rem, 1.1rem + 11vw, 13rem);
+  --d-xl: clamp(4.2rem, 0.4rem + 16vw, 20rem);
 
   /* Layout */
-  --container: 1360px;
-  --container-wide: 1560px;
-  --gutter: clamp(1.25rem, 4vw, 4rem);
-  --radius-sm: 6px;
-  --radius: 12px;
-  --radius-lg: 22px;
-  --radius-pill: 999px;
+  --container: 1440px;
+  --container-tight: 1140px;
+  --gutter: clamp(1.15rem, 3.5vw, 3.75rem);
+
+  /* Geometry — pill comes straight off the logo lozenge */
+  --r-pill: 999px;
+  --r-sm: 4px;
+  --r-md: 10px;
+  --r-lg: 20px;
 
   /* Motion */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-fast: 0.28s;
-  --dur: 0.55s;
-  --dur-slow: 0.9s;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --t-fast: 0.25s;
+  --t: 0.5s;
+  --t-slow: 0.85s;
 
-  /* Elevation */
-  --shadow-food: 0 40px 80px -30px rgba(0, 0, 0, 0.85);
-  --shadow-card: 0 24px 60px -32px rgba(0, 0, 0, 0.7);
-
-  --nav-h: 76px;
-  color-scheme: dark;
+  --nav-h: 74px;
+  --bar-h: 62px;
 }
 
-@media (max-width: 640px) {
-  :root { --nav-h: 64px; }
+@media (max-width: 768px) {
+  :root { --nav-h: 60px; }
+}
+
+/* ---------- CHAPTER SURFACES ----------
+   Applied to a <section> to switch the whole colour context. */
+.ch-cream { --bg: var(--cream); --fg: var(--ink); --fg-mute: var(--ink-mute); --line: rgba(18,16,18,0.14); }
+.ch-warm  { --bg: var(--cream-warm); --fg: var(--ink); --fg-mute: var(--ink-mute); --line: rgba(18,16,18,0.12); }
+.ch-paper { --bg: var(--paper); --fg: var(--ink); --fg-mute: var(--ink-mute); --line: rgba(18,16,18,0.12); }
+.ch-dark  { --bg: var(--ink); --fg: var(--cream); --fg-mute: var(--dark-mute); --line: var(--dark-line); }
+.ch-cyan  { --bg: var(--cyan); --fg: var(--ink); --fg-mute: rgba(18,16,18,0.66); --line: rgba(18,16,18,0.2); }
+.ch-orange{ --bg: var(--orange); --fg: var(--ink); --fg-mute: rgba(18,16,18,0.66); --line: rgba(18,16,18,0.2); }
+
+.ch-cream, .ch-warm, .ch-paper, .ch-dark, .ch-cyan, .ch-orange {
+  background: var(--bg);
+  color: var(--fg);
 }

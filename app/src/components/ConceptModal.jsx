@@ -40,10 +40,10 @@ export function ConceptProvider({ children }) {
           <button className="concept__scrim" aria-label="Close" onClick={close} />
           <div className="concept__card">
             <div className="concept__mark" aria-hidden="true"><Check size={28} /></div>
-            <p className="concept__kicker">{payload.summary || 'Got it — that came through'}</p>
-            <h2 id="concept-title" className="concept__title font-display">{payload.title}</h2>
+            <p className="concept__kicker">{payload.summary || 'Got it, that came through'}</p>
+            <h2 id="concept-title" className="concept__title dsp">{payload.title}</h2>
             <p className="concept__body">{payload.message}</p>
-            <button className="btn btn--orange concept__close" onClick={close}>
+            <button className="btn btn-orange concept__close" onClick={close}>
               Back to it
             </button>
             <button className="concept__x" onClick={close} aria-label="Close dialog">

@@ -7,14 +7,14 @@ export const MENU_CATEGORIES = [
   { id: 'all', label: 'All' },
   { id: 'starters', label: 'Starters' },
   { id: 'wings', label: 'Wings' },
-  { id: 'boneless', label: 'Boneless' },
-  { id: 'tenders', label: 'Tenders' },
+  { id: 'boneless', label: 'Boneless Wings' },
+  { id: 'tenders', label: 'Saucy Tenders' },
   { id: 'waffles', label: "Chicken N' Waffles" },
   { id: 'wraps', label: 'Wraps' },
-  { id: 'sandwiches', label: 'Sandwiches' },
-  { id: 'fries', label: 'Fries' },
-  { id: 'desserts', label: 'Desserts' },
-  { id: 'drinks', label: 'Drinks' },
+  { id: 'sandwiches', label: 'Burgers & Sandwiches' },
+  { id: 'fries', label: 'Fries N Munchies' },
+  { id: 'desserts', label: 'Desserts N Shakes' },
+  { id: 'drinks', label: 'Beverages' },
   { id: 'extras', label: 'Extras' },
 ]
 
@@ -71,7 +71,7 @@ export const MENU_ITEMS = [
   // ---------------- BONE-IN WINGS ----------------
   {
     id: 'wings-6-combo', cat: 'wings', name: '6pc Bone-In Wings Combo Meal', price: '$13.99',
-    desc: 'Six fresh, never frozen bone-in wings sauced in your pick of 25+ flavors, plus a side and a drink.',
+    desc: 'Six fresh, never frozen bone-in wings sauced in your pick of 30+ sauces, plus a side and a drink.',
     image: img.wings, feature: true, hero: true,
   },
   {
@@ -81,10 +81,10 @@ export const MENU_ITEMS = [
   },
   { id: 'wings-4', cat: 'wings', name: '4 Bone-In Wings', price: '$6.99', desc: 'Fresh, never frozen. Pick a flavor, pick a dip.' },
   { id: 'wings-6', cat: 'wings', name: '6 Bone-In Wings', price: '$9.99', desc: 'Fresh, never frozen. Sauced or dry-rubbed.' },
-  { id: 'wings-10', cat: 'wings', name: '10 Bone-In Wings', price: '$14.99', desc: 'Split your flavors. We won’t judge.' },
+  { id: 'wings-10', cat: 'wings', name: '10 Bone-In Wings', price: '$14.99', desc: 'Two flavors, five wings each. Sorted.' },
   { id: 'wings-20', cat: 'wings', name: '20 Bone-In Wings', price: '$27.99', desc: 'Built to share. Or not.' },
   { id: 'wings-50', cat: 'wings', name: '50 Bone-In Wings', price: '$69.99', desc: 'Crew-sized. Mix up to a handful of flavors.', badge: 'Party Size' },
-  { id: 'wings-100', cat: 'wings', name: '100 Bone-In Wings', price: '$134.99', desc: 'The whole game day, handled.', badge: 'Party Size' },
+  { id: 'wings-100', cat: 'wings', name: '100 Bone-In Wings', price: '$134.99', desc: 'Enough wings for the whole game.', badge: 'Party Size' },
 
   // ---------------- BONELESS ----------------
   {
@@ -102,19 +102,19 @@ export const MENU_ITEMS = [
   { id: 'boneless-10', cat: 'boneless', name: '10 Boneless Wings', price: '$12.99', desc: 'All white meat, all sauce.' },
   { id: 'boneless-20', cat: 'boneless', name: '20 Boneless Wings', price: '$24.99', desc: 'Feed a few. Mix your flavors.' },
   { id: 'boneless-50', cat: 'boneless', name: '50 Boneless Wings', price: '$59.99', desc: 'Crew-sized boneless.', badge: 'Party Size' },
-  { id: 'boneless-100', cat: 'boneless', name: '100 Boneless Wings', price: '$114.99', desc: 'One hundred reasons to skip the group chat debate.', badge: 'Party Size' },
+  { id: 'boneless-100', cat: 'boneless', name: '100 Boneless Wings', price: '$114.99', desc: 'Enough boneless for the whole room.', badge: 'Party Size' },
 
   // ---------------- SAUCY TENDERS ----------------
   {
     id: 'tenders-3', cat: 'tenders', name: '3 Saucy Tenders', price: '$8.99',
-    desc: 'Fresh, hand-breaded jumbo tenders — sauced or sauce on the side.',
+    desc: 'Fresh, hand-breaded jumbo tenders. Sauced, or sauce on the side.',
     image: img.tenders, feature: true,
   },
   { id: 'tenders-5', cat: 'tenders', name: '5 Saucy Tenders', price: '$11.99', desc: 'Jumbo tenders, hand breaded, tossed to order.' },
   { id: 'tenders-10', cat: 'tenders', name: '10 Saucy Tenders', price: '$21.99', desc: 'Ten jumbo tenders. Sauced or on the side.' },
   { id: 'tenders-20', cat: 'tenders', name: '20 Saucy Tenders', price: '$39.99', desc: 'Share-ready jumbo tenders.', badge: 'Party Size' },
   { id: 'tenders-50', cat: 'tenders', name: '50 Saucy Tenders', price: '$94.99', desc: 'Catering-sized tenders.', badge: 'Party Size' },
-  { id: 'tenders-100', cat: 'tenders', name: '100 Saucy Tenders', price: '$179.99', desc: 'The full crew, tendered.', badge: 'Party Size' },
+  { id: 'tenders-100', cat: 'tenders', name: '100 Saucy Tenders', price: '$179.99', desc: 'Enough tenders for a full room.', badge: 'Party Size' },
   { id: 'tenders-3-combo', cat: 'tenders', name: '3pc Tender Combo', price: '$13.99', desc: 'Three jumbo tenders with a side and a drink.', image: img.tendersCut, feature: true },
   { id: 'tenders-5-combo', cat: 'tenders', name: '5pc Tender Combo', price: '$15.99', desc: 'Five jumbo tenders with a side and a drink.' },
 
@@ -130,7 +130,7 @@ export const MENU_ITEMS = [
   },
   {
     id: 'waffles-pebbles', cat: 'waffles', name: "Fruity Pebbles Chicken N' Waffles", price: '$14.99',
-    desc: 'The one you’ve seen on the feed — Fruity Pebbles waffle, powdered sugar, crispy chicken.',
+    desc: 'Fruity Pebbles waffle, powdered sugar, crispy chicken. The one people film.',
     image: img.waffles, feature: true, hero: true, badge: 'Viral',
   },
   {
@@ -175,7 +175,7 @@ export const MENU_ITEMS = [
 
   // ---------------- BEVERAGES ----------------
   { id: 'can-soda', cat: 'drinks', name: 'Can Soda', price: '$0.99', desc: 'Ice cold.' },
-  { id: 'gatorade', cat: 'drinks', name: 'Gatorade', price: '$2.50', desc: 'Rehydrate. Re-sauce.' },
+  { id: 'gatorade', cat: 'drinks', name: 'Gatorade', price: '$2.50', desc: 'For after the hot ones.' },
   { id: 'water', cat: 'drinks', name: 'Bottled Water', price: '$2.00', desc: 'For after the 911 Sauce.' },
   { id: 'large-soda', cat: 'drinks', name: 'Large Soda', price: '$2.99', desc: 'Fountain, large.' },
   { id: 'bottled-soda', cat: 'drinks', name: 'Bottled Soda', price: '$2.50', desc: 'Grab and go.' },

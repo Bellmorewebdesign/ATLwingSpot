@@ -1,73 +1,75 @@
-import { MILESTONES } from '../data/story'
-import { PROOF } from '../data/site'
+import { Link } from 'react-router-dom'
+import { STORY_CHAPTERS, PROOF, FOUNDERS } from '../data/story'
+import { ORDER_URL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { Reveal } from '../components/Reveal'
-import { OrderButton } from '../components/OrderButton'
-import { Link } from 'react-router-dom'
 import { ArrowRight } from '../components/Icons'
 import './Story.css'
 
 export default function Story() {
   return (
-    <div className="page story-page">
-      <Seo title="Our Story" description="Two friends, an 800 sq ft shop, and one big bet. How ATL Wing Spot went from a Long Island opening to a 1M+ TikTok breakout and a growing franchise." />
+    <div className="page story-p">
+      <Seo
+        title="Our Story"
+        description="ATL Wing Spot started in an 800 square foot shop in Lynbrook in May 2023. A month later a TikTok crossed a million views. Here's what happened next."
+      />
 
-      <header className="page-hero container-wide story-hero">
-        <Reveal><p className="eyebrow page-hero__eyebrow"><span className="dot" /> Our Story</p></Reveal>
-        <h1 className="story-hero__title font-display">
-          <Reveal as="span" className="story-hero__line" clip><span>Two friends.</span></Reveal>
-          <Reveal as="span" className="story-hero__line accent" delay={90} clip><span>800 sq ft.</span></Reveal>
-          <Reveal as="span" className="story-hero__line" delay={180} clip><span>One big bet.</span></Reveal>
-        </h1>
-        <Reveal delay={140}>
-          <p className="page-hero__sub story-hero__sub">
-            In May 2023, two friends saved up and opened the first ATL Wing Spot in an approximately 800-square-foot shop. A month later, the internet found it.
+      {/* Dark, centred opening */}
+      <header className="story-p__mast ch-dark">
+        <div className="wrap">
+          <p className="story-p__kick">Lynbrook, New York · May 2023</p>
+          <h1 className="dsp dsp-lg story-p__h1">
+            One shop.<br /><span className="t-orange">800 square feet.</span>
+          </h1>
+          <p className="story-p__lede">
+            {FOUNDERS} put their savings into a room barely bigger than the kitchen inside it,
+            and started frying wings to order.
           </p>
-        </Reveal>
+        </div>
       </header>
 
-      <section className="story-band">
-        <div className="container-wide story-band__inner">
+      <section className="story-p__proof ch-cyan">
+        <div className="wrap story-p__proof-in">
           {PROOF.map((p) => (
-            <Reveal key={p.value} className="story-band__item">
-              <span className="story-band__label">{p.label}</span>
-              <span className="story-band__value font-display">{p.value}</span>
-            </Reveal>
+            <div className="pf" key={p.value}>
+              <span className="pf__l">{p.label}</span>
+              <span className="dsp pf__v">{p.value}</span>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="section story-chapters">
-        <div className="container-wide">
-          {MILESTONES.map((m, i) => (
-            <Reveal as="article" key={m.id} className={`chapter ${i % 2 ? 'chapter--flip' : ''}`}>
-              <div className="chapter__stat">
-                <span className="chapter__num font-display">{m.stat}</span>
-                <span className="chapter__unit">{m.statUnit}</span>
-              </div>
-              <div className="chapter__body">
-                <span className="chapter__marker">{m.marker}</span>
-                <h2 className="chapter__title font-display">{m.title}</h2>
-                <p className="chapter__text">{m.body}</p>
+      <section className="sec ch-cream">
+        <div className="wrap story-p__chapters">
+          {STORY_CHAPTERS.map((c, i) => (
+            <Reveal as="article" className="chap" key={c.id} delay={40}>
+              <span className="chap__n">{String(i + 1).padStart(2, '0')}</span>
+              <div className="chap__body">
+                <span className="chap__when">{c.when}</span>
+                <h2 className="dsp chap__title">{c.title}</h2>
+                <p className="chap__text">{c.body}</p>
               </div>
             </Reveal>
           ))}
         </div>
       </section>
 
-      <section className="story-feast" aria-hidden="true">
+      <section className="story-p__feast" aria-hidden="true">
         <img src={asset('assets/food/fruity-pebbles-chicken-waffles.jpg')} alt="" loading="lazy" />
         <img src={asset('assets/food/hero-wings.jpg')} alt="" loading="lazy" />
+        <img src={asset('assets/food/saucy-tenders.jpg')} alt="" loading="lazy" />
       </section>
 
-      <section className="section story-close">
-        <div className="container-wide story-close__inner">
-          <Reveal><h2 className="story-close__headline font-display">Now we’re<br />just getting<br /><span className="accent-o">started.</span></h2></Reveal>
-          <Reveal delay={120} className="story-close__actions">
-            <OrderButton size="lg">Taste what the hype’s about</OrderButton>
-            <Link to="/franchise" className="btn btn--ghost btn--lg">Own an ATL <ArrowRight /></Link>
-          </Reveal>
+      <section className="sec ch-dark story-p__end">
+        <div className="wrap story-p__end-in">
+          <h2 className="dsp dsp-md">Same wings.<br /><span className="t-cyan">More counters.</span></h2>
+          <div className="story-p__acts">
+            <a className="btn btn-orange btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+              Order now <ArrowRight />
+            </a>
+            <Link className="btn btn-line btn-lg" to="/locations">Find a shop</Link>
+          </div>
         </div>
       </section>
     </div>

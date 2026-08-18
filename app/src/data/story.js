@@ -1,38 +1,78 @@
-// ATL's growth story — supplied facts only, no invented specifics.
-export const MILESTONES = [
+// ATL's growth story. Every item traces to ATL's own materials or public
+// press (QSR Magazine, Long Island local press). No revenue or performance
+// claims. No invented location count.
+
+export const FOUNDERS = 'Masood Din and Wally Daftanai'
+
+// The homepage story runs on scaling numbers, not timeline cards.
+export const STORY_BEATS = [
   {
-    id: 'open',
-    marker: 'May 2023',
-    title: 'Two friends. 800 sq ft.',
-    body: 'Two friends saved up and opened the first ATL Wing Spot in an approximately 800-square-foot shop.',
-    stat: '800', statUnit: 'sq ft',
+    id: 'shop',
+    figure: '800',
+    unit: 'sq ft',
+    when: 'May 2023',
+    line: 'Two friends put their savings into one small shop in Lynbrook.',
   },
   {
-    id: 'viral',
-    marker: 'One month later',
-    title: '1M+ TikTok breakout',
-    body: 'About a month in, a single video crossed a million views. The line started forming and never really stopped.',
-    stat: '1M+', statUnit: 'views',
+    id: 'views',
+    figure: '1M+',
+    unit: 'views',
+    when: 'One month later',
+    line: 'A TikTok took off. The line outside got a lot longer.',
   },
   {
     id: 'best',
-    marker: 'Then',
-    title: 'Best Wings on Long Island',
-    body: 'The neighborhood made it official — voted Best Wings on Long Island.',
-    stat: '#1', statUnit: 'wings, LI',
+    figure: '#1',
+    unit: 'on Long Island',
+    when: 'Then',
+    line: 'Voted best wings on Long Island.',
   },
   {
-    id: 'qsr',
-    marker: 'Then',
-    title: 'Featured in QSR Magazine',
-    body: 'Industry recognition followed, with a feature in QSR Magazine.',
-    stat: 'QSR', statUnit: 'featured',
+    id: 'markets',
+    figure: 'NY·NJ·CA',
+    unit: 'and growing',
+    when: 'Now',
+    line: 'From one counter in Lynbrook to shops in three states.',
+  },
+]
+
+// Longer-form beats for the dedicated Story page.
+export const STORY_CHAPTERS = [
+  {
+    id: 'open',
+    when: 'May 2023',
+    title: 'One shop, 800 square feet',
+    body: `${FOUNDERS} saved up and opened the first ATL Wing Spot in Lynbrook, New York. A room barely bigger than the kitchen it held. Fresh wings, fried to order, halal, and a sauce list far longer than the space deserved.`,
+  },
+  {
+    id: 'viral',
+    when: 'One month later',
+    title: 'A million views',
+    body: 'About a month after opening, a TikTok about the wings crossed a million views. People drove in from across the island to find out if it was real.',
+  },
+  {
+    id: 'best',
+    when: 'Then',
+    title: 'Best wings on Long Island',
+    body: 'The neighbourhood made it official, and QSR Magazine came calling not long after.',
+  },
+  {
+    id: 'franchise',
+    when: 'January 2025',
+    title: 'Franchising opens',
+    body: 'Under twenty months from opening day, ATL began signing franchise territories.',
   },
   {
     id: 'now',
-    marker: 'Now',
-    title: 'A growing franchise',
-    body: 'Locations now reach across Long Island, Queens, Manhattan, New Jersey — and all the way to California.',
-    stat: '10', statUnit: 'and counting',
+    when: 'Now',
+    title: 'New York, New Jersey, California',
+    body: 'Same wings, same sauces, more counters. The original Lynbrook shop is still running.',
   },
+]
+
+// Verified recognition only.
+export const PROOF = [
+  { label: 'Voted', value: 'Best Wings on Long Island' },
+  { label: 'Featured in', value: 'QSR Magazine' },
+  { label: 'Certified', value: '100% Halal' },
 ]

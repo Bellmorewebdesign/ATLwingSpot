@@ -95,10 +95,10 @@ export function MockupForm({ fields, submitLabel = 'Submit', concept, columns = 
       })}
 
       <div className="mform__submit is-full">
-        <button type="submit" className="btn btn--orange btn--lg">
+        <button type="submit" className="btn btn-orange btn-lg">
           {submitLabel} <ArrowRight />
         </button>
-        <p className="mform__note">Concept demo — submission is disabled in this website concept.</p>
+        <p className="mform__note">Concept demo. Nothing is actually sent.</p>
       </div>
     </form>
   )

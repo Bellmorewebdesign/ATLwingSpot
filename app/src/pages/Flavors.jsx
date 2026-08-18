@@ -1,59 +1,53 @@
-import { HEAT_LEVELS, STYLES, FLAVORS } from '../data/flavors'
+import { HEAT_LEVELS, STYLES, FLAVORS, FLAVOR_COUNT } from '../data/flavors'
 import { Seo } from '../components/Seo'
+import { FlavorStage } from '../components/FlavorStage'
 import { Reveal } from '../components/Reveal'
-import { FlavorFinder } from '../components/FlavorFinder'
-import { OrderButton } from '../components/OrderButton'
-import { Flame } from '../components/Icons'
 import './Flavors.css'
-
-const HEAT_COLORS = { 1: 'var(--atl-cyan)', 2: 'var(--atl-orange)', 3: 'var(--atl-orange-bright)', 4: 'var(--atl-red)' }
-
-function Pips({ level }) {
-  return (
-    <span className="fl-pips" aria-label={`Heat ${level} of 4`}>
-      {[1, 2, 3, 4].map((n) => (
-        <span key={n} className={`fl-pips__dot ${n <= level ? 'is-on' : ''}`}
-          style={n <= level ? { background: HEAT_COLORS[level] } : undefined} />
-      ))}
-    </span>
-  )
-}
 
 export default function Flavors() {
   return (
-    <div className="page flavors-page">
-      <Seo title="Flavors" description="Find your ATL Wing Spot flavor. Pick your heat, wet or dry rub, and match with featured flavors from a 25+ flavor lineup." />
+    <div className="page flav">
+      <Seo
+        title="Flavors"
+        description="30+ sauces and rubs at ATL Wing Spot — from Buttery Garlic Parmesan and Lemon Pepper to Mango Habanero and 911 Sauce. Pick your heat, wet or dry."
+      />
 
-      <header className="page-hero page-hero--glow container-wide">
-        <Reveal><p className="eyebrow page-hero__eyebrow"><span className="dot" /> Flavors</p></Reveal>
-        <Reveal delay={80}><h1 className="page-hero__title">Find your <span className="accent-o">flavor.</span></h1></Reveal>
-        <Reveal delay={140}><p className="page-hero__sub">The live menu runs 25+ flavors. Here’s a featured taste of the lineup — and a finder to narrow it to your move.</p></Reveal>
-      </header>
+      <FlavorStage heading="Pick your flavor." />
 
-      <FlavorFinder withHeader={false} />
+      <section className="sec ch-cream flav__list">
+        <div className="wrap">
+          <h2 className="dsp dsp-sm flav__h">The board</h2>
+          <p className="flav__note">
+            {FLAVOR_COUNT} sauces and rubs in store. Here are the regulars, grouped by how hot they run.
+          </p>
 
-      <section className="section flavors-grid-section">
-        <div className="container-wide">
-          <div className="divider-label">Featured Flavors <span className="text-orange">{FLAVORS.length}</span></div>
-          <div className="flavors-grid">
-            {FLAVORS.map((f, i) => (
-              <Reveal as="article" key={f.id} className="fl-card" delay={i * 40} style={{ '--fc': HEAT_COLORS[f.heat] }}>
-                <div className="fl-card__top">
-                  <span className="fl-card__style">{f.style === 'wet' ? 'Wet' : 'Dry Rub'}</span>
-                  <Pips level={f.heat} />
+          {HEAT_LEVELS.map((lvl) => {
+            const set = FLAVORS.filter((f) => f.heat === lvl.id)
+            if (!set.length) return null
+            return (
+              <div className="tier" key={lvl.id} style={{ '--tone': lvl.color }}>
+                <div className="tier__head">
+                  <h3 className="dsp tier__name">{lvl.label}</h3>
+                  <span className="tier__blurb">{lvl.blurb}</span>
                 </div>
-                <h3 className="fl-card__name font-display">{f.name}</h3>
-                <p className="fl-card__desc">“{f.descriptor}”</p>
-                <span className="fl-card__heat">
-                  <Flame size={13} /> {HEAT_LEVELS[f.heat - 1].label}
-                </span>
-              </Reveal>
-            ))}
-          </div>
-          <p className="flavors-note">Featured flavors shown — not the full inventory. Ask in store for the current 25+ lineup{' '}and the secret menu.</p>
-          <div className="flavors-cta">
-            <OrderButton size="lg">Order your flavor</OrderButton>
-          </div>
+                <ul className="tier__items">
+                  {set.map((f, i) => (
+                    <Reveal as="li" className="fl" key={f.id} delay={i * 40}>
+                      <span className="fl__name">{f.name}</span>
+                      <span className="fl__blurb">{f.blurb}</span>
+                      <span className="fl__style">
+                        {STYLES.find((s) => s.id === f.style).label}
+                      </span>
+                    </Reveal>
+                  ))}
+                </ul>
+              </div>
+            )
+          })}
+
+          <p className="fineprint flav__fine">
+            Sauces rotate and vary by shop. Ask what&rsquo;s on the board today.
+          </p>
         </div>
       </section>
     </div>

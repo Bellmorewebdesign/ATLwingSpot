@@ -1,17 +1,16 @@
 import { Seo } from '../components/Seo'
 import { Hero } from '../components/Hero'
-import { BrandTicker } from '../components/BrandTicker'
-import { MenuShowcase } from '../components/MenuShowcase'
-import { ViralSection } from '../components/ViralSection'
-import { FlavorFinder } from '../components/FlavorFinder'
-import { WingCalculator } from '../components/WingCalculator'
-import { FoodInterlude } from '../components/FoodInterlude'
-import { StoryTimeline } from '../components/StoryTimeline'
-import { LocationsPreview } from '../components/LocationsPreview'
-import { CateringTeaser } from '../components/CateringTeaser'
-import { FranchiseTeaser } from '../components/FranchiseTeaser'
-import { SocialSection } from '../components/SocialSection'
+import { WordStripe } from '../components/WordStripe'
+import { CraveTrack } from '../components/CraveTrack'
+import { FlavorStage } from '../components/FlavorStage'
+import { CrewCalc } from '../components/CrewCalc'
+import { StoryScale } from '../components/StoryScale'
+import { LocationsBand } from '../components/LocationsBand'
+import { CateringBand } from '../components/CateringBand'
+import { FranchiseStrip } from '../components/FranchiseStrip'
+import { SocialBand } from '../components/SocialBand'
 import { FinalCTA } from '../components/FinalCTA'
+import { BOX_WORDS, TICKER } from '../data/site'
 
 export default function Home() {
   return (
@@ -19,20 +18,31 @@ export default function Home() {
       <Seo
         title="Stay Saucy"
         suffix={false}
-        description="ATL Wing Spot — fresh, never frozen wings in 25+ flavors. 100% Halal. Voted Best Wings on Long Island. Pickup + delivery across NY, NJ & CA."
+        description="Fresh, never frozen wings fried to order in 30+ sauces. 100% halal. Voted best wings on Long Island. Order pickup or delivery across NY, NJ and CA."
       />
+
+      {/* cream */}
       <Hero />
-      <BrandTicker />
-      <MenuShowcase />
-      <ViralSection />
-      <FlavorFinder index="03" />
-      <WingCalculator index="04" />
-      <FoodInterlude />
-      <StoryTimeline index="06" />
-      <LocationsPreview index="07" />
-      <CateringTeaser index="08" />
-      <FranchiseTeaser index="09" />
-      <SocialSection index="10" />
+      {/* cyan — ATL's own packaging pattern */}
+      <WordStripe words={BOX_WORDS} tone="cyan" size="md" />
+      {/* dark, horizontal */}
+      <CraveTrack />
+      {/* reactive colour */}
+      <FlavorStage />
+      {/* orange */}
+      <CrewCalc />
+      {/* dark, right-led */}
+      <StoryScale />
+      {/* white, split */}
+      <LocationsBand />
+      {/* full-bleed photography, right-aligned */}
+      <CateringBand />
+      {/* cyan slim */}
+      <FranchiseStrip />
+      {/* cream, overlapping */}
+      <SocialBand />
+      <WordStripe words={TICKER} tone="ink" size="sm" separator="·" speed={44} />
+      {/* cyan takeover */}
       <FinalCTA />
     </>
   )

@@ -1,54 +1,32 @@
-import { useEffect, useRef } from 'react'
 import { ORDER_URL } from '../data/site'
 import { asset } from '../lib/asset'
 import { ArrowRight } from './Icons'
-import { useReducedMotion } from '../hooks/useReducedMotion'
 import './FinalCTA.css'
 
+// Cyan takeover, asymmetric: type sits low-left, the basket bleeds off the
+// right edge at full size.
 export function FinalCTA() {
-  const btnRef = useRef(null)
-  const reduced = useReducedMotion()
-
-  // Magnetic pull on fine pointers only.
-  useEffect(() => {
-    if (reduced) return
-    const btn = btnRef.current
-    if (!btn || !window.matchMedia('(pointer:fine)').matches) return
-    const strength = 0.3
-    const onMove = (e) => {
-      const r = btn.getBoundingClientRect()
-      const x = e.clientX - (r.left + r.width / 2)
-      const y = e.clientY - (r.top + r.height / 2)
-      btn.style.transform = `translate(${x * strength}px, ${y * strength}px)`
-    }
-    const reset = () => { btn.style.transform = '' }
-    const zone = btn.parentElement
-    zone.addEventListener('pointermove', onMove)
-    zone.addEventListener('pointerleave', reset)
-    return () => { zone.removeEventListener('pointermove', onMove); zone.removeEventListener('pointerleave', reset) }
-  }, [reduced])
-
   return (
-    <section className="final-cta grain" id="order">
-      <img className="final-cta__food" src={asset('assets/food/wings-basket-cutout.png')} alt="" loading="lazy" decoding="async" />
-      <div className="container-wide final-cta__inner">
-        <p className="final-cta__kicker">100% Halal · Fresh, Never Frozen · 25+ Flavors</p>
-        <h2 className="final-cta__headline font-display">
-          Enough<br />scrolling.
-        </h2>
-        <p className="final-cta__sub">You know you want the wings.</p>
-        <div className="final-cta__btn-zone">
-          <a
-            ref={btnRef}
-            href={ORDER_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn--orange btn--lg final-cta__btn"
-          >
-            Order ATL <ArrowRight />
-          </a>
+    <section className="fcta ch-cyan" id="order">
+      <img
+        className="fcta__food"
+        src={asset('assets/food/wings-basket-cutout.png')}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        aria-hidden="true"
+      />
+      <div className="wrap fcta__in">
+        <div className="fcta__col">
+          <p className="fcta__kick">Fresh wings · your sauce · your call</p>
+          <h2 className="dsp fcta__h">Let&rsquo;s eat.</h2>
+          <div className="fcta__acts">
+            <a className="btn btn-ink btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+              Order now <ArrowRight />
+            </a>
+            <p className="fcta__note">Pickup or delivery. Ordering runs on ATL&rsquo;s order.online page.</p>
+          </div>
         </div>
-        <p className="final-cta__note">Pickup + Delivery · Powered by DoorDash</p>
       </div>
     </section>
   )

@@ -1,10 +1,10 @@
 .mform {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.1rem 1.2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.1rem;
 }
 .mform--cols-1 { grid-template-columns: 1fr; }
-.mform__field { display: flex; flex-direction: column; gap: 0.4rem; }
+.mform__field { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
 .mform__field.is-full, .mform__submit.is-full { grid-column: 1 / -1; }
 
 .mform__label {
@@ -12,58 +12,65 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--atl-muted);
+  color: var(--ink-mute);
 }
-.mform__req { color: var(--atl-orange); }
+.mform__req { color: var(--orange-deep); }
 
 .mform input,
 .mform select,
 .mform textarea {
   width: 100%;
-  padding: 0.85rem 1rem;
-  background: var(--atl-black);
-  border: 1px solid var(--atl-border);
-  border-radius: var(--radius-sm);
-  color: var(--atl-cream);
+  padding: 0.8rem 1rem;
+  background: var(--cream-warm);
+  border: 2px solid var(--line);
+  border-radius: var(--r-md);
+  color: var(--ink);
   font-size: var(--step-0);
-  transition: border-color var(--dur-fast), background var(--dur-fast);
+  transition: border-color var(--t-fast), background var(--t-fast);
 }
 .mform textarea { resize: vertical; min-height: 110px; }
-.mform input::placeholder, .mform textarea::placeholder { color: var(--atl-muted-dim); }
+.mform input::placeholder, .mform textarea::placeholder { color: var(--ink-mute); }
 .mform input:focus, .mform select:focus, .mform textarea:focus {
   outline: none;
-  border-color: var(--atl-cyan);
-  background: var(--atl-charcoal);
+  border-color: var(--cyan-deep);
+  background: #fff;
 }
-.mform select { appearance: none; cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239a9aa2' stroke-width='2.4'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+.mform select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236d6a6d' stroke-width='2.4'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   padding-right: 2.4rem;
 }
 .mform__field.has-error input,
 .mform__field.has-error select,
-.mform__field.has-error textarea { border-color: var(--atl-red); }
-.mform__error { font-size: 0.76rem; color: #ff7a6f; font-weight: 600; }
+.mform__field.has-error textarea { border-color: var(--red); }
+.mform__error { font-size: 0.76rem; color: #b8281f; font-weight: 700; }
 
-.mform__segmented { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.mform__segmented { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .mform__seg {
-  padding: 0.7rem 1.1rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--atl-border);
-  background: var(--atl-black);
-  color: var(--atl-muted);
-  font-weight: 700;
+  padding: 0.65em 1.05em;
+  border-radius: var(--r-pill);
+  border: 2px solid var(--line);
+  color: var(--ink-mute);
+  font-weight: 800;
   font-size: 0.8rem;
-  letter-spacing: 0.03em;
-  transition: color var(--dur-fast), background var(--dur-fast), border-color var(--dur-fast);
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
 }
-.mform__seg:hover { color: var(--atl-cream); }
-.mform__seg.is-active { background: var(--atl-cyan); color: var(--atl-black); border-color: transparent; }
+.mform__seg:hover { color: var(--ink); }
+.mform__seg.is-active { background: var(--cyan); border-color: var(--cyan); color: var(--ink); }
 
-.mform__submit { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; margin-top: 0.4rem; }
-.mform__note { font-size: 0.78rem; color: var(--atl-muted-dim); }
+.mform__submit {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.3rem;
+}
+.mform__note { font-size: 0.78rem; color: var(--ink-mute); }
 
 @media (max-width: 560px) {
   .mform { grid-template-columns: 1fr; }
+  .mform__submit .btn { width: 100%; justify-content: center; }
 }

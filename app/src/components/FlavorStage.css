@@ -1,0 +1,155 @@
+/* Full-viewport reactive flavour environment. The whole section — ground,
+   type colour, sauce disc, controls — responds to the selection. */
+.stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding-block: clamp(3rem, 7vw, 6rem);
+  background: var(--tone);
+  color: var(--tone-fg);
+  transition: background var(--t-slow) var(--ease), color var(--t-slow) var(--ease);
+  text-align: center;
+}
+
+.stage__disc {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: min(120vh, 96vw);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.34), rgba(255,255,255,0.10) 46%, transparent 68%);
+  pointer-events: none;
+}
+.stage__food {
+  position: absolute;
+  right: -8%;
+  bottom: -12%;
+  width: min(46vw, 560px);
+  transform: rotate(-9deg);
+  opacity: 0.9;
+  filter: drop-shadow(0 30px 46px rgba(0,0,0,0.26));
+  pointer-events: none;
+}
+
+.stage__in { position: relative; z-index: 1; width: 100%; }
+
+.stage__head { margin-bottom: clamp(1.5rem, 3.5vw, 2.6rem); }
+.stage__title { color: inherit; }
+.stage__sub {
+  margin-top: 0.8rem;
+  font-size: var(--step-1);
+  font-weight: 600;
+  opacity: 0.72;
+}
+
+/* ---- controls ---- */
+.stage__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1rem, 3vw, 2.8rem);
+  margin-bottom: clamp(1.6rem, 4vw, 2.8rem);
+}
+.stage__set { border: 0; padding: 0; margin: 0; }
+.stage__legend {
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 0.6rem;
+  width: 100%;
+  text-align: center;
+}
+
+.heat, .wetdry {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 5px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.26);
+}
+.heat__b, .wetdry__b {
+  padding: 0.7em 1.15em;
+  border-radius: var(--r-pill);
+  font-weight: 800;
+  font-size: clamp(0.72rem, 1.6vw, 0.88rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: inherit;
+  opacity: 0.72;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
+              opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.heat__b:hover, .wetdry__b:hover { opacity: 1; }
+.heat__b.on, .wetdry__b.on {
+  background: var(--ink);
+  color: var(--cream);
+  opacity: 1;
+}
+
+/* ---- result ---- */
+.stage__result { margin-bottom: clamp(1.4rem, 3vw, 2.2rem); }
+.stage__pick {
+  font-weight: 800;
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.66;
+  margin-bottom: 0.5rem;
+  animation: st-up 0.45s var(--ease) both;
+}
+.stage__name {
+  font-size: clamp(2.4rem, 9vw, 8rem);
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  animation: st-up 0.5s var(--ease) 0.05s both;
+}
+.stage__blurb {
+  margin-top: 0.7rem;
+  font-size: var(--step-1);
+  font-style: italic;
+  opacity: 0.78;
+  animation: st-up 0.5s var(--ease) 0.12s both;
+}
+
+/* ---- foot ---- */
+.stage__foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+}
+.stage__also { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
+.chip {
+  padding: 0.5em 0.95em;
+  border-radius: var(--r-pill);
+  border: 2px solid currentColor;
+  font-weight: 700;
+  font-size: 0.78rem;
+  opacity: 0.7;
+  transition: opacity var(--t-fast), background var(--t-fast), color var(--t-fast);
+}
+.chip:hover { opacity: 1; background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+.stage__note { margin-top: 1.4rem; font-size: 0.78rem; opacity: 0.6; }
+
+@keyframes st-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 860px) {
+  .stage__food { width: 70vw; right: -18%; bottom: -8%; opacity: 0.5; }
+}
+@media (max-width: 560px) {
+  .stage { min-height: auto; }
+  .stage__controls { flex-direction: column; align-items: center; gap: 1.2rem; }
+  .heat__b { padding-inline: 0.85em; }
+  .stage__foot .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage, .stage__pick, .stage__name, .stage__blurb { transition: none; animation: none; }
+}

@@ -5,7 +5,8 @@ import { Header } from './components/Header'
 import { Footer } from './components/Footer'
 import { StickyMobileBar } from './components/StickyMobileBar'
 import { Seo } from './components/Seo'
-import { OrderButton } from './components/OrderButton'
+import { ORDER_URL } from './data/site'
+import { ArrowRight } from './components/Icons'
 
 import Home from './pages/Home'
 import Menu from './pages/Menu'
@@ -18,15 +19,19 @@ import Contact from './pages/Contact'
 
 function NotFound() {
   return (
-    <div className="page notfound">
-      <Seo title="Not Found" description="This page took a wrong turn. Head back to the wings." />
-      <div className="container notfound__inner">
-        <p className="eyebrow"><span className="dot" /> 404</p>
-        <h1 className="notfound__title font-display">This page<br />flew the <span className="accent-o">coop.</span></h1>
-        <p className="notfound__sub">The link’s broken, but the wings aren’t. Let’s get you back.</p>
-        <div className="notfound__actions">
-          <Link to="/" className="btn btn--cream btn--lg">Back home</Link>
-          <OrderButton size="lg" variant="orange">Order now</OrderButton>
+    <div className="page nf">
+      <Seo title="Not found" description="That page doesn’t exist. Head back to the wings." />
+      <div className="wrap-tight">
+        <p className="kicker t-orange">404</p>
+        <h1 className="dsp dsp-md nf__t">Nothing<br />here.</h1>
+        <p className="measure-sm" style={{ marginInline: 'auto', color: 'var(--ink-mute)' }}>
+          That link is broken. The wings are fine.
+        </p>
+        <div className="nf__actions">
+          <Link to="/" className="btn btn-ink btn-lg">Back home</Link>
+          <a className="btn btn-orange btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+            Order now <ArrowRight />
+          </a>
         </div>
       </div>
     </div>
@@ -44,7 +49,7 @@ export default function App() {
 
   return (
     <ConceptProvider>
-      <a href="#main" className="skip-link" onClick={focusMain}>Skip to content</a>
+      <a href="#main" className="skip" onClick={focusMain}>Skip to content</a>
       <ScrollToTop />
       <Header />
       <main id="main" tabIndex={-1} key={pathname}>

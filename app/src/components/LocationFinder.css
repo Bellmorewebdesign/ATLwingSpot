@@ -1,0 +1,96 @@
+.finder {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: start;
+}
+
+/* ---- rail ---- */
+.finder__rail { position: sticky; top: calc(var(--nav-h) + 1.5rem); min-width: 0; }
+.finder__results { min-width: 0; }
+
+.finder__search {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.1rem;
+  border: 2px solid var(--fg);
+  border-radius: var(--r-pill);
+  margin-bottom: 1.2rem;
+}
+.finder__search input { flex: 1; min-width: 0; background: none; border: 0; outline: none; }
+.finder__search input::placeholder { color: var(--fg-mute); }
+
+.finder__regions { display: flex; flex-direction: column; margin-bottom: 1.4rem; }
+.finder__region {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 2px solid var(--line);
+  font-weight: 800;
+  font-size: 0.94rem;
+  color: var(--fg);
+  opacity: 0.6;
+  transition: opacity var(--t-fast), padding-left var(--t-fast) var(--ease);
+}
+.finder__region:hover { opacity: 1; padding-left: 0.35rem; }
+.finder__region b {
+  font-size: 0.74rem;
+  padding: 0.25em 0.6em;
+  border-radius: var(--r-pill);
+  background: var(--line);
+}
+.finder__region.on { opacity: 1; }
+.finder__region.on b { background: var(--cyan); color: var(--ink); }
+
+.finder__geo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 2px solid currentColor;
+  padding-bottom: 3px;
+}
+.finder__geonote { margin-top: 0.6rem; font-size: 0.76rem; color: var(--fg-mute); max-width: 30ch; }
+
+/* ---- results ---- */
+.finder__count {
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  margin-bottom: 0.5rem;
+}
+.finder__empty { color: var(--fg-mute); padding-block: 2rem; }
+
+@media (max-width: 860px) {
+  .finder { grid-template-columns: 1fr; }
+  .finder__rail { position: static; }
+  .finder__regions {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0.4rem;
+    scrollbar-width: none;
+    margin-bottom: 1rem;
+  }
+  .finder__regions::-webkit-scrollbar { display: none; }
+  .finder__region {
+    flex-shrink: 0;
+    width: auto;
+    padding: 0.5rem 0.95rem;
+    border: 2px solid var(--line);
+    border-radius: var(--r-pill);
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .finder__region.on { background: var(--cyan); border-color: var(--cyan); }
+  .finder__region.on b { background: rgba(18,16,18,0.15); }
+  .finder__region:hover { padding-left: 0.95rem; }
+}

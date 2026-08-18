@@ -1,160 +1,171 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { MENU_CATEGORIES, MENU_ITEMS } from '../data/menu'
 import { ORDER_URL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
-import { Reveal } from '../components/Reveal'
-import { ArrowRight, Search as SearchIcon } from '../components/Icons'
+import { ArrowRight, Search } from '../components/Icons'
 import './Menu.css'
 
-function OrderLink({ children = 'Order' }) {
+const CATS = MENU_CATEGORIES.filter((c) => c.id !== 'all')
+
+function OrderLink({ label = 'Order' }) {
   return (
-    <a className="menu-order" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-      {children} <ArrowRight />
+    <a className="mi__order" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+      {label} <ArrowRight />
     </a>
   )
 }
 
-function FeatureCard({ item }) {
+/* Items with photography get scale; everything else reads as a real menu
+   list rather than another rounded card. */
+function Feature({ item }) {
   return (
-    <article className="menu-card menu-card--feature">
-      <div className="menu-card__media">
+    <article className="feat">
+      <div className="feat__img">
         <img src={asset(item.image)} alt={item.name} loading="lazy" decoding="async" />
-        {item.badge && <span className="menu-card__badge">{item.badge}</span>}
+        {item.badge && <span className="feat__badge">{item.badge}</span>}
       </div>
-      <div className="menu-card__body">
-        <div className="menu-card__head">
-          <h3 className="menu-card__name">{item.name}</h3>
-          <span className="menu-card__price">{item.price}</span>
+      <div className="feat__body">
+        <h3 className="dsp feat__name">{item.name}</h3>
+        <p className="feat__desc">{item.desc}</p>
+        <div className="feat__foot">
+          <span className="feat__price">{item.price}</span>
+          <OrderLink />
         </div>
-        <p className="menu-card__desc">{item.desc}</p>
+      </div>
+    </article>
+  )
+}
+
+function Row({ item }) {
+  return (
+    <li className="mi">
+      <div className="mi__l">
+        <h3 className="mi__name">
+          {item.name}
+          {item.badge && <span className="mi__tag">{item.badge}</span>}
+        </h3>
+        <p className="mi__desc">{item.desc}</p>
+      </div>
+      <div className="mi__r">
+        <span className="mi__price">{item.price}</span>
         <OrderLink />
       </div>
-    </article>
+    </li>
   )
 }
 
-function TextCard({ item }) {
+function Section({ cat, items }) {
+  const feats = items.filter((i) => i.image && i.feature)
+  const rows = items.filter((i) => !(i.image && i.feature))
   return (
-    <article className="menu-card menu-card--text">
-      <div className="menu-card__head">
-        <h3 className="menu-card__name">{item.name}{item.badge && <span className="menu-card__tag">{item.badge}</span>}</h3>
-        <span className="menu-card__price">{item.price}</span>
-      </div>
-      <p className="menu-card__desc">{item.desc}</p>
-      <OrderLink />
-    </article>
-  )
-}
-
-function CategoryBlock({ cat, items }) {
-  const features = items.filter((i) => i.image && i.feature)
-  const rest = items.filter((i) => !(i.image && i.feature))
-  return (
-    <section className="menu-block" id={`cat-${cat.id}`}>
-      <div className="divider-label">{cat.label} <span className="menu-block__count">{items.length}</span></div>
-      {features.length > 0 && (
-        <div className="menu-grid menu-grid--feature">
-          {features.map((i) => <FeatureCard key={i.id} item={i} />)}
+    <section className="mcat" id={`cat-${cat.id}`}>
+      <h2 className="dsp mcat__h">{cat.label}</h2>
+      {feats.length > 0 && (
+        <div className="mcat__feats">
+          {feats.map((i) => <Feature key={i.id} item={i} />)}
         </div>
       )}
-      {rest.length > 0 && (
-        <div className="menu-grid menu-grid--text">
-          {rest.map((i) => <TextCard key={i.id} item={i} />)}
-        </div>
-      )}
+      {rows.length > 0 && <ul className="mcat__rows">{rows.map((i) => <Row key={i.id} item={i} />)}</ul>}
     </section>
   )
 }
 
 export default function Menu() {
   const [params, setParams] = useSearchParams()
-  const initialCat = params.get('cat') && MENU_CATEGORIES.some((c) => c.id === params.get('cat'))
-    ? params.get('cat') : 'all'
-  const [active, setActive] = useState(initialCat)
-  const [query, setQuery] = useState('')
-  const barRef = useRef(null)
+  const initial = params.get('cat')
+  const [active, setActive] = useState(
+    initial && CATS.some((c) => c.id === initial) ? initial : 'all'
+  )
+  const [q, setQ] = useState('')
 
   useEffect(() => {
     const next = new URLSearchParams(params)
-    if (active === 'all') next.delete('cat'); else next.set('cat', active)
+    if (active === 'all') next.delete('cat')
+    else next.set('cat', active)
     setParams(next, { replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active])
 
-  const q = query.trim().toLowerCase()
-  const searching = q.length > 0
+  const term = q.trim().toLowerCase()
+  const searching = term.length > 0
 
-  const searchResults = useMemo(() => {
-    if (!searching) return []
-    return MENU_ITEMS.filter(
-      (i) => i.name.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q)
-    )
-  }, [q, searching])
+  const found = useMemo(
+    () =>
+      searching
+        ? MENU_ITEMS.filter(
+            (i) => i.name.toLowerCase().includes(term) || i.desc.toLowerCase().includes(term)
+          )
+        : [],
+    [term, searching]
+  )
 
-  const visibleCats = active === 'all'
-    ? MENU_CATEGORIES.filter((c) => c.id !== 'all')
-    : MENU_CATEGORIES.filter((c) => c.id === active)
+  const shown = active === 'all' ? CATS : CATS.filter((c) => c.id === active)
 
   return (
-    <div className="page menu-page">
-      <Seo title="Menu" description="Explore the full ATL Wing Spot menu — bone-in wings, boneless, saucy tenders, chicken n' waffles, loaded fries, shakes and more. 25+ flavors." />
+    <div className="page menu ch-cream">
+      <Seo
+        title="Menu"
+        description="The full ATL Wing Spot menu — bone-in wings, boneless, saucy tenders, chicken n' waffles, loaded fries, shakes and more, in 30+ sauces."
+      />
 
-      <header className="page-hero page-hero--glow container-wide">
-        <Reveal><p className="eyebrow page-hero__eyebrow"><span className="dot" /> The Menu</p></Reveal>
-        <Reveal delay={80}><h1 className="page-hero__title">Menu</h1></Reveal>
-        <Reveal delay={140}><p className="page-hero__sub">25+ flavors. One serious appetite.</p></Reveal>
-        <Reveal delay={180}><p className="page-hero__note">Menu pricing and availability may vary by location.</p></Reveal>
+      <header className="mast wrap menu__mast">
+        <h1 className="dsp dsp-lg">Menu</h1>
+        <p className="menu__sub">Fried to order. Sauced to order. 30+ sauces and rubs to pick from.</p>
+        <p className="fineprint menu__fine">Prices and availability vary by location.</p>
       </header>
 
-      <div className="menu-controls" ref={barRef}>
-        <div className="container-wide menu-controls__inner">
-          <div className="menu-search">
-            <SearchIcon size={18} />
+      <div className="menu__body wrap">
+        {/* Desktop: sticky rail. Mobile: horizontal tab strip. */}
+        <aside className="mrail">
+          <div className="mrail__search">
+            <Search size={17} />
             <input
               type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search the menu…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search the menu"
               aria-label="Search the menu"
             />
           </div>
-          <div className="menu-tabs" role="tablist" aria-label="Menu categories">
-            {MENU_CATEGORIES.map((c) => (
+          <nav className="mrail__cats" aria-label="Menu categories">
+            <button
+              className={`mrail__cat ${active === 'all' && !searching ? 'on' : ''}`}
+              onClick={() => { setActive('all'); setQ('') }}
+            >
+              Everything
+            </button>
+            {CATS.map((c) => (
               <button
                 key={c.id}
-                role="tab"
-                aria-selected={active === c.id && !searching}
-                className={`menu-tab ${active === c.id && !searching ? 'is-active' : ''}`}
-                onClick={() => { setActive(c.id); setQuery('') }}
+                className={`mrail__cat ${active === c.id && !searching ? 'on' : ''}`}
+                onClick={() => { setActive(c.id); setQ('') }}
               >
                 {c.label}
               </button>
             ))}
-          </div>
-        </div>
-      </div>
+          </nav>
+        </aside>
 
-      <div className="container-wide menu-body">
-        {searching ? (
-          <section className="menu-block">
-            <div className="divider-label">
-              {searchResults.length} result{searchResults.length === 1 ? '' : 's'} for “{query}”
-            </div>
-            {searchResults.length > 0 ? (
-              <div className="menu-grid menu-grid--text">
-                {searchResults.map((i) => <TextCard key={i.id} item={i} />)}
-              </div>
-            ) : (
-              <p className="menu-empty">No matches — try “wings”, “waffles”, or “shake”.</p>
-            )}
-          </section>
-        ) : (
-          visibleCats.map((c) => (
-            <CategoryBlock key={c.id} cat={c} items={MENU_ITEMS.filter((i) => i.cat === c.id)} />
-          ))
-        )}
+        <div className="menu__content">
+          {searching ? (
+            <section className="mcat">
+              <h2 className="dsp mcat__h">
+                {found.length} {found.length === 1 ? 'match' : 'matches'}
+              </h2>
+              {found.length > 0 ? (
+                <ul className="mcat__rows">{found.map((i) => <Row key={i.id} item={i} />)}</ul>
+              ) : (
+                <p className="menu__empty">Nothing by that name. Try “wings”, “waffles” or “shake”.</p>
+              )}
+            </section>
+          ) : (
+            shown.map((c) => (
+              <Section key={c.id} cat={c} items={MENU_ITEMS.filter((i) => i.cat === c.id)} />
+            ))
+          )}
+        </div>
       </div>
     </div>
   )

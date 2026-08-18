@@ -1,52 +1,37 @@
-// FEATURED FLAVORS — a curated slice, NOT the full inventory.
-// The live restaurant advertises 25+ flavors; these are known / promoted names.
-// heat: 1 = Chill, 2 = Medium, 3 = Hot, 4 = No Fear
-// style: 'wet' | 'dry'
-// Descriptors are playful but claim no unverified ingredients.
+// FLAVOURS — real ATL sauce names only.
+// ATL advertises 30+ sauces and rubs; this is a featured selection, and the
+// UI says so. Heat tiers mirror ATL's own Mild / Medium / Hot grouping, with
+// a fourth "No Fear" tier for 911. Descriptors stay playful and never claim
+// an ingredient the flavour name doesn't already state.
 
 export const HEAT_LEVELS = [
-  { id: 1, label: 'Chill', tag: 'No heat, all flavor' },
-  { id: 2, label: 'Medium', tag: 'A friendly kick' },
-  { id: 3, label: 'Hot', tag: 'Now we’re talking' },
-  { id: 4, label: 'No Fear', tag: 'Proceed accordingly' },
+  { id: 1, label: 'Mild',    blurb: 'All flavour, no burn.',        color: '#22c1da' },
+  { id: 2, label: 'Medium',  blurb: 'A little kick. Nothing scary.', color: '#f4a020' },
+  { id: 3, label: 'Hot',     blurb: 'Now you feel it.',              color: '#f4601f' },
+  { id: 4, label: 'No Fear', blurb: 'Ask for extra ranch.',          color: '#e0342a' },
 ]
 
 export const STYLES = [
-  { id: 'wet', label: 'Wet', tag: 'Tossed & saucy' },
-  { id: 'dry', label: 'Dry Rub', tag: 'Seasoned, no sauce' },
+  { id: 'wet', label: 'Wet',     blurb: 'Tossed and dripping.' },
+  { id: 'dry', label: 'Dry Rub', blurb: 'Seasoned, no sauce.' },
 ]
 
 export const FLAVORS = [
-  {
-    id: 'garlic-butter', name: 'Roasted Garlic Butter', heat: 1, style: 'wet',
-    descriptor: 'Buttery, garlicky, zero drama.',
-  },
-  {
-    id: 'honey-bbq', name: 'Sweet Honey BBQ', heat: 1, style: 'wet',
-    descriptor: 'Sticky, sweet, everybody’s pick.',
-  },
-  {
-    id: 'old-bay', name: 'Old Bay', heat: 1, style: 'dry',
-    descriptor: 'East coast, on a wing.',
-  },
-  {
-    id: 'cajun-rub', name: 'Cajun Rub', heat: 2, style: 'dry',
-    descriptor: 'All seasoning, a little kick.',
-  },
-  {
-    id: 'chipotle-bbq', name: 'Chipotle BBQ', heat: 2, style: 'wet',
-    descriptor: 'Smoky-sweet with a slow build.',
-  },
-  {
-    id: 'nashville-hot', name: 'Nashville Hot', heat: 3, style: 'dry',
-    descriptor: 'Cayenne-forward and unbothered.',
-  },
-  {
-    id: 'buffalo-2', name: 'Hot Buffalo 2.0', heat: 3, style: 'wet',
-    descriptor: 'The classic, turned all the way up.',
-  },
-  {
-    id: '911', name: '911 Sauce', heat: 4, style: 'wet',
-    descriptor: 'Proceed accordingly.',
-  },
+  { id: 'garlic-parm',   name: 'Buttery Garlic Parmesan', heat: 1, style: 'wet', blurb: 'The one nobody argues about.' },
+  { id: 'sweet-teriyaki',name: 'Sweet Teriyaki',          heat: 1, style: 'wet', blurb: 'Sticky and sweet.' },
+  { id: 'lemon-pepper',  name: 'Lemon Pepper',            heat: 1, style: 'dry', blurb: 'Classic. Comes wet or dry.' },
+  { id: 'honeycomb',     name: 'Honeycomb Garlic',        heat: 1, style: 'wet', blurb: 'Sweet garlic, no heat.' },
+  { id: 'pineapple-bbq', name: 'Pineapple BBQ',           heat: 1, style: 'wet', blurb: 'BBQ that went on vacation.' },
+  { id: 'chipotle-bbq',  name: 'Chipotle BBQ',            heat: 2, style: 'wet', blurb: 'Smoky with a slow build.' },
+  { id: 'honey-sriracha',name: 'Honey Sriracha',          heat: 2, style: 'wet', blurb: 'Sweet first, heat second.' },
+  { id: 'stingin-honey', name: "Stingin' Honey Garlic",   heat: 2, style: 'wet', blurb: 'Honey with a sting.' },
+  { id: 'jerk',          name: 'Jamaican Jerk',           heat: 2, style: 'dry', blurb: 'Heavy on the seasoning.' },
+  { id: 'coconut-heat',  name: 'Coconut Sweet Heat',      heat: 2, style: 'wet', blurb: 'A regular on the highlight reel.' },
+  { id: 'cajun-buffalo', name: 'Cajun Buffalo',           heat: 3, style: 'wet', blurb: 'Buffalo with Cajun on top.' },
+  { id: 'hot-honey-lp',  name: 'Hot Honey Lemon Pepper',  heat: 3, style: 'wet', blurb: 'Three good ideas at once.' },
+  { id: 'nashville',     name: 'Nashville Hot',           heat: 3, style: 'dry', blurb: 'Cayenne, and plenty of it.' },
+  { id: 'mango-hab',     name: 'Mango Habanero',          heat: 3, style: 'wet', blurb: 'Sweet up front. Habanero after.' },
+  { id: '911',           name: '911 Sauce',               heat: 4, style: 'wet', blurb: 'You were warned.' },
 ]
+
+export const FLAVOR_COUNT = '30+'

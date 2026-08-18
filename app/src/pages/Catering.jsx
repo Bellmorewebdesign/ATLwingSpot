@@ -1,4 +1,4 @@
-import { CATERING_PACKAGES, CATERING_SCENES } from '../data/catering'
+import { CATERING_PACKAGES } from '../data/catering'
 import { LOCATIONS } from '../data/locations'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
@@ -11,68 +11,86 @@ const FIELDS = [
   { name: 'name', label: 'Name', type: 'text', required: true, autoComplete: 'name' },
   { name: 'email', label: 'Email', type: 'email', required: true, autoComplete: 'email' },
   { name: 'phone', label: 'Phone', type: 'tel', required: true, autoComplete: 'tel' },
-  { name: 'date', label: 'Event Date', type: 'date' },
-  { name: 'guests', label: 'Estimated Guests', type: 'number', placeholder: 'e.g. 40' },
-  { name: 'location', label: 'Preferred Location', type: 'select', options: LOCATIONS.map((l) => `${l.name} — ${l.city}, ${l.state}`), placeholder: 'Choose a location' },
-  { name: 'message', label: 'Message', type: 'textarea', full: true, placeholder: 'Tell us about your event, flavors, timing…' },
+  { name: 'date', label: 'Event date', type: 'date' },
+  { name: 'guests', label: 'How many people', type: 'number', placeholder: 'e.g. 40' },
+  {
+    name: 'location', label: 'Which shop', type: 'select',
+    options: LOCATIONS.map((l) => `${l.name} — ${l.city}, ${l.state}`),
+    placeholder: 'Pick a location',
+  },
+  { name: 'message', label: 'Anything else', type: 'textarea', full: true, placeholder: 'Sauces, timing, drop-off…' },
 ]
+
+const GROUPS = ['Wings', 'Boneless', 'Tenders', 'Starter', 'Side']
 
 export default function Catering() {
   return (
-    <div className="page catering-page">
-      <Seo title="Catering" description="ATL Wing Spot catering — trays of wings, tenders, mozzarella sticks and waffle fries for game day, the office, or any party. Start a catering request." />
+    <div className="page cat">
+      <Seo
+        title="Catering"
+        description="ATL Wing Spot catering — trays of wings, tenders, mozzarella sticks and waffle fries for game day, the office or a party. Tell us the headcount."
+      />
 
-      <header className="page-hero container-wide catering-hero">
-        <Reveal><p className="eyebrow page-hero__eyebrow"><span className="dot" /> Catering</p></Reveal>
-        <h1 className="catering-hero__scenes font-display">
-          {CATERING_SCENES.map((s, i) => (
-            <Reveal as="span" key={s} className={`catering-hero__scene ${i === CATERING_SCENES.length - 1 ? 'is-punch' : ''}`} delay={i * 70} clip>
-              <span>{s}</span>
-            </Reveal>
-          ))}
-        </h1>
-        <Reveal delay={140}>
-          <p className="page-hero__sub">Feed the whole room. Pick your flavors, we handle the trays.</p>
-        </Reveal>
-        <Reveal delay={200}>
-          <a href="#catering-form" className="btn btn--orange btn--lg catering-hero__cta">Start a catering request <ArrowRight /></a>
-        </Reveal>
+      {/* Orange takeover masthead with the food at full scale */}
+      <header className="cat__mast ch-orange">
+        <img className="cat__food" src={asset('assets/food/wings-basket-cutout.png')} alt="" loading="lazy" aria-hidden="true" />
+        <div className="wrap cat__mast-in">
+          <h1 className="dsp dsp-lg cat__h1">Feed<br />everybody.</h1>
+          <p className="cat__sub">
+            Fifty wings or five hundred. Trays of tenders, mozzarella sticks and waffle fries.
+            Give us the headcount and the sauces.
+          </p>
+          <a href="#request" className="btn btn-ink btn-lg cat__cta">Set up catering <ArrowRight /></a>
+        </div>
       </header>
 
-      <section className="section catering-trays">
-        <div className="container-wide">
-          <div className="divider-label">Catering Trays</div>
-          <div className="catering-trays__grid">
-            {CATERING_PACKAGES.map((p, i) => (
-              <Reveal as="article" key={p.id} className="tray-card" delay={(i % 3) * 50}>
-                <span className="tray-card__tag">{p.tag}</span>
-                <h3 className="tray-card__name">{p.name}{p.qty && <span className="tray-card__qty"> · {p.qty}</span>}</h3>
-                <span className="tray-card__price font-display">{p.price}</span>
-              </Reveal>
-            ))}
-          </div>
-          <p className="catering-trays__note">Pricing and availability may vary by location. Trays serve groups — ask your local ATL for exact counts.</p>
+      <section className="sec ch-cream">
+        <div className="wrap">
+          <h2 className="dsp dsp-sm cat__h2">Trays</h2>
+          <p className="cat__note">Prices and availability vary by location.</p>
+
+          {GROUPS.map((g) => {
+            const set = CATERING_PACKAGES.filter((p) => p.tag === g)
+            if (!set.length) return null
+            return (
+              <div className="tray" key={g}>
+                <h3 className="tray__h">{g}</h3>
+                <ul className="tray__items">
+                  {set.map((p, i) => (
+                    <Reveal as="li" className="tray__row" key={p.id} delay={i * 40}>
+                      <span className="tray__name">
+                        {p.name}{p.qty && <em> · {p.qty}</em>}
+                      </span>
+                      <span className="tray__price">{p.price}</span>
+                    </Reveal>
+                  ))}
+                </ul>
+              </div>
+            )
+          })}
         </div>
       </section>
 
-      <section className="section catering-form-section" id="catering-form">
-        <div className="container catering-form-wrap">
-          <div className="catering-form__intro">
-            <Reveal><p className="eyebrow"><span className="dot" /> Let’s plan it</p></Reveal>
-            <Reveal delay={80}><h2 className="section-title">Start a<br /><span className="accent-o">catering request.</span></h2></Reveal>
-            <Reveal delay={140}><p className="lead">Send the details and your local ATL will follow up. This is a concept preview — nothing is submitted yet.</p></Reveal>
+      <section className="sec ch-paper cat__form-sec" id="request">
+        <div className="wrap-tight cat__form-wrap">
+          <div>
+            <h2 className="dsp dsp-sm">Tell us<br />the headcount.</h2>
+            <p className="cat__form-sub">
+              Send the details and your local shop picks it up from there.
+            </p>
           </div>
-          <Reveal delay={100} className="catering-form__card">
+          <div className="cat__card">
             <MockupForm
               fields={FIELDS}
-              submitLabel="Send catering request"
+              submitLabel="Send request"
               concept={{
-                title: 'Catering Request Received',
-                summary: 'Nice — that would’ve gone to your local ATL',
-                message: 'This is a preview of the proposed catering inquiry experience. Submission is disabled in this website concept.',
+                title: 'Request received',
+                summary: 'That would have gone to your local shop',
+                message:
+                  'This is a preview of the proposed catering request. Submission is switched off in this website concept.',
               }}
             />
-          </Reveal>
+          </div>
         </div>
       </section>
     </div>

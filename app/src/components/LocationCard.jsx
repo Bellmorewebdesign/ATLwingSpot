@@ -1,38 +1,27 @@
 import { ORDER_URL } from '../data/site'
 import { mapsUrl } from '../data/locations'
-import { MapPin, ArrowUpRight } from './Icons'
+import { ArrowUpRight } from './Icons'
 import './LocationCard.css'
 
+// A scannable row, not a boxed card — reads fast on a phone.
 export function LocationCard({ loc }) {
   return (
-    <article className="loc-card">
-      <div className="loc-card__top">
-        <span className="loc-card__state">{loc.state}</span>
-        <span className="loc-card__region">{loc.region}</span>
+    <li className="loc">
+      <div className="loc__main">
+        <h3 className="dsp loc__name">{loc.name}</h3>
+        <address className="loc__addr">
+          {loc.street}, {loc.city}, {loc.state} {loc.zip}
+        </address>
+        {loc.since && <span className="loc__since">{loc.since}</span>}
       </div>
-      <h3 className="loc-card__name font-display">{loc.name}</h3>
-      <address className="loc-card__addr">
-        {loc.street}<br />
-        {loc.city}, {loc.state} {loc.zip}
-      </address>
-      <div className="loc-card__actions">
-        <a
-          className="btn btn--orange btn--sm"
-          href={ORDER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Order Now
+      <div className="loc__acts">
+        <a className="btn btn-orange btn-sm" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+          Order
         </a>
-        <a
-          className="loc-card__dir link-arrow"
-          href={mapsUrl(loc)}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <MapPin size={16} /> Directions <ArrowUpRight size={14} />
+        <a className="loc__dir" href={mapsUrl(loc)} target="_blank" rel="noopener noreferrer">
+          Directions <ArrowUpRight size={13} />
         </a>
       </div>
-    </article>
+    </li>
   )
 }

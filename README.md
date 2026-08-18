@@ -62,16 +62,41 @@ so refreshes never 404 and everything works under the project subpath
 
 ---
 
-## Tech
+## Design system
 
-- React 18 + React Router (HashRouter)
-- Vite 5 (`base: './'`, output published to repo root)
-- Motion: CSS + IntersectionObserver + rAF (respects `prefers-reduced-motion`)
-- Fonts bundled via `@fontsource` (Anton display, Manrope body)
+Built from ATL's own physical brand rather than a generic dark-restaurant palette:
+
+- **Cream is the ground.** Every ATL product photo is shot on white, so a cream page
+  lets the food merge into the layout instead of floating on black with visible edges.
+- **Chapter surfaces.** Each section sets `--bg` / `--fg` / `--line` via one class
+  (`.ch-cream`, `.ch-dark`, `.ch-cyan`, `.ch-orange`, `.ch-paper`). Scrolling moves
+  through colour chapters instead of one long dark page.
+- **Word-stripe** (`WordStripe`) reproduces the repeating WINGS · TENDERS · MUNCHIES
+  print on ATL's real cyan takeout box, used as the structural divider.
+- **Seal** (`.seal`) echoes the round "SAUCE IT UP!" stamp on their basket paper.
+- **Pill geometry** for buttons and tags, taken from the logo's `atl` lozenge.
+- Type: Anton display / Manrope UI, bundled via `@fontsource` (no external requests).
+
+Composition is art-directed per section — centred hero, horizontal crave track,
+right-led story figures, split locations, full-bleed catering — rather than repeating
+one eyebrow/headline/paragraph/button stack.
+
+### Signature interactions
+
+1. **Hero** — the headline is painted twice and the upper copy is clipped, so the wing
+   basket is wedged *inside* the letterforms.
+2. **Flavor stage** — heat and wet/dry selections re-colour the entire section.
+3. **Crave track** — full-bleed horizontal product panels with snap + arrow controls.
+4. **Crew calculator** — an oversized count-in number.
+
+Motion is CSS + IntersectionObserver + rAF only, and every piece has a
+`prefers-reduced-motion` path. No animation library.
 
 ## Notes on content
 
-All copy, figures, and claims use ATL-supplied material only. Menu pricing is shown
-with a "may vary by location" note; franchise figures are labeled as ATL-published and
-informational (subject to the current FDD); no reviews, handles, or press outlets are
-fabricated. Store hours are intentionally not hardcoded.
+Copy and figures use ATL's own materials and public press (QSR Magazine, Long Island
+local press) only. Sauce names are real ATL flavours, shown as a featured selection of
+the 30+ on the board. Menu prices carry a "varies by location" note; franchise figures
+are labelled as ATL-published with an FDD disclaimer and no earnings claims. No invented
+reviews, follower counts, handles, hours, or location totals. Distances are not faked —
+"use my location" hands off to ATL's ordering site, which does the real lookup.

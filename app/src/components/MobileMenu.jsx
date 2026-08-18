@@ -1,17 +1,15 @@
 import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { NAV_LINKS } from '../data/navigation'
-import { SOCIAL } from '../data/site'
-import { OrderButton } from './OrderButton'
-import { Instagram, TikTok, ArrowUpRight } from './Icons'
+import { SOCIAL, ORDER_URL } from '../data/site'
 import { useScrollLock } from '../hooks/useScrollLock'
+import { Instagram, TikTok, ArrowRight, ArrowUpRight } from './Icons'
 import './MobileMenu.css'
 
 export function MobileMenu({ open, onClose }) {
   const location = useLocation()
   useScrollLock(open)
 
-  // Close on route change
   useEffect(() => { onClose() }, [location.pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -22,33 +20,28 @@ export function MobileMenu({ open, onClose }) {
   }, [open, onClose])
 
   return (
-    <div className={`mobile-menu ${open ? 'is-open' : ''}`} aria-hidden={!open}>
-      <nav className="mobile-menu__nav" aria-label="Mobile">
-        {NAV_LINKS.map((link, i) => (
-          <Link
-            key={link.to}
-            to={link.to}
-            className="mobile-menu__link font-display"
-            style={{ '--i': i }}
-            onClick={onClose}
-          >
-            <span className="mobile-menu__num">0{i + 1}</span>
-            {link.label}
+    <div className={`mm ${open ? 'on' : ''}`} aria-hidden={!open}>
+      <nav className="mm__nav" aria-label="Mobile">
+        {NAV_LINKS.map((l, i) => (
+          <Link key={l.to} to={l.to} className="dsp mm__link" style={{ '--i': i }} onClick={onClose}>
+            {l.label}
           </Link>
         ))}
       </nav>
 
-      <div className="mobile-menu__foot">
-        <OrderButton className="mobile-menu__order btn--block btn--lg">Order Now</OrderButton>
-        <div className="mobile-menu__social">
-          <a href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-            <Instagram /> <span>Instagram</span> <ArrowUpRight />
+      <div className="mm__foot">
+        <a className="btn btn-ink btn-lg btn-block" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+          Order now <ArrowRight />
+        </a>
+        <div className="mm__social">
+          <a href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer">
+            <Instagram size={18} /> <span>Instagram</span> <ArrowUpRight size={13} />
           </a>
-          <a href={SOCIAL.tiktok} target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-            <TikTok /> <span>TikTok</span> <ArrowUpRight />
+          <a href={SOCIAL.tiktok} target="_blank" rel="noopener noreferrer">
+            <TikTok size={18} /> <span>TikTok</span> <ArrowUpRight size={13} />
           </a>
         </div>
-        <p className="mobile-menu__tag">100% Halal · Fresh, Never Frozen · 25+ Flavors</p>
+        <p className="mm__facts">100% Halal · Fresh, never frozen · 30+ sauces</p>
       </div>
     </div>
   )

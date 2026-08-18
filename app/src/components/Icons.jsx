@@ -1,6 +1,6 @@
 // Inline SVG icons — no icon-font dependency, theme via currentColor.
 
-export function ArrowRight({ className = 'arrow', ...p }) {
+export function ArrowRight({ className = 'ar', ...p }) {
   return (
     <svg className={className} width="1em" height="1em" viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
@@ -10,7 +10,17 @@ export function ArrowRight({ className = 'arrow', ...p }) {
   )
 }
 
-export function ArrowUpRight({ className = 'arrow', ...p }) {
+export function ArrowLeft({ className = 'ar', ...p }) {
+  return (
+    <svg className={className} width="1em" height="1em" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true" {...p}>
+      <path d="M19 12H5M11 6l-6 6 6 6" />
+    </svg>
+  )
+}
+
+export function ArrowUpRight({ className = 'ar', ...p }) {
   return (
     <svg className={className} width="1em" height="1em" viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"

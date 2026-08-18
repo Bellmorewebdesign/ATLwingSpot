@@ -1,0 +1,48 @@
+.ws {
+  overflow: hidden;
+  width: 100%;
+  --ws-fg: #fff;
+}
+.ws--cyan   { background: var(--cyan);   --ws-fg: #fff; }
+.ws--orange { background: var(--orange); --ws-fg: var(--ink); }
+.ws--ink    { background: var(--ink);    --ws-fg: var(--cream); }
+.ws--cream  { background: var(--cream);  --ws-fg: var(--ink); }
+
+.ws__viewport {
+  display: flex;
+  width: max-content;
+  animation: ws-run var(--ws-speed, 34s) linear infinite;
+}
+.ws:hover .ws__viewport { animation-play-state: paused; }
+.ws__track { display: flex; flex-shrink: 0; }
+
+.ws__item {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  color: var(--ws-fg);
+  white-space: nowrap;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+.ws--sm .ws__item { font-size: clamp(1rem, 2.2vw, 1.5rem); padding: 0.55em 0.5em; letter-spacing: 0.01em; }
+.ws--md .ws__item { font-size: clamp(1.6rem, 4.2vw, 3rem); padding: 0.34em 0.28em; letter-spacing: 0.005em; }
+.ws--lg .ws__item { font-size: clamp(2.4rem, 7vw, 5.5rem); padding: 0.26em 0.2em; letter-spacing: -0.005em; }
+
+.ws__sep {
+  display: inline-block;
+  margin-inline: 0.42em;
+  opacity: 0.55;
+  font-weight: 400;
+}
+
+@keyframes ws-run {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws__viewport { animation: none; }
+  .ws__track[aria-hidden='true'] { display: none; }
+  .ws__viewport { justify-content: center; }
+}

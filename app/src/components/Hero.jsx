@@ -1,118 +1,92 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { OrderButton } from './OrderButton'
-import { ArrowRight } from './Icons'
+import { ORDER_URL } from '../data/site'
 import { asset } from '../lib/asset'
 import { useReducedMotion } from '../hooks/useReducedMotion'
+import { ArrowRight } from './Icons'
 import './Hero.css'
 
+/**
+ * The food is wedged INSIDE the wordmark: the headline is rendered twice at
+ * identical position — once behind the basket, once in front but clipped to
+ * its lower half. The basket therefore sits between the upper and lower
+ * halves of the letterforms and genuinely breaks through the type.
+ */
 export function Hero() {
   const foodRef = useRef(null)
-  const stageRef = useRef(null)
   const reduced = useReducedMotion()
 
-  // Subtle scroll + pointer parallax on the wings basket. Transform/opacity
-  // only; disabled entirely for reduced-motion and coarse pointers.
   useEffect(() => {
     if (reduced) return
     const food = foodRef.current
-    const stage = stageRef.current
-    if (!food || !stage) return
-    // Parallax only where the basket is absolutely positioned (desktop).
-    // On phones it sits in normal flow, so moving it would collide with copy.
-    if (!window.matchMedia('(min-width: 821px)').matches) return
+    if (!food) return
+    if (!window.matchMedia('(min-width: 861px)').matches) return
 
-    let sy = 0
-    let px = 0
-    let py = 0
-    let raf = 0
-
-    const render = () => {
+    let px = 0, py = 0, sy = 0, raf = 0
+    const draw = () => {
       raf = 0
-      food.style.transform =
-        `translate3d(${px}px, ${sy + py}px, 0) rotate(${-6 + px * 0.02}deg)`
+      food.style.transform = `translate3d(${px}px, ${sy + py}px, 0) scale(${1 + sy * 0.0004})`
     }
-    // Establish the resting transform so the first pointer/scroll event
-    // doesn't snap the basket from 0deg to its -6deg resting tilt.
-    render()
-    const schedule = () => { if (!raf) raf = requestAnimationFrame(render) }
+    const tick = () => { if (!raf) raf = requestAnimationFrame(draw) }
 
-    const onScroll = () => {
-      const y = window.scrollY
-      if (y > window.innerHeight) return
-      sy = y * 0.12
-      schedule()
-    }
-    const fine = window.matchMedia('(pointer:fine)').matches
     const onMove = (e) => {
-      const r = stage.getBoundingClientRect()
-      px = ((e.clientX - r.left) / r.width - 0.5) * 26
-      py = ((e.clientY - r.top) / r.height - 0.5) * 18
-      schedule()
+      px = (e.clientX / window.innerWidth - 0.5) * 22
+      py = (e.clientY / window.innerHeight - 0.5) * 14
+      tick()
     }
-
+    const onScroll = () => {
+      if (window.scrollY > window.innerHeight) return
+      sy = window.scrollY * 0.09
+      tick()
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
     window.addEventListener('scroll', onScroll, { passive: true })
-    if (fine) stage.addEventListener('pointermove', onMove)
     return () => {
+      window.removeEventListener('pointermove', onMove)
       window.removeEventListener('scroll', onScroll)
-      stage.removeEventListener('pointermove', onMove)
       cancelAnimationFrame(raf)
     }
   }, [reduced])
 
+  const Word = ({ front = false }) => (
+    <div className={`hero__type ${front ? 'hero__type--front' : ''}`} aria-hidden="true">
+      <span className="hero__l1 dsp">Stay</span>
+      <span className="hero__l2 dsp">Saucy.</span>
+    </div>
+  )
+
   return (
-    <section className={`hero ${reduced ? 'no-anim' : ''}`} ref={stageRef}>
-      <div className="hero__glow" aria-hidden="true" />
-      <div className="hero__inner container-wide">
-        <p className="hero__eyebrow">
-          <span className="hero__eyebrow-item">100% Halal</span>
-          <span className="hero__eyebrow-dot" />
-          <span className="hero__eyebrow-item">Fresh, Never Frozen</span>
-          <span className="hero__eyebrow-dot" />
-          <span className="hero__eyebrow-item">25+ Flavors</span>
+    <section className="hero">
+      <div className="hero__inner wrap-full">
+        <p className="hero__facts">
+          <span>100% Halal</span><i /><span>Fresh, never frozen</span><i /><span>30+ sauces</span>
         </p>
 
-        <h1 className="hero__headline font-display">
-          <span className="hero__line"><span className="hero__word">Stay</span></span>
-          <span className="hero__line hero__line--2"><span className="hero__word hero__word--saucy">Saucy.</span></span>
-        </h1>
+        <div className="hero__stage">
+          <h1 className="hero__h1">
+            <span className="sr-only">ATL Wing Spot — stay saucy</span>
+            <Word />
+          </h1>
 
-        <div className="hero__food-wrap" ref={foodRef}>
           <img
+            ref={foodRef}
             className="hero__food"
             src={asset('assets/food/wings-basket-cutout.png')}
-            alt="A basket of ATL Wing Spot buffalo wings with ranch"
-            width="620"
-            height="470"
-            fetchpriority="high"
-            decoding="async"
+            alt="A basket of ATL Wing Spot wings with ranch"
+            width="1200" height="910"
+            fetchpriority="high" decoding="async"
           />
+
+          <Word front />
         </div>
 
-        <div className="hero__bottom">
-          <p className="hero__sub">
-            Fresh, never frozen wings tossed in <strong>25+ flavors</strong>.
-            Voted <span className="text-cyan">Best Wings on Long Island</span>.
-          </p>
-
-          <div className="hero__actions">
-            <OrderButton size="lg" className="hero__order">Order Now</OrderButton>
-            <Link to="/locations" className="btn btn--ghost btn--lg">Find a Location</Link>
-            <Link to="/menu" className="hero__menu-link link-arrow">
-              View Menu <ArrowRight />
-            </Link>
-          </div>
-
-          <p className="hero__note">
-            <span className="hero__note-dot" /> Pickup + Delivery
-            <span className="hero__note-sep">·</span> Powered by DoorDash
-          </p>
+        <div className="hero__actions">
+          <a className="btn btn-orange btn-lg hero__order" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+            Order now <ArrowRight />
+          </a>
+          <Link className="btn btn-line hero__find" to="/locations">Find a location</Link>
+          <Link className="tlink hero__menu" to="/menu">See the menu <ArrowRight /></Link>
         </div>
-      </div>
-
-      <div className="hero__scroll" aria-hidden="true">
-        <span>Scroll</span>
-        <span className="hero__scroll-line" />
       </div>
     </section>
   )
