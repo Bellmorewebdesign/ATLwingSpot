@@ -3,16 +3,21 @@ import { useScrollProgress } from '../hooks/useScrollProgress'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 import './SauceZoom.css'
 
-const IMG = 'assets/food/wings-macro.webp'
+const IMG = 'assets/food/sauce-wall.webp'
 
 /**
  * The signature scroll moment.
  *
- * "SAUCE IT UP" (ATL's own printed slogan) is a WINDOW onto a macro shot of
- * the sauce: the type layer is viewport-sized with the same cover-positioned
- * background as the photo behind it, so the letters line up pixel-for-pixel
- * with the image. Scrolling grows the type and dissolves the cream ground —
- * so the letters melt seamlessly into a full-bleed wall of sauce.
+ * "SAUCE IT UP" (ATL's own printed slogan) is a WINDOW onto the sauce wall:
+ * the type layer is viewport-sized with the same cover-positioned background
+ * as the photo behind it, so the letters line up pixel-for-pixel with the
+ * image. Scrolling grows the type and dissolves the cream ground, so the
+ * letters melt seamlessly into a full-bleed wall of sauce.
+ *
+ * The artwork is the 1894px source at NATIVE scale, with its white studio
+ * background soft-blended into a sauce-coloured field (no hard key, so no
+ * cut-out edges). An earlier macro crop was upscaled ~1.75x before `cover`
+ * upscaled it again, which is what made the letters look mushy.
  *
  * Growth is driven by font-size rather than transform: a transform would scale
  * the letter's slice of the image too, magnifying it into a soft blur and
@@ -26,7 +31,7 @@ export function SauceZoom() {
   if (reduced) {
     return (
       <section className="zoom zoom--static" aria-label="Sauce it up">
-        <img className="zoom__bg" src={url} alt="Wings coated in ATL sauce" loading="lazy" />
+        <img className="zoom__bg" src={url} alt="A basket of ATL Wing Spot wings" loading="lazy" />
         <p className="zoom__still dsp">Sauce<br />it up.</p>
       </section>
     )
@@ -45,7 +50,7 @@ export function SauceZoom() {
         <img
           className="zoom__bg"
           src={url}
-          alt="Wings coated in ATL sauce"
+          alt="A basket of ATL Wing Spot wings"
           loading="lazy"
           decoding="async"
         />
