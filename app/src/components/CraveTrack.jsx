@@ -15,12 +15,12 @@ import './CraveTrack.css'
  * at category level only.
  */
 const PANELS = [
-  { cat: 'wings',      name: 'Bone-In\nWings',      line: 'Fresh, never frozen. Fried to order, sauced to order.', img: 'assets/food/official/official-bone-in-wings.webp' },
-  { cat: 'boneless',   name: 'Boneless',            line: 'All white meat, hand breaded, same 25+ sauces.',        img: 'assets/food/official/official-boneless-20pc.webp' },
-  { cat: 'tenders',    name: 'Saucy\nTenders',      line: 'Jumbo tenders, sauced to order.',                       img: 'assets/food/official/official-saucy-chicken-drip.webp' },
-  { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch.',        img: 'assets/food/official/official-fruity-pebbles-chicken-waffles.webp' },
-  { cat: 'sandwiches', name: 'Sandwiches',          line: 'Crispy chicken, ranch, pickles, a proper bun.',         img: 'assets/food/official/official-buffalo-ranch-sandwich.webp' },
-  { cat: 'starters',   name: 'Quesadillas',         line: 'Chicken and cheddar, pressed and stacked.',             img: 'assets/food/official/official-quesadilla-stack.webp' },
+  { cat: 'wings',      name: 'Bone-In\nWings',      line: "Never frozen. They don't hit the fryer until you order them.",          img: 'assets/food/official/official-bone-in-wings.webp' },
+  { cat: 'boneless',   name: 'Boneless',            line: 'All white meat, breaded by hand, and every sauce on the board works on these too.', img: 'assets/food/official/official-boneless-20pc.webp' },
+  { cat: 'tenders',    name: 'Saucy\nTenders',      line: 'Jumbo. Ask for them tossed, or with the sauce on the side.',            img: 'assets/food/official/official-saucy-chicken-drip.webp' },
+  { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch on the waffle. Yes, really.', img: 'assets/food/official/official-fruity-pebbles-chicken-waffles.webp' },
+  { cat: 'sandwiches', name: 'Sandwiches',          line: 'Crispy chicken on a toasted bun, chipotle or classic.',                 img: 'assets/food/official/official-buffalo-ranch-sandwich.webp' },
+  { cat: 'starters',   name: 'Quesadillas',         line: 'Four on the menu, from plain cheddar to loaded chicken.',               img: 'assets/food/official/official-quesadilla-stack.webp' },
 ]
 
 export function CraveTrack() {

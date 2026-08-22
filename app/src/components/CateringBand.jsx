@@ -20,8 +20,8 @@ export function CateringBand() {
         <Reveal className="cband__col">
           <h2 className="dsp dsp-md cband__title">Feed<br />everybody.</h2>
           <p className="cband__line">
-            Fifty wings. A hundred wings. Trays of tenders, mozzarella sticks and waffle fries.
-            Tell us the headcount and the sauces.
+            Fifty wings, a hundred wings, trays of tenders, mozzarella sticks and waffle fries.
+            Tell us the headcount and which sauces, and we&rsquo;ll handle the rest.
           </p>
           <div className="cband__acts">
             <Link className="btn btn-orange btn-lg" to="/catering">Set up catering <ArrowRight /></Link>

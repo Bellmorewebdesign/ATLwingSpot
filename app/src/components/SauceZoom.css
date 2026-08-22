@@ -35,26 +35,61 @@
   will-change: opacity;
 }
 
-/* The slogan is a window onto the same sauce shot */
+/* The slogan is a window onto the same sauce shot.
+ *
+ * Getting it to travel straight through the middle of the words took two
+ * things that fight each other:
+ *
+ * 1. Centring. Every "centre it" mechanism that works on the BOX — grid/flex
+ *    place-items, auto margins, text-align on an overflowing line — clamps to
+ *    the start edge the moment the content is wider than its box. That pinned
+ *    the left edge at x=0, so as the type grew it slid right instead of
+ *    growing around the middle. The fix is to make the box far wider than the
+ *    type ever gets (400vw, centred with a negative margin) so the text never
+ *    overflows it and plain text-align centring applies cleanly.
+ * 2. The clip. `background-clip: text` only paints through text that is
+ *    in-flow inline content of this element. Wrapping the lines in anything
+ *    transformed or absolutely positioned (the obvious way to dodge the
+ *    clamping) drops them out of the clip and the words vanish entirely.
+ *
+ * Because the box is no longer viewport-sized, `cover` can't be used: it would
+ * scale the photo to fill 400vw and blow it up ~4x. --bg-w is cover recomputed
+ * against the viewport (rendered width = max(vw, vh * image aspect)), which
+ * reproduces the photo behind it pixel for pixel. Box centre and viewport
+ * centre coincide, so `background-position: center` still lines the two up. */
 .zoom__word {
+  --img-aspect: 1.7612;                          /* sauce-wall.webp, 1888x1072 */
+  --bg-w: max(100vw, 100svh * var(--img-aspect));
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 400vw;
+  margin: 0 0 0 -200vw;
   z-index: 2;
-  margin: 0;
-  display: grid;
-  place-items: center;
   text-align: center;
   font-size: calc(clamp(2.4rem, 10vw, 9rem) * var(--k, 1));
   line-height: 0.84;
   letter-spacing: -0.02em;
-  background-size: cover;
+  background-size: var(--bg-w) auto;
   background-position: center;
+  background-repeat: no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
   will-change: opacity;
   pointer-events: none;
+}
+/* Vertical centring in em, so it tracks the growing type and goes negative
+   once the block is taller than the fold — overflowing top and bottom evenly. */
+.zoom__lines {
+  display: block;
+  margin-top: calc((100svh - 1.68em) / 2);
+}
+.zoom__line {
+  display: block;
+  white-space: nowrap;
 }
 
 .zoom__cue {

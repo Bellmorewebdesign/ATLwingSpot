@@ -37,8 +37,8 @@ export default function Catering() {
         <div className="wrap cat__mast-in">
           <h1 className="dsp dsp-lg cat__h1">Feed<br />everybody.</h1>
           <p className="cat__sub">
-            Fifty wings or five hundred. Trays of tenders, mozzarella sticks and waffle fries.
-            Give us the headcount and the sauces.
+            Fifty wings or five hundred, plus trays of tenders, mozzarella sticks and waffle fries.
+            Give us the headcount and which sauces, and your local shop takes it from there.
           </p>
           <a href="#request" className="btn btn-ink btn-lg cat__cta">Set up catering <ArrowRight /></a>
         </div>

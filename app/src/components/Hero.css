@@ -90,14 +90,17 @@
   clip-path: inset(59% 0 0 0);
 }
 
+/* ATL's own basket, keyed off the studio white. It is close to square, so it
+   is set narrower and dropped lower than the old letterbox crop was — enough
+   to burst through the middle of the lockup without swallowing STAY. */
 .hero__food {
   grid-area: 1 / 1;
   z-index: 2;
-  width: min(49vw, 690px);
+  width: min(42vw, 590px);
   height: auto;
   justify-self: center;
   align-self: center;
-  margin-top: 4%;
+  margin-top: 8%;
   filter: drop-shadow(0 26px 26px rgba(84, 40, 8, 0.26))
           drop-shadow(0 6px 8px rgba(84, 40, 8, 0.16));
   animation: h-food 0.85s var(--ease) 0.3s both;
@@ -126,7 +129,7 @@
 
 /* ---------- responsive ---------- */
 @media (max-width: 860px) {
-  .hero__food { width: min(80vw, 470px); margin-top: 3%; }
+  .hero__food { width: min(66vw, 400px); margin-top: 6%; }
   .hero__type--front { clip-path: inset(62% 0 0 0); }
 }
 @media (max-width: 560px) {
@@ -139,7 +142,7 @@
   /* type carries the composition on a phone; the basket supports it */
   .hero__l1 { font-size: max(1.9rem, min(22vw, 12vh, 6rem)); }
   .hero__l2 { font-size: max(3.4rem, min(34vw, 19vh, 9rem)); }
-  .hero__food { width: min(74vw, 340px); }
+  .hero__food { width: min(62vw, 290px); }
   /* more of SAUCY. in front so the wordmark still reads on a phone */
   .hero__type--front { clip-path: inset(52% 0 0 0); }
   .hero__actions { width: 100%; flex-direction: column; align-items: stretch; }
