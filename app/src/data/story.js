@@ -46,7 +46,7 @@ export const STORY_CHAPTERS = [
     id: 'open',
     when: 'May 2023',
     title: 'One shop, 800 square feet',
-    body: 'Two friends saved up and opened the first ATL Wing Spot in a room roughly 800 square feet. Fresh wings, fried to order, halal, and a sauce list far longer than the space deserved.',
+    body: 'Two friends saved up and opened the first ATL Wing Spot in a room of roughly 800 square feet. Everything halal, everything fried the moment it was ordered, and a sauce list that had no business being that long in a space that small.',
   },
   {
     id: 'viral',
@@ -58,13 +58,13 @@ export const STORY_CHAPTERS = [
     id: 'best',
     when: 'Then',
     title: 'Best wings on Long Island',
-    body: 'The neighbourhood made it official, and QSR Magazine came calling not long after.',
+    body: 'The neighborhood made it official, and QSR Magazine came calling not long after.',
   },
   {
     id: 'now',
     when: 'Now',
     title: 'New York, New Jersey, California',
-    body: 'Same wings, same sauces, more counters, with franchised shops now open beyond Long Island.',
+    body: 'The wings and the sauces have not changed. There are just more counters now, including franchised shops well beyond Long Island.',
   },
 ]
 

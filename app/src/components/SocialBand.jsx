@@ -31,8 +31,8 @@ export function SocialBand() {
         <Reveal className="sband__copy">
           <h2 className="dsp dsp-md sband__title">More on<br />the feed.</h2>
           <p className="sband__line">
-            A month after opening, one video crossed a million views and the line went around the block.
-            We still post everything coming out of the fryer.
+            A month after opening, one video crossed a million views. We still post everything
+            coming out of the fryer.
           </p>
           <div className="sband__links">
             <a className="btn btn-ink" href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer">

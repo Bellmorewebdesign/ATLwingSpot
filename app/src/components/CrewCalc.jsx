@@ -70,7 +70,7 @@ export function CrewCalc() {
           <a className="btn btn-ink btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
             Order for the crew <ArrowRight />
           </a>
-          <p className="crew__note">Add more. We&rsquo;re not judging. It&rsquo;s a rough guide, not a rule.</p>
+          <p className="crew__note">It&rsquo;s a starting point, not a rule. You know your people better than we do.</p>
         </div>
       </div>
     </section>

@@ -112,7 +112,7 @@ export default function Menu() {
 
       <header className="mast wrap menu__mast">
         <h1 className="dsp dsp-lg">Menu</h1>
-        <p className="menu__sub">Fried to order. Sauced to order. 25+ sauces and rubs to pick from.</p>
+        <p className="menu__sub">Everything is fried once you order it, then tossed in whichever of the 25+ sauces and rubs you pick.</p>
         <p className="fineprint menu__fine">Prices and availability vary by location.</p>
       </header>
 

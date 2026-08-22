@@ -39,7 +39,7 @@ export function SpreadBand() {
         </Reveal>
 
         <div className="spread__shakes">
-          <Reveal className="shakes__label"><p>Seven shakes on the board. These three get ordered most.</p></Reveal>
+          <Reveal className="shakes__label"><p>Seven shakes on the board. Here are three of them.</p></Reveal>
           <ul className="shakes__row">
             {SHAKES.map((s, i) => (
               <Reveal as="li" className="shake" key={s.id} delay={i * 90}>

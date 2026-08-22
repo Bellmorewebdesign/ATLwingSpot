@@ -62,7 +62,10 @@ export function SauceZoom() {
           style={{ '--k': k, opacity: fade, backgroundImage: `url(${url})` }}
           aria-hidden="true"
         >
-          Sauce<br />it up.
+          <span className="zoom__lines">
+            <span className="zoom__line">Sauce</span>
+            <span className="zoom__line">it up.</span>
+          </span>
         </p>
 
         <span className="zoom__cue" style={{ opacity: veil }} aria-hidden="true">Keep scrolling</span>
