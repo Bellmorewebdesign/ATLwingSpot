@@ -8,9 +8,9 @@ import './SocialBand.css'
 // handles, captions, comments or follower counts. The only number here is
 // the verified 1M+ view breakout.
 const SHOTS = [
-  { src: 'assets/food/fruity-pebbles-chicken-waffles.jpg', alt: "Fruity Pebbles chicken and waffles" },
-  { src: 'assets/food/saucy-tenders.jpg', alt: 'Saucy tenders' },
-  { src: 'assets/food/chipotle-chicken-sandwich.jpg', alt: 'Chipotle chicken sandwich' },
+  { src: 'assets/food/official/official-oreo-chicken-waffles.webp', alt: "Oreo chicken and waffles" },
+  { src: 'assets/food/official/official-wings-30pc.webp', alt: 'Three baskets of wings in different sauces' },
+  { src: 'assets/food/official/official-classic-chicken-sandwich.webp', alt: 'Crispy chicken sandwich' },
 ]
 
 export function SocialBand() {

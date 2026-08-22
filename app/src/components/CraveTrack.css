@@ -34,62 +34,68 @@
   scrollbar-width: none;
   padding-inline: var(--gutter);
   padding-bottom: 0.5rem;
+  align-items: stretch;
 }
 .crave__rail::-webkit-scrollbar { display: none; }
 .crave__rail:focus-visible { outline-offset: -3px; }
 
+/* Cream card: the studio white of the official shots blends straight into it */
 .crave__panel {
   position: relative;
   flex: 0 0 auto;
-  width: min(78vw, 620px);
-  aspect-ratio: 4 / 5;
-  max-height: 82vh;
+  width: min(78vw, 460px);
   scroll-snap-align: center;
   border-radius: var(--r-lg);
   overflow: hidden;
-  background: #17151a;
+  background: var(--paper);
+  color: var(--ink);
   display: flex;
-  align-items: flex-end;
-  isolation: isolate;
+  flex-direction: column;
 }
 .crave__panel:first-child { scroll-snap-align: start; }
 
-.crave__media { position: absolute; inset: 0; z-index: -1; }
+.crave__media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: var(--paper);
+}
+/* Absolutely positioned so a portrait shot's intrinsic height can't drive the
+   box — aspect-ratio governs and every card lines up. contain, never cover:
+   a crop would slice sandwiches and shakes in half. */
 .crave__media img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  transition: transform var(--t-slow) var(--ease);
-}
-/* Cutouts sit on a colour field rather than being cropped */
-.crave__media.is-contain {
-  background: radial-gradient(75% 60% at 50% 42%, #2b2731, #17151a 72%);
-  display: grid;
-  place-items: center;
-  padding: 12% 8% 34%;
-}
-.crave__media.is-contain img { object-fit: contain; height: auto; max-height: 100%; }
-.crave__panel:hover .crave__media img { transform: scale(1.04); }
-
-.crave__panel::after {
-  content: '';
   position: absolute;
   inset: 0;
-  z-index: -1;
-  background: linear-gradient(180deg, transparent 34%, rgba(10,9,12,0.55) 62%, rgba(10,9,12,0.94));
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: clamp(0.6rem, 1.6vw, 1.1rem);
+  transition: transform var(--t-slow) var(--ease);
 }
+.crave__panel:hover .crave__media img { transform: scale(1.035); }
 
-.crave__body { position: relative; padding: clamp(1.2rem, 3vw, 2rem); width: 100%; }
+.crave__body {
+  padding: 0 clamp(1rem, 2.2vw, 1.5rem) clamp(1.1rem, 2.4vw, 1.6rem);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-top: 2px solid rgba(18, 16, 18, 0.1);
+  padding-top: clamp(0.9rem, 2vw, 1.2rem);
+  margin-inline: clamp(1rem, 2.2vw, 1.5rem);
+  padding-inline: 0;
+}
 .crave__name {
-  font-size: clamp(2rem, 5.4vw, 3.6rem);
-  line-height: 0.84;
-  color: var(--cream);
-  margin-bottom: 0.5rem;
+  font-size: clamp(1.6rem, 3.6vw, 2.3rem);
+  line-height: 0.9;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
 }
 .crave__name span { display: block; }
-.crave__line { color: rgba(246,239,225,0.78); font-size: var(--step--1); max-width: 34ch; margin-bottom: 1rem; }
+.crave__line { color: var(--ink-mute); font-size: var(--step--1); max-width: 34ch; margin-bottom: 1rem; flex: 1; }
 .crave__links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.crave__links .btn-line { color: var(--cream); }
-.crave__links .btn-line:hover { background: var(--cream); color: var(--ink); }
+.crave__links .btn-line { color: var(--ink); border-color: var(--ink); }
+.crave__links .btn-line:hover { background: var(--ink); color: var(--cream); }
 
 .crave__hint {
   margin-top: 1.2rem;
@@ -101,10 +107,10 @@
 }
 
 @media (min-width: 1100px) {
-  .crave__panel { width: 520px; aspect-ratio: 3 / 4; }
+  .crave__panel { width: 420px; }
 }
 @media (max-width: 640px) {
-  .crave__panel { width: 82vw; aspect-ratio: 3 / 4; }
+  .crave__panel { width: 80vw; }
   .crave__nav { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {

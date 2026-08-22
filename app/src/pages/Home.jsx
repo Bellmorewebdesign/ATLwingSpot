@@ -2,6 +2,7 @@ import { Seo } from '../components/Seo'
 import { Hero } from '../components/Hero'
 import { WordStripe } from '../components/WordStripe'
 import { CraveTrack } from '../components/CraveTrack'
+import { SpreadBand } from '../components/SpreadBand'
 import { SauceZoom } from '../components/SauceZoom'
 import { FlavorStage } from '../components/FlavorStage'
 import { CrewCalc } from '../components/CrewCalc'
@@ -28,6 +29,8 @@ export default function Home() {
       <WordStripe words={BOX_WORDS} tone="cyan" size="md" />
       {/* dark, horizontal */}
       <CraveTrack />
+      {/* warm cream — official studio photography, backgrounds blend in */}
+      <SpreadBand />
       {/* signature scroll moment: fall through the slogan into the sauce */}
       <SauceZoom />
       {/* reactive colour */}

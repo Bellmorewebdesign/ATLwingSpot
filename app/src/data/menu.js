@@ -19,15 +19,30 @@ export const MENU_CATEGORIES = [
 ]
 
 const img = {
+  // ---- Official ATL photography (supplied by the client). Primary. ----
+  offWings:        'assets/food/official/official-bone-in-wings.webp',
+  offWings30:      'assets/food/official/official-wings-30pc.webp',
+  offBoneless:     'assets/food/official/official-boneless-20pc.webp',
+  offDrip:         'assets/food/official/official-saucy-chicken-drip.webp',
+  offPebbleWaffle: 'assets/food/official/official-fruity-pebbles-chicken-waffles.webp',
+  offOreoWaffle:   'assets/food/official/official-oreo-chicken-waffles.webp',
+  offClassicSand:  'assets/food/official/official-classic-chicken-sandwich.webp',
+  offBuffaloSand:  'assets/food/official/official-buffalo-ranch-sandwich.webp',
+  offChipQues:     'assets/food/official/official-chipotle-chicken-quesadilla.webp',
+  offQuesStack:    'assets/food/official/official-quesadilla-stack.webp',
+  offOreoShake:    'assets/food/official/official-oreo-shake.webp',
+  offPebbleShake:  'assets/food/official/official-fruity-pebbles-shake.webp',
+  offCtcShake:     'assets/food/official/official-cinnamon-toast-crunch-shake.webp',
+  offSpread:       'assets/food/official/official-menu-spread.webp',
+
+  // ---- Legacy assets, kept where a transparent cutout or a full-frame
+  // ---- photo does something the studio-on-white shots cannot.
   hero: 'assets/food/hero-wings.jpg',
-  wings: 'assets/food/wings-basket-cutout.png',
   boneless: 'assets/food/boneless-combo.jpg',
   tenders: 'assets/food/saucy-tenders.jpg',
   tendersCut: 'assets/food/crispy-tenders-cutout.png',
-  waffles: 'assets/food/fruity-pebbles-chicken-waffles.jpg',
   wafflesCut: 'assets/food/chicken-waffles-cutout.png',
   sandwich: 'assets/food/chipotle-chicken-sandwich.jpg',
-  shakes: 'assets/food/shakes-lineup.png',
   oreos: 'assets/food/fried-oreos.png',
   corn: 'assets/food/cajun-corn-cutout.png',
 }
@@ -54,6 +69,7 @@ export const MENU_ITEMS = [
   {
     id: 'chipotle-quesadilla', cat: 'starters', name: 'Chipotle Chicken Quesadilla', price: '$9.99',
     desc: 'Crispy boneless chicken, house chipotle sauce, cheddar cheese and ranch.',
+    image: img.offChipQues, feature: true,
   },
   {
     id: 'buffalo-quesadilla', cat: 'starters', name: 'Crispy Buffalo Chicken Quesadilla', price: '$9.99',
@@ -72,12 +88,12 @@ export const MENU_ITEMS = [
   {
     id: 'wings-6-combo', cat: 'wings', name: '6pc Bone-In Wings Combo Meal', price: '$13.99',
     desc: 'Six fresh, never frozen bone-in wings sauced in your pick of 25+ sauces, plus a side and a drink.',
-    image: img.wings, feature: true, hero: true,
+    image: img.offWings, feature: true, hero: true,
   },
   {
     id: 'wings-10-combo', cat: 'wings', name: '10pc Bone-In Wings Combo', price: '$17.99',
     desc: 'Ten bone-in wings, one flavor decision. Comes with a side and a drink.',
-    image: img.hero, feature: true,
+    image: img.offWings30, feature: true,
   },
   { id: 'wings-4', cat: 'wings', name: '4 Bone-In Wings', price: '$6.99', desc: 'Fresh, never frozen. Pick a flavor, pick a dip.' },
   { id: 'wings-6', cat: 'wings', name: '6 Bone-In Wings', price: '$9.99', desc: 'Fresh, never frozen. Sauced or dry-rubbed.' },
@@ -90,12 +106,11 @@ export const MENU_ITEMS = [
   {
     id: 'boneless-6-combo', cat: 'boneless', name: '6pc Boneless Wings Combo', price: '$12.99',
     desc: 'Hand-breaded white-meat boneless wings, fresh never frozen, with a side and a drink.',
-    image: img.boneless, feature: true,
+    image: img.offBoneless, feature: true,
   },
   {
     id: 'boneless-10-combo', cat: 'boneless', name: '10pc Boneless Wings Combo', price: '$16.99',
     desc: 'Ten boneless, sauced your way, with a side and a drink.',
-    image: img.boneless,
   },
   { id: 'boneless-4', cat: 'boneless', name: '4 Boneless Wings', price: '$5.99', desc: 'Fresh, never frozen white-meat chicken, hand breaded and fried.' },
   { id: 'boneless-6', cat: 'boneless', name: '6 Boneless Wings', price: '$7.99', desc: 'Hand-breaded white meat. Any flavor.' },
@@ -108,7 +123,7 @@ export const MENU_ITEMS = [
   {
     id: 'tenders-3', cat: 'tenders', name: '3 Saucy Tenders', price: '$8.99',
     desc: 'Fresh, hand-breaded jumbo tenders. Sauced, or sauce on the side.',
-    image: img.tenders, feature: true,
+    image: img.offDrip, feature: true,
   },
   { id: 'tenders-5', cat: 'tenders', name: '5 Saucy Tenders', price: '$11.99', desc: 'Jumbo tenders, hand breaded, tossed to order.' },
   { id: 'tenders-10', cat: 'tenders', name: '10 Saucy Tenders', price: '$21.99', desc: 'Ten jumbo tenders. Sauced or on the side.' },
@@ -127,11 +142,12 @@ export const MENU_ITEMS = [
   {
     id: 'waffles-oreo', cat: 'waffles', name: "Oreo Chicken N' Waffles", price: '$14.99',
     desc: 'Waffle loaded with crushed Oreo, powdered sugar, crispy chicken.',
+    image: img.offOreoWaffle, feature: true,
   },
   {
     id: 'waffles-pebbles', cat: 'waffles', name: "Fruity Pebbles Chicken N' Waffles", price: '$14.99',
     desc: 'Fruity Pebbles waffle, powdered sugar, crispy chicken. The one people film.',
-    image: img.waffles, feature: true, hero: true, badge: 'Viral',
+    image: img.offPebbleWaffle, feature: true, hero: true, badge: 'Viral',
   },
   {
     id: 'waffles-ctc', cat: 'waffles', name: "Cinnamon Toast Crunch Chicken N' Waffles", price: '$14.99',
@@ -153,7 +169,11 @@ export const MENU_ITEMS = [
     desc: 'Crispy chicken, house chipotle sauce, on a toasted bun.',
     image: img.sandwich, feature: true, hero: true,
   },
-  { id: 'sandwich-deluxe', cat: 'sandwiches', name: 'Chicken Deluxe', price: '$7.99', desc: 'The classic crispy chicken sandwich, done right.', image: img.sandwich },
+  {
+    id: 'sandwich-deluxe', cat: 'sandwiches', name: 'Chicken Deluxe', price: '$7.99',
+    desc: 'The classic crispy chicken sandwich, done right.',
+    image: img.offClassicSand, feature: true,
+  },
 
   // ---------------- FRIES + MUNCHIES ----------------
   { id: 'fries-waffle', cat: 'fries', name: 'Waffle Fries', price: '$3.99', desc: 'Crispy waffle-cut fries.' },
@@ -168,7 +188,7 @@ export const MENU_ITEMS = [
   {
     id: 'milkshake', cat: 'desserts', name: 'Milkshake', price: '$6.99',
     desc: 'Reese’s, Fruity Pebbles, Oreo Blast, Cinnamon Toast Crunch, Chocolate, Vanilla, or Strawberry Shortcake.',
-    image: img.shakes, feature: true, hero: true, badge: '7 Flavors',
+    image: img.offCtcShake, feature: true, hero: true, badge: '7 Flavors',
   },
   { id: 'fried-oreos', cat: 'desserts', name: 'Fried Oreos', price: '$4.99', desc: 'Golden, powdered, dangerous. Served warm.', image: img.oreos, feature: true },
   { id: 'funnel-fries', cat: 'desserts', name: 'Funnel Cake Fries', price: '$4.99', desc: 'Funnel cake, fry-shaped, powdered sugar.' },

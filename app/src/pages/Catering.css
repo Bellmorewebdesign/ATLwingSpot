@@ -63,3 +63,20 @@
   .cat__food { width: 72vw; right: -22%; bottom: -10%; opacity: 0.55; }
   .cat__cta { width: 100%; }
 }
+
+/* Wide official wings shot: white studio ground blends into the warm section */
+.cat__wide { padding-block: clamp(1.5rem, 4vw, 3rem); text-align: center; }
+.cat__wide img {
+  width: 100%;
+  max-width: 1500px;
+  height: auto;
+  margin-inline: auto;
+}
+.cat__wide-cap {
+  margin-top: 0.6rem;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}

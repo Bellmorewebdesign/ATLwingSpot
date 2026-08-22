@@ -56,9 +56,9 @@ export default function Story() {
       </section>
 
       <section className="story-p__feast" aria-hidden="true">
-        <img src={asset('assets/food/fruity-pebbles-chicken-waffles.jpg')} alt="" loading="lazy" />
-        <img src={asset('assets/food/hero-wings.jpg')} alt="" loading="lazy" />
-        <img src={asset('assets/food/saucy-tenders.jpg')} alt="" loading="lazy" />
+        <img src={asset('assets/food/official/official-bone-in-wings.webp')} alt="" loading="lazy" />
+        <img src={asset('assets/food/official/official-chipotle-chicken-quesadilla.webp')} alt="" loading="lazy" />
+        <img src={asset('assets/food/official/official-fruity-pebbles-chicken-waffles.webp')} alt="" loading="lazy" />
       </section>
 
       <section className="sec ch-dark story-p__end">

@@ -1,0 +1,85 @@
+.spread { padding-block: clamp(3.5rem, 8vw, 7rem); overflow: hidden; }
+
+.spread__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  flex-wrap: wrap;
+  margin-bottom: clamp(1.2rem, 3vw, 2rem);
+}
+.spread__title { color: var(--ink); }
+
+/* The spread is the point of the section — give it the width */
+.spread__shot {
+  margin-inline: calc(-1 * clamp(0rem, 2vw, 2.5rem));
+}
+.spread__shot img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ---- shakes ---- */
+.spread__shakes { margin-top: clamp(2rem, 5vw, 3.5rem); }
+.shakes__label p {
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 1rem;
+}
+
+.shakes__row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(0.6rem, 2vw, 1.6rem);
+  align-items: end;
+}
+.shake { display: flex; flex-direction: column; align-items: center; }
+/* stagger so it reads as a shot, not three equal cards */
+.shake:nth-child(2) { transform: translateY(-6%); }
+.shake:nth-child(3) { transform: translateY(3%); }
+
+.shake__img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  display: grid;
+  place-items: center;
+}
+.shake__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform var(--t-slow) var(--ease);
+}
+.shake:hover .shake__img img { transform: translateY(-6px) scale(1.03); }
+
+.shake__name {
+  margin-top: 0.5rem;
+  font-weight: 800;
+  font-size: clamp(0.7rem, 1.6vw, 0.85rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .shakes__row {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    gap: 0.8rem;
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+  }
+  .shakes__row::-webkit-scrollbar { display: none; }
+  .shake { flex: 0 0 auto; width: 58vw; scroll-snap-align: center; transform: none !important; }
+  .spread__cta { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shake__img img { transition: none; }
+}

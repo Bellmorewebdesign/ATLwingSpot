@@ -5,13 +5,22 @@ import { asset } from '../lib/asset'
 import { ArrowRight, ArrowLeft } from './Icons'
 import './CraveTrack.css'
 
+/**
+ * Official ATL product photography. Every shot is lit on white, so each panel
+ * is a WHITE card: the studio background matches the card exactly and leaves no
+ * visible rectangle against the dark section. Captions sit under the image so no
+ * scrim ever greys out the food.
+ *
+ * `official-quesadilla-stack` has no confirmed product identity, so it is used
+ * at category level only.
+ */
 const PANELS = [
-  { cat: 'wings',      name: 'Bone-In\nWings',    line: 'Fresh, never frozen. Fried to order, sauced to order.', img: 'assets/food/hero-wings.jpg' },
-  { cat: 'boneless',   name: 'Boneless',          line: 'All white meat, hand breaded, same 25+ sauces.',        img: 'assets/food/boneless-combo.jpg', focus: '22% 72%' },
-  { cat: 'tenders',    name: 'Saucy\nTenders',    line: 'Jumbo tenders. Sauced, or sauce on the side.',          img: 'assets/food/saucy-tenders.jpg' },
-  { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch.',      img: 'assets/food/fruity-pebbles-chicken-waffles.jpg' },
-  { cat: 'fries',      name: 'Sides +\nMunchies', line: 'Cajun corn, loaded waffle fries, mozzarella sticks.',   img: 'assets/food/cajun-corn-cutout.png', contain: true },
-  { cat: 'desserts',   name: 'Shakes +\nSweets',  line: 'Seven shakes, fried Oreos, funnel cake fries.',         img: 'assets/food/shakes-lineup.webp', contain: true },
+  { cat: 'wings',      name: 'Bone-In\nWings',      line: 'Fresh, never frozen. Fried to order, sauced to order.', img: 'assets/food/official/official-bone-in-wings.webp' },
+  { cat: 'boneless',   name: 'Boneless',            line: 'All white meat, hand breaded, same 25+ sauces.',        img: 'assets/food/official/official-boneless-20pc.webp' },
+  { cat: 'tenders',    name: 'Saucy\nTenders',      line: 'Jumbo tenders, sauced to order.',                       img: 'assets/food/official/official-saucy-chicken-drip.webp' },
+  { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch.',        img: 'assets/food/official/official-fruity-pebbles-chicken-waffles.webp' },
+  { cat: 'sandwiches', name: 'Sandwiches',          line: 'Crispy chicken, ranch, pickles, a proper bun.',         img: 'assets/food/official/official-buffalo-ranch-sandwich.webp' },
+  { cat: 'starters',   name: 'Quesadillas',         line: 'Chicken and cheddar, pressed and stacked.',             img: 'assets/food/official/official-quesadilla-stack.webp' },
 ]
 
 export function CraveTrack() {
@@ -60,15 +69,14 @@ export function CraveTrack() {
       <ul className="crave__rail" ref={railRef} tabIndex={0} aria-label="Menu categories, scroll horizontally">
         {PANELS.map((p) => (
           <li className="crave__panel" key={p.cat}>
-            <div className={`crave__media ${p.contain ? 'is-contain' : ''}`}>
-              <img src={asset(p.img)} alt={p.name.replace('\n', ' ')} loading="lazy" decoding="async"
-                style={p.focus ? { objectPosition: p.focus } : undefined} />
+            <div className="crave__media">
+              <img src={asset(p.img)} alt={p.name.replace('\n', ' ')} loading="lazy" decoding="async" />
             </div>
             <div className="crave__body">
               <h3 className="dsp crave__name">{p.name.split('\n').map((l, i) => <span key={i}>{l}</span>)}</h3>
               <p className="crave__line">{p.line}</p>
               <div className="crave__links">
-                <Link className="btn btn-cream btn-sm" to={`/menu?cat=${p.cat}`}>See it</Link>
+                <Link className="btn btn-ink btn-sm" to={`/menu?cat=${p.cat}`}>See it</Link>
                 <a className="btn btn-line btn-sm" href={ORDER_URL} target="_blank" rel="noopener noreferrer">Order</a>
               </div>
             </div>

@@ -44,6 +44,17 @@ export default function Catering() {
         </div>
       </header>
 
+      <section className="cat__wide ch-paper" aria-label="Wings by the tray">
+        <img
+          src={asset('assets/food/official/official-wings-30pc.webp')}
+          alt="Three trays of ATL wings in different sauces"
+          width="1800" height="712"
+          loading="lazy"
+          decoding="async"
+        />
+        <p className="cat__wide-cap">Thirty wings, three sauces. Scale it from there.</p>
+      </section>
+
       <section className="sec ch-cream">
         <div className="wrap">
           <h2 className="dsp dsp-sm cat__h2">Trays</h2>
