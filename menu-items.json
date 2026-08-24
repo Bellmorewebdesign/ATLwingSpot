@@ -1,0 +1,619 @@
+{
+  "source_page": "https://www.atlwingspot.com/menu/",
+  "scraped_on": "2026-08-24",
+  "item_count": 68,
+  "items": [
+    {
+      "category": "starters",
+      "description": "Bite-sized golden treats with a crispy exterior and a creamy, cheesy mac and cheese center.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Mac-N-Cheese-Bites-e1746183930370.jpg",
+      "index": 1,
+      "title": "Mac N Cheese Bites",
+      "local_image": "images/mac-n-cheese-bites-e1746183930370.jpg",
+      "web_image": "images-web/mac-n-cheese-bites-e1746183930370.jpg"
+    },
+    {
+      "category": "starters",
+      "description": "Our fan favorite Cajun fried corn! Juicy ears of corn on the cob fried till golden and tossed in our famous cajun rub! Served with ranch.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Cajun-Fried-Corn.jpg",
+      "index": 2,
+      "title": "Cajun Fried Corn (Fan Favourite)",
+      "local_image": "images/cajun-fried-corn.jpg",
+      "web_image": "images-web/cajun-fried-corn.jpg"
+    },
+    {
+      "category": "starters",
+      "description": "Served with Thai chili sauce.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/7fa67d84-4eb6-44ee-b868-fd74d7cbf451-retina-large.avif",
+      "index": 3,
+      "title": "Crispy Coconut Shrimp",
+      "local_image": "images/7fa67d84-4eb6-44ee-b868-fd74d7cbf451-retina-large.avif",
+      "web_image": "images-web/7fa67d84-4eb6-44ee-b868-fd74d7cbf451-retina-large.webp"
+    },
+    {
+      "category": "starters",
+      "description": "Includes marinara sauce",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Mozzarella-Sticks.jpg",
+      "index": 4,
+      "title": "Mozzarella Sticks (6)",
+      "local_image": "images/mozzarella-sticks.jpg",
+      "web_image": "images-web/mozzarella-sticks.jpg"
+    },
+    {
+      "category": "quesadillas",
+      "description": "Crispy boneless chicken topped with our housemade chipotle sauce, cheddar cheese, and ranch!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Chipotle-Chicken-Quesadilla-scaled.webp",
+      "index": 5,
+      "title": "Chipotle Chicken Quesadilla",
+      "local_image": "images/chipotle-chicken-quesadilla-scaled.webp",
+      "web_image": "images-web/chipotle-chicken-quesadilla-scaled.webp"
+    },
+    {
+      "category": "quesadillas",
+      "description": "Served with sour cream",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Cheddar-Cheese-Quesadilla.png",
+      "index": 6,
+      "title": "Cheddar Cheese Quesadilla",
+      "local_image": "images/cheddar-cheese-quesadilla.png",
+      "web_image": "images-web/cheddar-cheese-quesadilla.png"
+    },
+    {
+      "category": "quesadillas",
+      "description": "Grilled chicken, cheddar cheese, green peppers, & onions. Served with sour scream!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Loaded-Chicken-Quesadilla-e1746184121941.png",
+      "index": 7,
+      "title": "Loaded Chicken Quesadilla",
+      "local_image": "images/loaded-chicken-quesadilla-e1746184121941.png",
+      "web_image": "images-web/loaded-chicken-quesadilla-e1746184121941.png"
+    },
+    {
+      "category": "quesadillas",
+      "description": "Crispy buffalo chicken and cheddar cheese topped with ranch. Served with ranch on the side.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Crispy-Buffalo-Chicken-Quesadilla.png",
+      "index": 8,
+      "title": "Crispy Buffalo Chicken Quesadilla",
+      "local_image": "images/crispy-buffalo-chicken-quesadilla.png",
+      "web_image": "images-web/crispy-buffalo-chicken-quesadilla.png"
+    },
+    {
+      "category": "traditional",
+      "description": "6 of our Classic Bone-in wings! Always fresh never frozen. Choose from over 30 flavors! Served with your choice of side, beverage, and dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/6pc-Bone-In-Wings-Combo-Meal.jpg",
+      "index": 9,
+      "title": "6pc Bone In Wings Combo Meal",
+      "local_image": "images/6pc-bone-in-wings-combo-meal.jpg",
+      "web_image": "images-web/6pc-bone-in-wings-combo-meal.jpg"
+    },
+    {
+      "category": "traditional",
+      "description": "10 of our Classic Bone-in wings! Always fresh never frozen. Choose from over 30 flavors! Served with your choice of side, beverage, and dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/6pc-Bone-In-Wings-Combo-Meal.jpg",
+      "index": 10,
+      "title": "10pc Bone In Wings Combo",
+      "local_image": "images/6pc-bone-in-wings-combo-meal.jpg",
+      "web_image": "images-web/6pc-bone-in-wings-combo-meal.jpg"
+    },
+    {
+      "category": "traditional",
+      "description": "4 of our Classic Bone-in wings! Always fresh never frozen. Choose from over 25 flavors! Served with celery and your choice of dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Wings-e1746184196401.jpg",
+      "index": 11,
+      "title": "4 Bone In Wings",
+      "local_image": "images/wings-e1746184196401.jpg",
+      "web_image": "images-web/wings-e1746184196401.jpg"
+    },
+    {
+      "category": "traditional",
+      "description": "6 of our Classic Bone-in wings! Always fresh never frozen. Choose from over 25 flavors! Served with celery and your choice of dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Wings-e1746184196401.jpg",
+      "index": 12,
+      "title": "6 Pieces Wings",
+      "local_image": "images/wings-e1746184196401.jpg",
+      "web_image": "images-web/wings-e1746184196401.jpg"
+    },
+    {
+      "category": "traditional",
+      "description": "10 of our Classic Bone-in wings! Always fresh never frozen. Choose from over 25 flavors! Served with celery and your choice of dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Wings-e1746184196401.jpg",
+      "index": 13,
+      "title": "10 Pieces Wings",
+      "local_image": "images/wings-e1746184196401.jpg",
+      "web_image": "images-web/wings-e1746184196401.jpg"
+    },
+    {
+      "category": "traditional",
+      "description": "20 of our Classic Bone-in wings! Always fresh never frozen. Choose from over 25 flavors! Served with celery and your choice of dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Wings-e1746184196401.jpg",
+      "index": 14,
+      "title": "20 Pieces Wings",
+      "local_image": "images/wings-e1746184196401.jpg",
+      "web_image": "images-web/wings-e1746184196401.jpg"
+    },
+    {
+      "category": "traditional",
+      "description": "50 of our Classic Bone-in wings! Always fresh never frozen. Choose from over 25 flavors! Served with celery and your choice of dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/50-Bone-in-Wings.avif",
+      "index": 15,
+      "title": "50 Bone in Wings",
+      "local_image": "images/50-bone-in-wings.avif",
+      "web_image": "images-web/50-bone-in-wings.webp"
+    },
+    {
+      "category": "traditional",
+      "description": "100 of our Classic Bone-in wings! Always fresh never frozen. Choose from over 25 flavors! Served with celery and your choice of dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/50-Bone-in-Wings.avif",
+      "index": 16,
+      "title": "100 Bone in Wings",
+      "local_image": "images/50-bone-in-wings.avif",
+      "web_image": "images-web/50-bone-in-wings.webp"
+    },
+    {
+      "category": "boneless",
+      "description": "Our fan favorite boneless wings, now in a COMBO! Fresh never frozen white meat chicken hand breaded and fried till golden brown. Served with your choice of sauce, side order, beverage, and dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/6pc-Boneless-Wings-Combo.jpg",
+      "index": 17,
+      "title": "6pc Boneless Wings Combo",
+      "local_image": "images/6pc-boneless-wings-combo.jpg",
+      "web_image": "images-web/6pc-boneless-wings-combo.jpg"
+    },
+    {
+      "category": "boneless",
+      "description": "Our fan favorite boneless wings, now in a COMBO! Fresh never frozen white meat chicken hand breaded and fried till golden brown. Served with your choice of sauce, side order, beverage, and dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/6pc-Boneless-Wings-Combo.jpg",
+      "index": 18,
+      "title": "10pc Boneless Wings Combo",
+      "local_image": "images/6pc-boneless-wings-combo.jpg",
+      "web_image": "images-web/6pc-boneless-wings-combo.jpg"
+    },
+    {
+      "category": "boneless",
+      "description": "Our fan favorite boneless wings! Fresh never frozen white meat chicken hand breaded and fried till golden brown. Choose your sauce and dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/4-Boneless-Wings.jpg",
+      "index": 19,
+      "title": "4 Boneless Wings",
+      "local_image": "images/4-boneless-wings.jpg",
+      "web_image": "images-web/4-boneless-wings.jpg"
+    },
+    {
+      "category": "boneless",
+      "description": "Our fan favorite boneless wings! Fresh never frozen white meat chicken hand breaded and fried till golden brown. Choose your sauce and dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/4-Boneless-Wings.jpg",
+      "index": 20,
+      "title": "6 Boneless Wings",
+      "local_image": "images/4-boneless-wings.jpg",
+      "web_image": "images-web/4-boneless-wings.jpg"
+    },
+    {
+      "category": "boneless",
+      "description": "Our fan favorite boneless wings! Fresh never frozen white meat chicken hand breaded and fried till golden brown. Choose your sauce and dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/4-Boneless-Wings.jpg",
+      "index": 21,
+      "title": "10 Boneless Wings",
+      "local_image": "images/4-boneless-wings.jpg",
+      "web_image": "images-web/4-boneless-wings.jpg"
+    },
+    {
+      "category": "boneless",
+      "description": "Our fan favorite boneless wings! Fresh never frozen white meat chicken hand breaded and fried till golden brown. Choose your sauce and dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/4-Boneless-Wings.jpg",
+      "index": 22,
+      "title": "20 Boneless Wings",
+      "local_image": "images/4-boneless-wings.jpg",
+      "web_image": "images-web/4-boneless-wings.jpg"
+    },
+    {
+      "category": "boneless",
+      "description": "Our fan favorite boneless wings! Fresh never frozen white meat chicken hand breaded and fried till golden brown. Choose your sauce and dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/50-Boneless-Wings.jpg",
+      "index": 23,
+      "title": "50 Boneless Wings",
+      "local_image": "images/50-boneless-wings.jpg",
+      "web_image": "images-web/50-boneless-wings.jpg"
+    },
+    {
+      "category": "boneless",
+      "description": "Our fan favorite boneless wings! Fresh never frozen white meat chicken hand breaded and fried till golden brown. Choose your sauce and dip!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/50-Boneless-Wings.jpg",
+      "index": 24,
+      "title": "100 Boneless Wings",
+      "local_image": "images/50-boneless-wings.jpg",
+      "web_image": "images-web/50-boneless-wings.jpg"
+    },
+    {
+      "category": "tenders",
+      "description": "3 of our hand breaded Jumbo Tenders! Choose your favorite sauce and have them sauced or sauce on the side!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/3-Jumbo-Tenders.jpg",
+      "index": 25,
+      "title": "3 Saucy Tenders",
+      "local_image": "images/3-jumbo-tenders.jpg",
+      "web_image": "images-web/3-jumbo-tenders.jpg"
+    },
+    {
+      "category": "tenders",
+      "description": "5 of our hand breaded Jumbo Tenders! Choose your favorite sauce and have them sauced or sauce on the side!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/5-Jumbo-Tenders.jpg",
+      "index": 26,
+      "title": "5 Saucy Tenders",
+      "local_image": "images/5-jumbo-tenders.jpg",
+      "web_image": "images-web/5-jumbo-tenders.jpg"
+    },
+    {
+      "category": "tenders",
+      "description": "10 of our hand breaded Jumbo Tenders! Choose your favorite sauces and have them sauced or sauce on the side!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/10-Jumbo-Tenders.avif",
+      "index": 27,
+      "title": "10 Saucy Tenders",
+      "local_image": "images/10-jumbo-tenders.avif",
+      "web_image": "images-web/10-jumbo-tenders.webp"
+    },
+    {
+      "category": "tenders",
+      "description": "20 of our hand breaded Jumbo Tenders! Choose your favorite sauces and have them sauced or sauce on the side!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/20-Jumbo-Tenders.avif",
+      "index": 28,
+      "title": "20 Saucy Tenders",
+      "local_image": "images/20-jumbo-tenders.avif",
+      "web_image": "images-web/20-jumbo-tenders.webp"
+    },
+    {
+      "category": "tenders",
+      "description": "50 of our hand breaded Jumbo Tenders! Choose your favorite sauces and have them sauced or sauce on the side!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/50-Jumbo-Tenders.avif",
+      "index": 29,
+      "title": "50 Saucy Tenders",
+      "local_image": "images/50-jumbo-tenders.avif",
+      "web_image": "images-web/50-jumbo-tenders.webp"
+    },
+    {
+      "category": "tenders",
+      "description": "100 of our hand breaded Jumbo Tenders! Choose your favorite sauces and have them sauced or sauce on the side!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/50-Jumbo-Tenders.avif",
+      "index": 30,
+      "title": "100 Saucy Tenders",
+      "local_image": "images/50-jumbo-tenders.avif",
+      "web_image": "images-web/50-jumbo-tenders.webp"
+    },
+    {
+      "category": "tenders",
+      "description": "3 of our hand breaded Jumbo Tenders! Choose your favorite sauce and have them sauced or sauce on the side! Served with your choice of side and drink!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/3pc-Tender-Combo.webp",
+      "index": 31,
+      "title": "3pc Tender Combo",
+      "local_image": "images/3pc-tender-combo.webp",
+      "web_image": "images-web/3pc-tender-combo.webp"
+    },
+    {
+      "category": "tenders",
+      "description": "5 of our hand breaded Jumbo Tenders! Choose your favorite sauce and have them sauced or sauce on the side! Served with your choice of side and drink!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/3pc-Tender-Combo.webp",
+      "index": 32,
+      "title": "5pc Tender Combo",
+      "local_image": "images/3pc-tender-combo.webp",
+      "web_image": "images-web/3pc-tender-combo.webp"
+    },
+    {
+      "category": "chicken-n-waffles",
+      "description": "3 Crispy Chicken Tenders Served over a warm waffle topped with powdered sugar. Served with syrup on the side.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Chicken-N-Waffles.avif",
+      "index": 33,
+      "title": "Chicken N’ Waffles",
+      "local_image": "images/chicken-n-waffles.avif",
+      "web_image": "images-web/chicken-n-waffles.webp"
+    },
+    {
+      "category": "chicken-n-waffles",
+      "description": "3 hand breaded Chicken Tenders served with a crispy Oreo waffle topped with powdered sugar and chocolate syrup. Served with syrup on the side.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Oreo-Chicken-N-Waffles.png",
+      "index": 34,
+      "title": "Oreo Chicken N’ Waffles",
+      "local_image": "images/oreo-chicken-n-waffles.png",
+      "web_image": "images-web/oreo-chicken-n-waffles.png"
+    },
+    {
+      "category": "chicken-n-waffles",
+      "description": "3 hand breaded Chicken Tenders served with a crispy Fruity Pebbles waffle topped with powdered sugar and strawberry syrup. Served with syrup on the side.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Fruity-Pebbles-Chicken-N-Waffles.jpg",
+      "index": 35,
+      "title": "Fruity Pebbles Chicken N’ Waffles",
+      "local_image": "images/fruity-pebbles-chicken-n-waffles.jpg",
+      "web_image": "images-web/fruity-pebbles-chicken-n-waffles.jpg"
+    },
+    {
+      "category": "chicken-n-waffles",
+      "description": "3 hand breaded Chicken Tenders served with a crispy Cinnamon Toast Crunch waffle topped with powdered sugar and caramel syrup. Served with syrup on the side.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Cinnamon-Toast-Crunch-Chicken-N-Waffles.webp",
+      "index": 36,
+      "title": "Cinnamon Toast Crunch Chicken N’ Waffles",
+      "local_image": "images/cinnamon-toast-crunch-chicken-n-waffles.webp",
+      "web_image": "images-web/cinnamon-toast-crunch-chicken-n-waffles.webp"
+    },
+    {
+      "category": "chicken-n-waffles",
+      "description": "The OG. Our original waffle topped with powdered sugar. Served with syrup on the side.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Cinnamon-Toast-Crunch-Chicken-N-Waffles.webp",
+      "index": 37,
+      "title": "Waffle",
+      "local_image": "images/cinnamon-toast-crunch-chicken-n-waffles.webp",
+      "web_image": "images-web/cinnamon-toast-crunch-chicken-n-waffles.webp"
+    },
+    {
+      "category": "chicken-n-waffles",
+      "description": "Crispy oreo waffle topped with Hershey’s syrup, powdered suqar, and more OREOS!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Oreo-Waffle.png",
+      "index": 38,
+      "title": "Oreo Waffle",
+      "local_image": "images/oreo-waffle.png",
+      "web_image": "images-web/oreo-waffle.png"
+    },
+    {
+      "category": "chicken-n-waffles",
+      "description": "Crispy Fruity Pebbles waffle topped with strawberry syrup, powdered suqar, and more FRUITY PEBBLES!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Fruity-Pebbles-Waffle.png",
+      "index": 39,
+      "title": "Fruity Pebbles Waffle",
+      "local_image": "images/fruity-pebbles-waffle.png",
+      "web_image": "images-web/fruity-pebbles-waffle.png"
+    },
+    {
+      "category": "chicken-n-waffles",
+      "description": "Crispy Cinnamon Toast Crunch waffle topped with caramel syrup, powdered suqar, and more Cinnamon Toast Crunch!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Cinnamon-Toast-Crunch-Waffle.png",
+      "index": 40,
+      "title": "Cinnamon Toast Crunch Waffle",
+      "local_image": "images/cinnamon-toast-crunch-waffle.png",
+      "web_image": "images-web/cinnamon-toast-crunch-waffle.png"
+    },
+    {
+      "category": "wraps",
+      "description": "Crispy boneless chicken topped with cheddar cheese, lettuce, tomatoes, and honey mustard.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Honey-Mustard-Wrap-scaled.webp",
+      "index": 41,
+      "title": "Honey Mustard Wrap",
+      "local_image": "images/honey-mustard-wrap-scaled.webp",
+      "web_image": "images-web/honey-mustard-wrap-scaled.webp"
+    },
+    {
+      "category": "wraps",
+      "description": "Crispy Buffalo Chicken topped with lettuce, tomatoes and ranch dressing.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Buffalo-Ranch-Chicken-Wrap.jpg",
+      "index": 42,
+      "title": "Buffalo Ranch Chicken Wrap",
+      "local_image": "images/buffalo-ranch-chicken-wrap.jpg",
+      "web_image": "images-web/buffalo-ranch-chicken-wrap.jpg"
+    },
+    {
+      "category": "wraps",
+      "description": "Crispy chicken topped with chipotle sauce, lettuce, tomatoes, and cheddar cheese.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Chipotle-Chicken-Wrap.jpg",
+      "index": 43,
+      "title": "Chipotle Chicken Wrap",
+      "local_image": "images/chipotle-chicken-wrap.jpg",
+      "web_image": "images-web/chipotle-chicken-wrap.jpg"
+    },
+    {
+      "category": "burgers-n-sandwiches",
+      "description": "Crispy chicken on a brioche bun topped with chipotle sauce, lettuce, and tomato.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Chipotle-Chicken-Sandwich.jpg",
+      "index": 44,
+      "title": "Chipotle Chicken Sandwich",
+      "local_image": "images/chipotle-chicken-sandwich.jpg",
+      "web_image": "images-web/chipotle-chicken-sandwich.jpg"
+    },
+    {
+      "category": "burgers-n-sandwiches",
+      "description": "Fried chicken, american cheese, mayo, lettuce, & tomato on a brioche bun.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Chicken-Deluxe.png",
+      "index": 45,
+      "title": "Chicken Deluxe",
+      "local_image": "images/chicken-deluxe.png",
+      "web_image": "images-web/chicken-deluxe.png"
+    },
+    {
+      "category": "fries-n-munchies",
+      "description": "Golden waffle fries, available in small or large servings.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Waffle-Fries.webp",
+      "index": 46,
+      "title": "Waffle Fries",
+      "local_image": "images/waffle-fries.webp",
+      "web_image": "images-web/waffle-fries.webp"
+    },
+    {
+      "category": "fries-n-munchies",
+      "description": "Golden fries topped with melted cheddar cheese.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Cheese-Fries.webp",
+      "index": 47,
+      "title": "Cheese Fries",
+      "local_image": "images/cheese-fries.webp",
+      "web_image": "images-web/cheese-fries.webp"
+    },
+    {
+      "category": "fries-n-munchies",
+      "description": "Crispy, golden-battered onion rings, perfectly seasoned for a delightful crunch.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Battered-Onion-Rings.avif",
+      "index": 48,
+      "title": "Battered Onion Rings",
+      "local_image": "images/battered-onion-rings.avif",
+      "web_image": "images-web/battered-onion-rings.webp"
+    },
+    {
+      "category": "fries-n-munchies",
+      "description": "Loaded up with crispy chicken, buffalo sauce & ranch.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Buffalo-Ranch-Loaded-Waffle-Fries.avif",
+      "index": 49,
+      "title": "Buffalo Ranch Loaded Waffle Fries",
+      "local_image": "images/buffalo-ranch-loaded-waffle-fries.avif",
+      "web_image": "images-web/buffalo-ranch-loaded-waffle-fries.webp"
+    },
+    {
+      "category": "fries-n-munchies",
+      "description": "Waffle fries loaded up with crispy chicken topped with Nashville hot sauce and ranch!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Cajun-Fried-Corn.jpg",
+      "index": 50,
+      "title": "Nashville Hot Loaded Waffle Fries",
+      "local_image": "images/cajun-fried-corn.jpg",
+      "web_image": "images-web/cajun-fried-corn.jpg"
+    },
+    {
+      "category": "fries-n-munchies",
+      "description": "Sweet potato fries available in small or large sizes.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Sweet-Potato-Fries.webp",
+      "index": 51,
+      "title": "Sweet Potato Fries",
+      "local_image": "images/sweet-potato-fries.webp",
+      "web_image": "images-web/sweet-potato-fries.webp"
+    },
+    {
+      "category": "fries-n-munchies",
+      "description": "Loaded up with crispy chicken, pineapple BBQ sauce, & ranch!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/BBQ-Loaded-Waffle-Fries.avif",
+      "index": 52,
+      "title": "BBQ Loaded Waffle Fries",
+      "local_image": "images/bbq-loaded-waffle-fries.avif",
+      "web_image": "images-web/bbq-loaded-waffle-fries.webp"
+    },
+    {
+      "category": "desserts-n-shakes",
+      "description": "SHAKE IT UP! With one of your fan favorite milkshakes. Choose from flavors like Reese’s, Fruity Pebbles, Oreo BLAST, Cinnamon Toast Crunch, or keep it classic with Hershey’s Chocolate, Vanilla, or Strawberry Shortcake!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Milkshake.avif",
+      "index": 53,
+      "title": "Milkshake",
+      "local_image": "images/milkshake.avif",
+      "web_image": "images-web/milkshake.webp"
+    },
+    {
+      "category": "desserts-n-shakes",
+      "description": "Crispy Cinnamon Toast Crunch waffle topped with caramel syrup, powdered suqar, and more Cinnamon Toast Crunch!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Cinnamon-Toast-Crunch-Waffle.png",
+      "index": 54,
+      "title": "Cinnamon Toast Crunch Waffle",
+      "local_image": "images/cinnamon-toast-crunch-waffle.png",
+      "web_image": "images-web/cinnamon-toast-crunch-waffle.png"
+    },
+    {
+      "category": "desserts-n-shakes",
+      "description": "Crispy Fruity Pebbles waffle topped with strawberry syrup, powdered suqar, and more FRUITY PEBBLES!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Fruity-Pebbles-Waffle.avif",
+      "index": 55,
+      "title": "Fruity Pebbles Waffle",
+      "local_image": "images/fruity-pebbles-waffle.avif",
+      "web_image": "images-web/fruity-pebbles-waffle.webp"
+    },
+    {
+      "category": "desserts-n-shakes",
+      "description": "Crispy oreo waffle topped with Hershey’s syrup, powdered suqar, and more OREOS!",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Oreo-Waffle.avif",
+      "index": 56,
+      "title": "Oreo Waffle",
+      "local_image": "images/oreo-waffle.avif",
+      "web_image": "images-web/oreo-waffle.webp"
+    },
+    {
+      "category": "desserts-n-shakes",
+      "description": "Golden, crispy battered Oreos dusted with powdered sugar, offering a delightful blend of crunch and sweetness.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Fried-Oreos.avif",
+      "index": 57,
+      "title": "Fried Oreos",
+      "local_image": "images/fried-oreos.avif",
+      "web_image": "images-web/fried-oreos.webp"
+    },
+    {
+      "category": "desserts-n-shakes",
+      "description": "Lightly dusted with powdered sugar, these crispy funnel cake fries offer a sweet, crunchy treat.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Funnel-Cake-Fries.avif",
+      "index": 58,
+      "title": "Funnel Cake Fries (12)",
+      "local_image": "images/funnel-cake-fries.avif",
+      "web_image": "images-web/funnel-cake-fries.webp"
+    },
+    {
+      "category": "beverages",
+      "description": "Various sodas and bottled water options including Pepsi, Diet Pepsi, Orange Crush, Ginger Ale, Brisk Iced Tea, and Lemonade.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Bottled-Soda.avif",
+      "index": 59,
+      "title": "Can Soda",
+      "local_image": "images/bottled-soda.avif",
+      "web_image": "images-web/bottled-soda.webp"
+    },
+    {
+      "category": "beverages",
+      "description": "A crisp, satisfying taste to quench thirst and energize without caffeine",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Gatorade.avif",
+      "index": 60,
+      "title": "Gatorade",
+      "local_image": "images/gatorade.avif",
+      "web_image": "images-web/gatorade.webp"
+    },
+    {
+      "category": "beverages",
+      "description": "Pure and refreshing bottled water.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Bottled-Soda.avif",
+      "index": 61,
+      "title": "Bottled Water",
+      "local_image": "images/bottled-soda.avif",
+      "web_image": "images-web/bottled-soda.webp"
+    },
+    {
+      "category": "beverages",
+      "description": "Large soda selection: Pepsi, Crush Orange, Ginger Ale.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Large-Soda.avif",
+      "index": 62,
+      "title": "Large Soda",
+      "local_image": "images/large-soda.avif",
+      "web_image": "images-web/large-soda.webp"
+    },
+    {
+      "category": "beverages",
+      "description": "Selection of bottled sodas including classic Pepsi variants, Crush flavors, Mountain Dew Baja Blast, Country Time lemonades, Sunny D Fruit Punch, Brisk Iced Tea.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2024/10/Bottled-Soda.avif",
+      "index": 63,
+      "title": "Bottled Soda",
+      "local_image": "images/bottled-soda.avif",
+      "web_image": "images-web/bottled-soda.webp"
+    },
+    {
+      "category": "extras",
+      "description": "Every hero needs a side kick! Our ATL Wing Spot ranch is the perfect addition to any wing or munchie order.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Ranch-Cup.avif",
+      "index": 64,
+      "title": "Ranch Cup",
+      "local_image": "images/ranch-cup.avif",
+      "web_image": "images-web/ranch-cup.webp"
+    },
+    {
+      "category": "extras",
+      "description": "Cup of Blue Cheese Dip",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Blue-Cheese-Cup.avif",
+      "index": 65,
+      "title": "Blue Cheese Cup",
+      "local_image": "images/blue-cheese-cup.avif",
+      "web_image": "images-web/blue-cheese-cup.webp"
+    },
+    {
+      "category": "extras",
+      "description": "Add a side cup of your favorite sauce! (Did you know we have over 30!)",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Extra-Sauce-Cup.avif",
+      "index": 66,
+      "title": "Extra Sauce Cup",
+      "local_image": "images/extra-sauce-cup.avif",
+      "web_image": "images-web/extra-sauce-cup.webp"
+    },
+    {
+      "category": "extras",
+      "description": "Cup of Nacho Cheese Sauce",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Cheese-Sauce-Cup.avif",
+      "index": 67,
+      "title": "Cheese Sauce Cup",
+      "local_image": "images/cheese-sauce-cup.avif",
+      "web_image": "images-web/cheese-sauce-cup.webp"
+    },
+    {
+      "category": "extras",
+      "description": "Crisp celery stalks, freshly cut and ready as a refreshing side or snack.",
+      "image_url": "https://www.atlwingspot.com/wp-content/uploads/2025/03/Celery.avif",
+      "index": 68,
+      "title": "Celery",
+      "local_image": "images/celery.avif",
+      "web_image": "images-web/celery.webp"
+    }
+  ]
+}
