@@ -32,17 +32,17 @@
   margin-bottom: 0.3rem;
 }
 .tray__items { display: flex; flex-direction: column; }
+/* Name only — no price column, so the row is a plain listing rather than a
+   two-column layout with an empty right-hand side. */
 .tray__row {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
   gap: 1rem;
   padding-block: 0.8rem;
   border-bottom: 2px solid var(--line);
 }
 .tray__name { font-weight: 700; color: var(--ink); }
 .tray__name em { font-style: normal; color: var(--ink-mute); font-weight: 500; }
-.tray__price { font-family: var(--font-display); font-size: 1.3rem; color: var(--orange-deep); }
 
 .cat__form-wrap {
   display: grid;

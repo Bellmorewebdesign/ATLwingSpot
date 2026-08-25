@@ -50,7 +50,7 @@ export function Footer() {
         <div className="foot__legal">
           <p>© {year} ATL Wing Spot</p>
           <p className="foot__disc">
-            Website concept. Prices and availability vary by location. Ordering is handled on ATL&rsquo;s
+            Website concept. Availability varies by location. Ordering is handled on ATL&rsquo;s
             own ordering page.
           </p>
         </div>

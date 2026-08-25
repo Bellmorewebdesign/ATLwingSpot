@@ -1,7 +1,23 @@
-// Base menu dataset — mirrors ATL's current corporate menu.
-// Obvious typos cleaned ("suqar"->"sugar", "sour scream"->"sour cream").
-// Product claims are NOT materially altered.
-// Prices vary by location/platform — surfaced in the UI, never presented as universal.
+// ATL Wing Spot menu — generated from the official asset pack.
+//
+//   npm run menu:data      (app/scripts/build-menu-data.mjs)
+//
+// Source of truth: menu-items.json at the repo root, published by ATL. It holds
+// 68 listings mapped onto 51 official photographs; several sizes and
+// variations intentionally share one photo. Categories, names, the item-to-image
+// mapping and the substance of every description come from there.
+//
+// Descriptions are copy-edited only: typos fixed, shouting normalised, terminal
+// punctuation added, and sibling sizes made distinguishable from one another.
+// Where the source disagreed with itself about how many sauces exist ("over 30"
+// in some rows, "over 25" in others) the count is left out entirely rather than
+// guessed at.
+//
+// There is NO price field, by design — the customer-facing menu shows the name,
+// the description, the photo and the category, and nothing else.
+//
+// DO NOT EDIT BY HAND. Change the pack (or the copy table in the script) and
+// regenerate, or the next run will overwrite you.
 
 export const MENU_CATEGORIES = [
   { id: 'all', label: 'All' },
@@ -9,7 +25,8 @@ export const MENU_CATEGORIES = [
   { id: 'wings', label: 'Wings' },
   { id: 'boneless', label: 'Boneless Wings' },
   { id: 'tenders', label: 'Saucy Tenders' },
-  { id: 'waffles', label: "Chicken N' Waffles" },
+  { id: 'waffles', label: 'Chicken N\' Waffles' },
+  { id: 'quesadillas', label: 'Quesadillas' },
   { id: 'wraps', label: 'Wraps' },
   { id: 'sandwiches', label: 'Burgers & Sandwiches' },
   { id: 'fries', label: 'Fries N Munchies' },
@@ -18,192 +35,504 @@ export const MENU_CATEGORIES = [
   { id: 'extras', label: 'Extras' },
 ]
 
-const img = {
-  // ---- Official ATL photography (supplied by the client). Primary. ----
-  offWings:        'assets/food/official/official-bone-in-wings.webp',
-  offWings30:      'assets/food/official/official-wings-30pc.webp',
-  offBoneless:     'assets/food/official/official-boneless-20pc.webp',
-  offDrip:         'assets/food/official/official-saucy-chicken-drip.webp',
-  offPebbleWaffle: 'assets/food/official/official-fruity-pebbles-chicken-waffles.webp',
-  offOreoWaffle:   'assets/food/official/official-oreo-chicken-waffles.webp',
-  offClassicSand:  'assets/food/official/official-classic-chicken-sandwich.webp',
-  offBuffaloSand:  'assets/food/official/official-buffalo-ranch-sandwich.webp',
-  offChipQues:     'assets/food/official/official-chipotle-chicken-quesadilla.webp',
-  offQuesStack:    'assets/food/official/official-quesadilla-stack.webp',
-  offOreoShake:    'assets/food/official/official-oreo-shake.webp',
-  offPebbleShake:  'assets/food/official/official-fruity-pebbles-shake.webp',
-  offCtcShake:     'assets/food/official/official-cinnamon-toast-crunch-shake.webp',
-  offSpread:       'assets/food/official/official-menu-spread.webp',
-
-  // ---- Legacy assets, kept where a transparent cutout or a full-frame
-  // ---- photo does something the studio-on-white shots cannot.
-  hero: 'assets/food/hero-wings.jpg',
-  boneless: 'assets/food/boneless-combo.jpg',
-  tenders: 'assets/food/saucy-tenders.jpg',
-  tendersCut: 'assets/food/crispy-tenders-cutout.png',
-  wafflesCut: 'assets/food/chicken-waffles-cutout.png',
-  sandwich: 'assets/food/chipotle-chicken-sandwich.jpg',
-  oreos: 'assets/food/fried-oreos.png',
-  corn: 'assets/food/cajun-corn-cutout.png',
-}
-
 export const MENU_ITEMS = [
-  // ---------------- STARTERS ----------------
+  // ---------------- STARTERS (4) ----------------
   {
-    id: 'mac-bites', cat: 'starters', name: 'Mac N Cheese Bites', price: '$5.99 / $8.99',
-    desc: 'Bite-sized golden treats with a crispy exterior and creamy mac and cheese center.',
+    id: 'mac-n-cheese-bites', cat: 'starters',
+    name: 'Mac N Cheese Bites',
+    desc:
+      'Bite-sized golden treats with a crispy exterior and a creamy, cheesy mac and cheese center.',
+    image: 'assets/menu/mac-n-cheese-bites-e1746183930370.jpg', w: 1888, h: 1080,
   },
   {
-    id: 'cajun-corn', cat: 'starters', name: 'Cajun Fried Corn', price: '$2.99 / $5.99',
-    desc: "Fried corn tossed in ATL's Cajun rub. Served with ranch.", badge: 'Fan Favorite',
-    image: img.corn, feature: true,
+    id: 'cajun-fried-corn', cat: 'starters',
+    name: 'Cajun Fried Corn',
+    desc:
+      'Our fan-favorite Cajun fried corn. Juicy ears of corn on the cob fried till golden and tossed in our famous Cajun rub. Served with ranch.',
+    image: 'assets/menu/cajun-fried-corn.jpg', w: 1920, h: 1080,
   },
   {
-    id: 'coconut-shrimp', cat: 'starters', name: 'Crispy Coconut Shrimp', price: '$7.99',
-    desc: 'Served with Thai chili sauce.',
+    id: 'crispy-coconut-shrimp', cat: 'starters',
+    name: 'Crispy Coconut Shrimp',
+    desc:
+      'Crispy coconut shrimp, served with Thai chili sauce.',
+    image: 'assets/menu/7fa67d84-4eb6-44ee-b868-fd74d7cbf451-retina-large.webp', w: 1920, h: 1080,
   },
   {
-    id: 'mozz-sticks', cat: 'starters', name: 'Mozzarella Sticks (6)', price: '$8.99',
-    desc: 'Served with marinara.',
-  },
-  {
-    id: 'chipotle-quesadilla', cat: 'starters', name: 'Chipotle Chicken Quesadilla', price: '$9.99',
-    desc: 'Crispy boneless chicken, house chipotle sauce, cheddar cheese and ranch.',
-    image: img.offChipQues, feature: true,
-  },
-  {
-    id: 'buffalo-quesadilla', cat: 'starters', name: 'Crispy Buffalo Chicken Quesadilla', price: '$9.99',
-    desc: 'Crispy buffalo chicken and cheddar cheese with ranch.',
-  },
-  {
-    id: 'cheddar-quesadilla', cat: 'starters', name: 'Cheddar Cheese Quesadilla', price: '$5.99',
-    desc: 'Served with sour cream.',
-  },
-  {
-    id: 'loaded-quesadilla', cat: 'starters', name: 'Loaded Chicken Quesadilla', price: '$9.99',
-    desc: 'Grilled chicken, cheddar, green peppers and onions. Served with sour cream.',
+    id: 'mozzarella-sticks-6', cat: 'starters',
+    name: 'Mozzarella Sticks (6)',
+    desc:
+      'Six mozzarella sticks, served with marinara sauce.',
+    image: 'assets/menu/mozzarella-sticks.jpg', w: 1920, h: 1079,
   },
 
-  // ---------------- BONE-IN WINGS ----------------
+  // ---------------- WINGS (8) ----------------
   {
-    id: 'wings-6-combo', cat: 'wings', name: '6pc Bone-In Wings Combo Meal', price: '$13.99',
-    desc: 'Six fresh, never frozen bone-in wings sauced in your pick of 25+ sauces, plus a side and a drink.',
-    image: img.offWings, feature: true, hero: true,
+    id: '6pc-bone-in-wings-combo-meal', cat: 'wings',
+    name: '6pc Bone In Wings Combo Meal',
+    desc:
+      'Six of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with your choice of side, beverage and dip.',
+    image: 'assets/menu/6pc-bone-in-wings-combo-meal.jpg', w: 1920, h: 1080,
   },
   {
-    id: 'wings-10-combo', cat: 'wings', name: '10pc Bone-In Wings Combo', price: '$17.99',
-    desc: 'Ten bone-in wings, one flavor decision. Comes with a side and a drink.',
-    image: img.offWings30, feature: true,
-  },
-  { id: 'wings-4', cat: 'wings', name: '4 Bone-In Wings', price: '$6.99', desc: 'A snack, basically. Pick a flavor and a dip.' },
-  { id: 'wings-6', cat: 'wings', name: '6 Bone-In Wings', price: '$9.99', desc: 'Have them sauced, or take the dry rub instead.' },
-  { id: 'wings-10', cat: 'wings', name: '10 Bone-In Wings', price: '$14.99', desc: 'Enough to split across two flavors, five wings each.' },
-  { id: 'wings-20', cat: 'wings', name: '20 Bone-In Wings', price: '$27.99', desc: 'Meant for sharing, though nobody is checking.' },
-  { id: 'wings-50', cat: 'wings', name: '50 Bone-In Wings', price: '$69.99', desc: 'Spread fifty wings across a few different flavors.', badge: 'Party Size' },
-  { id: 'wings-100', cat: 'wings', name: '100 Bone-In Wings', price: '$134.99', desc: 'This is the one you order for the whole game.', badge: 'Party Size' },
-
-  // ---------------- BONELESS ----------------
-  {
-    id: 'boneless-6-combo', cat: 'boneless', name: '6pc Boneless Wings Combo', price: '$12.99',
-    desc: 'Hand-breaded white-meat boneless wings, fresh never frozen, with a side and a drink.',
-    image: img.offBoneless, feature: true,
+    id: '10pc-bone-in-wings-combo', cat: 'wings',
+    name: '10pc Bone In Wings Combo',
+    desc:
+      'Ten of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with your choice of side, beverage and dip.',
+    image: 'assets/menu/6pc-bone-in-wings-combo-meal.jpg', w: 1920, h: 1080,
   },
   {
-    id: 'boneless-10-combo', cat: 'boneless', name: '10pc Boneless Wings Combo', price: '$16.99',
-    desc: 'Ten boneless, sauced your way, with a side and a drink.',
-  },
-  { id: 'boneless-4', cat: 'boneless', name: '4 Boneless Wings', price: '$5.99', desc: 'White-meat chicken, breaded by hand and fried fresh.' },
-  { id: 'boneless-6', cat: 'boneless', name: '6 Boneless Wings', price: '$7.99', desc: 'Six pieces, in any flavor on the board.' },
-  { id: 'boneless-10', cat: 'boneless', name: '10 Boneless Wings', price: '$12.99', desc: 'Ten pieces, and they hold onto sauce well.' },
-  { id: 'boneless-20', cat: 'boneless', name: '20 Boneless Wings', price: '$24.99', desc: 'Enough for a few people, so mix the flavors up.' },
-  { id: 'boneless-50', cat: 'boneless', name: '50 Boneless Wings', price: '$59.99', desc: 'Party size, for when the room fills up.', badge: 'Party Size' },
-  { id: 'boneless-100', cat: 'boneless', name: '100 Boneless Wings', price: '$114.99', desc: 'A hundred pieces. Bring a bigger table.', badge: 'Party Size' },
-
-  // ---------------- SAUCY TENDERS ----------------
-  {
-    id: 'tenders-3', cat: 'tenders', name: '3 Saucy Tenders', price: '$8.99',
-    desc: 'Fresh, hand-breaded jumbo tenders. Sauced, or sauce on the side.',
-    image: img.offDrip, feature: true,
-  },
-  { id: 'tenders-5', cat: 'tenders', name: '5 Saucy Tenders', price: '$11.99', desc: 'Five jumbo tenders, tossed once you order.' },
-  { id: 'tenders-10', cat: 'tenders', name: '10 Saucy Tenders', price: '$21.99', desc: 'Ten of them, sauced or with it on the side.' },
-  { id: 'tenders-20', cat: 'tenders', name: '20 Saucy Tenders', price: '$39.99', desc: 'Twenty tenders, which is a lot of tenders.', badge: 'Party Size' },
-  { id: 'tenders-50', cat: 'tenders', name: '50 Saucy Tenders', price: '$94.99', desc: 'Fifty. Now we are into catering territory.', badge: 'Party Size' },
-  { id: 'tenders-100', cat: 'tenders', name: '100 Saucy Tenders', price: '$179.99', desc: 'A hundred jumbo tenders for a full room.', badge: 'Party Size' },
-  { id: 'tenders-3-combo', cat: 'tenders', name: '3pc Tender Combo', price: '$13.99', desc: 'Three jumbo tenders with a side and a drink.', image: img.tendersCut, feature: true },
-  { id: 'tenders-5-combo', cat: 'tenders', name: '5pc Tender Combo', price: '$15.99', desc: 'Five jumbo tenders with a side and a drink.' },
-
-  // ---------------- CHICKEN N' WAFFLES ----------------
-  {
-    id: 'waffles-classic', cat: 'waffles', name: "Chicken N' Waffles", price: '$11.99',
-    desc: 'Golden waffle, crispy chicken, syrup on standby.',
-    image: img.wafflesCut, feature: true,
+    id: '4-bone-in-wings', cat: 'wings',
+    name: '4 Bone In Wings',
+    desc:
+      'Four of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
+    image: 'assets/menu/wings-e1746184196401.jpg', w: 1894, h: 1078,
   },
   {
-    id: 'waffles-oreo', cat: 'waffles', name: "Oreo Chicken N' Waffles", price: '$14.99',
-    desc: 'Waffle loaded with crushed Oreo, powdered sugar, crispy chicken.',
-    image: img.offOreoWaffle, feature: true,
+    id: '6-bone-in-wings', cat: 'wings',
+    name: '6 Bone In Wings',
+    desc:
+      'Six of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
+    image: 'assets/menu/wings-e1746184196401.jpg', w: 1894, h: 1078,
   },
   {
-    id: 'waffles-pebbles', cat: 'waffles', name: "Fruity Pebbles Chicken N' Waffles", price: '$14.99',
-    desc: 'Fruity Pebbles waffle, powdered sugar, crispy chicken. The one people film.',
-    image: img.offPebbleWaffle, feature: true, hero: true, badge: 'Viral',
+    id: '10-bone-in-wings', cat: 'wings',
+    name: '10 Bone In Wings',
+    desc:
+      'Ten of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
+    image: 'assets/menu/wings-e1746184196401.jpg', w: 1894, h: 1078,
   },
   {
-    id: 'waffles-ctc', cat: 'waffles', name: "Cinnamon Toast Crunch Chicken N' Waffles", price: '$14.99',
-    desc: 'Cinnamon Toast Crunch waffle, powdered sugar, crispy chicken.',
-  },
-  { id: 'waffle-original', cat: 'waffles', name: 'Original Waffle', price: '$4.99', desc: 'Just the golden waffle. Syrup included.' },
-  { id: 'waffle-oreo', cat: 'waffles', name: 'Oreo Waffle', price: '$7.99', desc: 'Waffle + crushed Oreo + powdered sugar.' },
-  { id: 'waffle-pebbles', cat: 'waffles', name: 'Fruity Pebbles Waffle', price: '$7.99', desc: 'Waffle + Fruity Pebbles + powdered sugar.' },
-  { id: 'waffle-ctc', cat: 'waffles', name: 'Cinnamon Toast Crunch Waffle', price: '$7.99', desc: 'Waffle + Cinnamon Toast Crunch + powdered sugar.' },
-
-  // ---------------- WRAPS ----------------
-  { id: 'wrap-honey', cat: 'wraps', name: 'Honey Mustard Wrap', price: '$9.99', desc: 'Crispy chicken, honey mustard, wrapped up to go.' },
-  { id: 'wrap-buffalo', cat: 'wraps', name: 'Buffalo Ranch Chicken Wrap', price: '$9.99', desc: 'Buffalo chicken, ranch, all wrapped up.' },
-  { id: 'wrap-chipotle', cat: 'wraps', name: 'Chipotle Chicken Wrap', price: '$9.99', desc: 'Crispy chicken, house chipotle sauce.' },
-
-  // ---------------- SANDWICHES ----------------
-  {
-    id: 'sandwich-chipotle', cat: 'sandwiches', name: 'Chipotle Chicken Sandwich', price: '$7.99',
-    desc: 'Crispy chicken, house chipotle sauce, on a toasted bun.',
-    image: img.sandwich, feature: true, hero: true,
+    id: '20-bone-in-wings', cat: 'wings',
+    name: '20 Bone In Wings',
+    desc:
+      'Twenty of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
+    image: 'assets/menu/wings-e1746184196401.jpg', w: 1894, h: 1078,
   },
   {
-    id: 'sandwich-deluxe', cat: 'sandwiches', name: 'Chicken Deluxe', price: '$7.99',
-    desc: 'The classic crispy chicken sandwich, done right.',
-    image: img.offClassicSand, feature: true,
+    id: '50-bone-in-wings', cat: 'wings',
+    name: '50 Bone In Wings',
+    desc:
+      'Fifty of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
+    image: 'assets/menu/50-bone-in-wings.webp', w: 1920, h: 1080,
+  },
+  {
+    id: '100-bone-in-wings', cat: 'wings',
+    name: '100 Bone In Wings',
+    desc:
+      'One hundred of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
+    image: 'assets/menu/50-bone-in-wings.webp', w: 1920, h: 1080,
   },
 
-  // ---------------- FRIES + MUNCHIES ----------------
-  { id: 'fries-waffle', cat: 'fries', name: 'Waffle Fries', price: '$3.99', desc: 'Crispy waffle-cut fries.' },
-  { id: 'fries-cheese', cat: 'fries', name: 'Cheese Fries', price: '$4.99', desc: 'Waffle fries under a blanket of cheese sauce.' },
-  { id: 'onion-rings', cat: 'fries', name: 'Battered Onion Rings', price: '$4.99', desc: 'Thick-cut, battered, fried gold.' },
-  { id: 'fries-buffalo', cat: 'fries', name: 'Buffalo Ranch Loaded Waffle Fries', price: '$9.99', desc: 'Waffle fries loaded with buffalo chicken + ranch.', feature: true },
-  { id: 'fries-nashville', cat: 'fries', name: 'Nashville Hot Loaded Waffle Fries', price: '$9.99', desc: 'Waffle fries, Nashville hot chicken, the works.', feature: true },
-  { id: 'fries-sweet', cat: 'fries', name: 'Sweet Potato Fries', price: '$4.99', desc: 'Sweet, crispy, addictive.' },
-  { id: 'fries-bbq', cat: 'fries', name: 'BBQ Loaded Waffle Fries', price: '$9.99', desc: 'Waffle fries loaded with BBQ chicken.', feature: true },
-
-  // ---------------- DESSERTS + SHAKES ----------------
+  // ---------------- BONELESS WINGS (8) ----------------
   {
-    id: 'milkshake', cat: 'desserts', name: 'Milkshake', price: '$6.99',
-    desc: 'Reese’s, Fruity Pebbles, Oreo Blast, Cinnamon Toast Crunch, Chocolate, Vanilla, or Strawberry Shortcake.',
-    image: img.offCtcShake, feature: true, hero: true, badge: '7 Flavors',
+    id: '6pc-boneless-wings-combo', cat: 'boneless',
+    name: '6pc Boneless Wings Combo',
+    desc:
+      'Six of our fan-favorite boneless wings, now in a combo. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Served with your choice of sauce, side, beverage and dip.',
+    image: 'assets/menu/6pc-boneless-wings-combo.jpg', w: 1920, h: 1080,
   },
-  { id: 'fried-oreos', cat: 'desserts', name: 'Fried Oreos', price: '$4.99', desc: 'Golden, powdered, dangerous. Served warm.', image: img.oreos, feature: true },
-  { id: 'funnel-fries', cat: 'desserts', name: 'Funnel Cake Fries', price: '$4.99', desc: 'Funnel cake, fry-shaped, powdered sugar.' },
+  {
+    id: '10pc-boneless-wings-combo', cat: 'boneless',
+    name: '10pc Boneless Wings Combo',
+    desc:
+      'Ten of our fan-favorite boneless wings, now in a combo. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Served with your choice of sauce, side, beverage and dip.',
+    image: 'assets/menu/6pc-boneless-wings-combo.jpg', w: 1920, h: 1080,
+  },
+  {
+    id: '4-boneless-wings', cat: 'boneless',
+    name: '4 Boneless Wings',
+    desc:
+      'Four of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
+    image: 'assets/menu/4-boneless-wings.jpg', w: 1920, h: 1079,
+  },
+  {
+    id: '6-boneless-wings', cat: 'boneless',
+    name: '6 Boneless Wings',
+    desc:
+      'Six of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
+    image: 'assets/menu/4-boneless-wings.jpg', w: 1920, h: 1079,
+  },
+  {
+    id: '10-boneless-wings', cat: 'boneless',
+    name: '10 Boneless Wings',
+    desc:
+      'Ten of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
+    image: 'assets/menu/4-boneless-wings.jpg', w: 1920, h: 1079,
+  },
+  {
+    id: '20-boneless-wings', cat: 'boneless',
+    name: '20 Boneless Wings',
+    desc:
+      'Twenty of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
+    image: 'assets/menu/4-boneless-wings.jpg', w: 1920, h: 1079,
+  },
+  {
+    id: '50-boneless-wings', cat: 'boneless',
+    name: '50 Boneless Wings',
+    desc:
+      'Fifty of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
+    image: 'assets/menu/50-boneless-wings.jpg', w: 1920, h: 1080,
+  },
+  {
+    id: '100-boneless-wings', cat: 'boneless',
+    name: '100 Boneless Wings',
+    desc:
+      'One hundred of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
+    image: 'assets/menu/50-boneless-wings.jpg', w: 1920, h: 1080,
+  },
 
-  // ---------------- BEVERAGES ----------------
-  { id: 'can-soda', cat: 'drinks', name: 'Can Soda', price: '$0.99', desc: 'Ice cold.' },
-  { id: 'gatorade', cat: 'drinks', name: 'Gatorade', price: '$2.50', desc: 'For after the hot ones.' },
-  { id: 'water', cat: 'drinks', name: 'Bottled Water', price: '$2.00', desc: 'For after the 911 Sauce.' },
-  { id: 'large-soda', cat: 'drinks', name: 'Large Soda', price: '$2.99', desc: 'Fountain, large.' },
-  { id: 'bottled-soda', cat: 'drinks', name: 'Bottled Soda', price: '$2.50', desc: 'Grab and go.' },
+  // ---------------- SAUCY TENDERS (8) ----------------
+  {
+    id: '3-saucy-tenders', cat: 'tenders',
+    name: '3 Saucy Tenders',
+    desc:
+      'Three hand-breaded jumbo tenders. Pick your favorite sauce and have them tossed, or with the sauce on the side.',
+    image: 'assets/menu/3-jumbo-tenders.jpg', w: 1920, h: 1079,
+  },
+  {
+    id: '5-saucy-tenders', cat: 'tenders',
+    name: '5 Saucy Tenders',
+    desc:
+      'Five hand-breaded jumbo tenders. Pick your favorite sauce and have them tossed, or with the sauce on the side.',
+    image: 'assets/menu/5-jumbo-tenders.jpg', w: 1920, h: 1080,
+  },
+  {
+    id: '10-saucy-tenders', cat: 'tenders',
+    name: '10 Saucy Tenders',
+    desc:
+      'Ten hand-breaded jumbo tenders. Pick your favorite sauces and have them tossed, or with the sauce on the side.',
+    image: 'assets/menu/10-jumbo-tenders.webp', w: 1920, h: 1080,
+  },
+  {
+    id: '20-saucy-tenders', cat: 'tenders',
+    name: '20 Saucy Tenders',
+    desc:
+      'Twenty hand-breaded jumbo tenders. Pick your favorite sauces and have them tossed, or with the sauce on the side.',
+    image: 'assets/menu/20-jumbo-tenders.webp', w: 1920, h: 1080,
+  },
+  {
+    id: '50-saucy-tenders', cat: 'tenders',
+    name: '50 Saucy Tenders',
+    desc:
+      'Fifty hand-breaded jumbo tenders. Pick your favorite sauces and have them tossed, or with the sauce on the side.',
+    image: 'assets/menu/50-jumbo-tenders.webp', w: 1920, h: 1080,
+  },
+  {
+    id: '100-saucy-tenders', cat: 'tenders',
+    name: '100 Saucy Tenders',
+    desc:
+      'One hundred hand-breaded jumbo tenders. Pick your favorite sauces and have them tossed, or with the sauce on the side.',
+    image: 'assets/menu/50-jumbo-tenders.webp', w: 1920, h: 1080,
+  },
+  {
+    id: '3pc-tender-combo', cat: 'tenders',
+    name: '3pc Tender Combo',
+    desc:
+      'Three hand-breaded jumbo tenders, tossed or with the sauce on the side. Served with your choice of side and drink.',
+    image: 'assets/menu/3pc-tender-combo.webp', w: 1920, h: 1370,
+  },
+  {
+    id: '5pc-tender-combo', cat: 'tenders',
+    name: '5pc Tender Combo',
+    desc:
+      'Five hand-breaded jumbo tenders, tossed or with the sauce on the side. Served with your choice of side and drink.',
+    image: 'assets/menu/3pc-tender-combo.webp', w: 1920, h: 1370,
+  },
 
-  // ---------------- EXTRAS ----------------
-  { id: 'ranch', cat: 'extras', name: 'Ranch Cup', price: '$0.49', desc: 'The cooling agent.' },
-  { id: 'blue-cheese', cat: 'extras', name: 'Blue Cheese Cup', price: '$0.49', desc: 'Team blue cheese, this one’s for you.' },
-  { id: 'extra-sauce', cat: 'extras', name: 'Extra Sauce Cup', price: '$0.49', desc: 'Because you will want more.' },
-  { id: 'cheese-sauce', cat: 'extras', name: 'Cheese Sauce Cup', price: '$0.49', desc: 'Dip everything.' },
-  { id: 'celery', cat: 'extras', name: 'Celery', price: '$1.99', desc: 'For balance. Allegedly.' },
+  // ---------------- CHICKEN N' WAFFLES (8) ----------------
+  {
+    id: 'chicken-n-waffles', cat: 'waffles',
+    name: 'Chicken N’ Waffles',
+    desc:
+      'Three crispy chicken tenders served over a warm waffle topped with powdered sugar. Syrup on the side.',
+    image: 'assets/menu/chicken-n-waffles.webp', w: 1920, h: 1079,
+  },
+  {
+    id: 'oreo-chicken-n-waffles', cat: 'waffles',
+    name: 'Oreo Chicken N’ Waffles',
+    desc:
+      'Three hand-breaded chicken tenders served with a crispy Oreo waffle topped with powdered sugar and chocolate syrup. Syrup on the side.',
+    image: 'assets/menu/oreo-chicken-n-waffles.png', w: 1920, h: 1534,
+  },
+  {
+    id: 'fruity-pebbles-chicken-n-waffles', cat: 'waffles',
+    name: 'Fruity Pebbles Chicken N’ Waffles',
+    desc:
+      'Three hand-breaded chicken tenders served with a crispy Fruity Pebbles waffle topped with powdered sugar and strawberry syrup. Syrup on the side.',
+    image: 'assets/menu/fruity-pebbles-chicken-n-waffles.jpg', w: 1920, h: 1608,
+  },
+  {
+    id: 'cinnamon-toast-crunch-chicken-n-waffles', cat: 'waffles',
+    name: 'Cinnamon Toast Crunch Chicken N’ Waffles',
+    desc:
+      'Three hand-breaded chicken tenders served with a crispy Cinnamon Toast Crunch waffle topped with powdered sugar and caramel syrup. Syrup on the side.',
+    image: 'assets/menu/cinnamon-toast-crunch-chicken-n-waffles.webp', w: 1920, h: 1534,
+  },
+  {
+    id: 'waffle', cat: 'waffles',
+    name: 'Waffle',
+    desc:
+      'The OG. Our original waffle topped with powdered sugar, no chicken. Served with syrup on the side.',
+    image: 'assets/menu/cinnamon-toast-crunch-chicken-n-waffles.webp', w: 1920, h: 1534,
+  },
+  {
+    id: 'oreo-waffle', cat: 'waffles',
+    name: 'Oreo Waffle',
+    desc:
+      'Crispy Oreo waffle topped with Hershey’s syrup, powdered sugar and more Oreos.',
+    image: 'assets/menu/oreo-waffle.png', w: 1920, h: 1762,
+  },
+  {
+    id: 'fruity-pebbles-waffle', cat: 'waffles',
+    name: 'Fruity Pebbles Waffle',
+    desc:
+      'Crispy Fruity Pebbles waffle topped with strawberry syrup, powdered sugar and more Fruity Pebbles.',
+    image: 'assets/menu/fruity-pebbles-waffle.png', w: 1920, h: 1534,
+  },
+  {
+    id: 'cinnamon-toast-crunch-waffle', cat: 'waffles',
+    name: 'Cinnamon Toast Crunch Waffle',
+    desc:
+      'Crispy Cinnamon Toast Crunch waffle topped with caramel syrup, powdered sugar and more Cinnamon Toast Crunch.',
+    image: 'assets/menu/cinnamon-toast-crunch-waffle.png', w: 1920, h: 1534,
+  },
+
+  // ---------------- QUESADILLAS (4) ----------------
+  {
+    id: 'chipotle-chicken-quesadilla', cat: 'quesadillas',
+    name: 'Chipotle Chicken Quesadilla',
+    desc:
+      'Crispy boneless chicken topped with our housemade chipotle sauce, cheddar cheese and ranch.',
+    image: 'assets/menu/chipotle-chicken-quesadilla-scaled.webp', w: 2560, h: 2048,
+  },
+  {
+    id: 'cheddar-cheese-quesadilla', cat: 'quesadillas',
+    name: 'Cheddar Cheese Quesadilla',
+    desc:
+      'Melted cheddar cheese in a pressed tortilla. Served with sour cream.',
+    image: 'assets/menu/cheddar-cheese-quesadilla.png', w: 1920, h: 1420,
+  },
+  {
+    id: 'loaded-chicken-quesadilla', cat: 'quesadillas',
+    name: 'Loaded Chicken Quesadilla',
+    desc:
+      'Grilled chicken, cheddar cheese, green peppers and onions. Served with sour cream.',
+    image: 'assets/menu/loaded-chicken-quesadilla-e1746184121941.png', w: 1920, h: 1475,
+  },
+  {
+    id: 'crispy-buffalo-chicken-quesadilla', cat: 'quesadillas',
+    name: 'Crispy Buffalo Chicken Quesadilla',
+    desc:
+      'Crispy buffalo chicken and cheddar cheese topped with ranch. Served with ranch on the side.',
+    image: 'assets/menu/crispy-buffalo-chicken-quesadilla.png', w: 1920, h: 1472,
+  },
+
+  // ---------------- WRAPS (3) ----------------
+  {
+    id: 'honey-mustard-wrap', cat: 'wraps',
+    name: 'Honey Mustard Wrap',
+    desc:
+      'Crispy boneless chicken topped with cheddar cheese, lettuce, tomatoes and honey mustard, wrapped to go.',
+    image: 'assets/menu/honey-mustard-wrap-scaled.webp', w: 2560, h: 1829,
+  },
+  {
+    id: 'buffalo-ranch-chicken-wrap', cat: 'wraps',
+    name: 'Buffalo Ranch Chicken Wrap',
+    desc:
+      'Crispy buffalo chicken topped with lettuce, tomatoes and ranch dressing, wrapped to go.',
+    image: 'assets/menu/buffalo-ranch-chicken-wrap.jpg', w: 1920, h: 1080,
+  },
+  {
+    id: 'chipotle-chicken-wrap', cat: 'wraps',
+    name: 'Chipotle Chicken Wrap',
+    desc:
+      'Crispy chicken topped with chipotle sauce, lettuce, tomatoes and cheddar cheese, wrapped to go.',
+    image: 'assets/menu/chipotle-chicken-wrap.jpg', w: 1920, h: 1080,
+  },
+
+  // ---------------- BURGERS & SANDWICHES (2) ----------------
+  {
+    id: 'chipotle-chicken-sandwich', cat: 'sandwiches',
+    name: 'Chipotle Chicken Sandwich',
+    desc:
+      'Crispy chicken on a brioche bun topped with chipotle sauce, lettuce and tomato.',
+    image: 'assets/menu/chipotle-chicken-sandwich.jpg', w: 1920, h: 1536,
+  },
+  {
+    id: 'chicken-deluxe', cat: 'sandwiches',
+    name: 'Chicken Deluxe',
+    desc:
+      'Fried chicken, American cheese, mayo, lettuce and tomato on a brioche bun.',
+    image: 'assets/menu/chicken-deluxe.png', w: 1920, h: 1441,
+  },
+
+  // ---------------- FRIES N MUNCHIES (7) ----------------
+  {
+    id: 'waffle-fries', cat: 'fries',
+    name: 'Waffle Fries',
+    desc:
+      'Golden waffle fries, available in small or large servings.',
+    image: 'assets/menu/waffle-fries.webp', w: 1920, h: 1621,
+  },
+  {
+    id: 'cheese-fries', cat: 'fries',
+    name: 'Cheese Fries',
+    desc:
+      'Golden fries topped with melted cheddar cheese.',
+    image: 'assets/menu/cheese-fries.webp', w: 1920, h: 1578,
+  },
+  {
+    id: 'battered-onion-rings', cat: 'fries',
+    name: 'Battered Onion Rings',
+    desc:
+      'Crispy, golden-battered onion rings, perfectly seasoned for a delightful crunch.',
+    image: 'assets/menu/battered-onion-rings.webp', w: 1920, h: 1079,
+  },
+  {
+    id: 'buffalo-ranch-loaded-waffle-fries', cat: 'fries',
+    name: 'Buffalo Ranch Loaded Waffle Fries',
+    desc:
+      'Waffle fries loaded up with crispy chicken, buffalo sauce and ranch.',
+    image: 'assets/menu/buffalo-ranch-loaded-waffle-fries.webp', w: 1920, h: 1079,
+  },
+  {
+    id: 'nashville-hot-loaded-waffle-fries', cat: 'fries',
+    name: 'Nashville Hot Loaded Waffle Fries',
+    desc:
+      'Waffle fries loaded up with crispy chicken, Nashville hot sauce and ranch.',
+    image: 'assets/menu/cajun-fried-corn.jpg', w: 1920, h: 1080,
+  },
+  {
+    id: 'sweet-potato-fries', cat: 'fries',
+    name: 'Sweet Potato Fries',
+    desc:
+      'Sweet potato fries, available in small or large servings.',
+    image: 'assets/menu/sweet-potato-fries.webp', w: 1920, h: 1576,
+  },
+  {
+    id: 'bbq-loaded-waffle-fries', cat: 'fries',
+    name: 'BBQ Loaded Waffle Fries',
+    desc:
+      'Waffle fries loaded up with crispy chicken, pineapple BBQ sauce and ranch.',
+    image: 'assets/menu/bbq-loaded-waffle-fries.webp', w: 1920, h: 1079,
+  },
+
+  // ---------------- DESSERTS N SHAKES (6) ----------------
+  {
+    id: 'milkshake', cat: 'desserts',
+    name: 'Milkshake',
+    desc:
+      'Shake it up with one of our fan-favorite milkshakes. Choose from flavors like Reese’s, Fruity Pebbles, Oreo Blast and Cinnamon Toast Crunch, or keep it classic with Hershey’s Chocolate, Vanilla or Strawberry Shortcake.',
+    image: 'assets/menu/milkshake.webp', w: 1024, h: 1255,
+  },
+  {
+    id: 'cinnamon-toast-crunch-waffle-desserts', cat: 'desserts',
+    name: 'Cinnamon Toast Crunch Waffle',
+    desc:
+      'Crispy Cinnamon Toast Crunch waffle topped with caramel syrup, powdered sugar and more Cinnamon Toast Crunch.',
+    image: 'assets/menu/cinnamon-toast-crunch-waffle.png', w: 1920, h: 1534,
+  },
+  {
+    id: 'fruity-pebbles-waffle-desserts', cat: 'desserts',
+    name: 'Fruity Pebbles Waffle',
+    desc:
+      'Crispy Fruity Pebbles waffle topped with strawberry syrup, powdered sugar and more Fruity Pebbles.',
+    image: 'assets/menu/fruity-pebbles-waffle.webp', w: 600, h: 300,
+  },
+  {
+    id: 'oreo-waffle-desserts', cat: 'desserts',
+    name: 'Oreo Waffle',
+    desc:
+      'Crispy Oreo waffle topped with Hershey’s syrup, powdered sugar and more Oreos.',
+    image: 'assets/menu/oreo-waffle.webp', w: 1024, h: 939,
+  },
+  {
+    id: 'fried-oreos', cat: 'desserts',
+    name: 'Fried Oreos',
+    desc:
+      'Golden, crispy battered Oreos dusted with powdered sugar, offering a delightful blend of crunch and sweetness.',
+    image: 'assets/menu/fried-oreos.webp', w: 1024, h: 576,
+  },
+  {
+    id: 'funnel-cake-fries-12', cat: 'desserts',
+    name: 'Funnel Cake Fries (12)',
+    desc:
+      'Twelve crispy funnel cake fries, lightly dusted with powdered sugar for a sweet, crunchy treat.',
+    image: 'assets/menu/funnel-cake-fries.webp', w: 1024, h: 575,
+  },
+
+  // ---------------- BEVERAGES (5) ----------------
+  {
+    id: 'can-soda', cat: 'drinks',
+    name: 'Can Soda',
+    desc:
+      'Canned soda, including Pepsi, Diet Pepsi, Orange Crush, Ginger Ale, Brisk Iced Tea and Lemonade.',
+    image: 'assets/menu/bottled-soda.webp', w: 1024, h: 576,
+  },
+  {
+    id: 'gatorade', cat: 'drinks',
+    name: 'Gatorade',
+    desc:
+      'A crisp, satisfying taste to quench thirst and energize without caffeine.',
+    image: 'assets/menu/gatorade.webp', w: 1024, h: 576,
+  },
+  {
+    id: 'bottled-water', cat: 'drinks',
+    name: 'Bottled Water',
+    desc:
+      'Pure and refreshing bottled water.',
+    image: 'assets/menu/bottled-soda.webp', w: 1024, h: 576,
+  },
+  {
+    id: 'large-soda', cat: 'drinks',
+    name: 'Large Soda',
+    desc:
+      'Large fountain soda: Pepsi, Orange Crush or Ginger Ale.',
+    image: 'assets/menu/large-soda.webp', w: 1024, h: 731,
+  },
+  {
+    id: 'bottled-soda', cat: 'drinks',
+    name: 'Bottled Soda',
+    desc:
+      'Bottled soda, including classic Pepsi variants, Crush flavors, Mountain Dew Baja Blast, Country Time lemonades, Sunny D Fruit Punch and Brisk Iced Tea.',
+    image: 'assets/menu/bottled-soda.webp', w: 1024, h: 576,
+  },
+
+  // ---------------- EXTRAS (5) ----------------
+  {
+    id: 'ranch-cup', cat: 'extras',
+    name: 'Ranch Cup',
+    desc:
+      'Every hero needs a sidekick. Our ATL Wing Spot ranch is the perfect addition to any wing or munchie order.',
+    image: 'assets/menu/ranch-cup.webp', w: 1024, h: 1190,
+  },
+  {
+    id: 'blue-cheese-cup', cat: 'extras',
+    name: 'Blue Cheese Cup',
+    desc:
+      'A cup of blue cheese dip.',
+    image: 'assets/menu/blue-cheese-cup.webp', w: 1024, h: 1182,
+  },
+  {
+    id: 'extra-sauce-cup', cat: 'extras',
+    name: 'Extra Sauce Cup',
+    desc:
+      'Add a side cup of your favorite sauce, from right across the sauce board.',
+    image: 'assets/menu/extra-sauce-cup.webp', w: 1024, h: 1165,
+  },
+  {
+    id: 'cheese-sauce-cup', cat: 'extras',
+    name: 'Cheese Sauce Cup',
+    desc:
+      'A cup of nacho cheese sauce.',
+    image: 'assets/menu/cheese-sauce-cup.webp', w: 1024, h: 1205,
+  },
+  {
+    id: 'celery', cat: 'extras',
+    name: 'Celery',
+    desc:
+      'Crisp celery stalks, freshly cut and ready as a refreshing side or snack.',
+    image: 'assets/menu/celery.webp', w: 1024, h: 576,
+  },
 ]
