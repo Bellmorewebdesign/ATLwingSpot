@@ -20,7 +20,7 @@ const PANELS = [
   { cat: 'tenders',    name: 'Saucy\nTenders',      line: 'Jumbo. Ask for them tossed, or with the sauce on the side.',            img: 'assets/food/official/official-saucy-chicken-drip.webp' },
   { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch on the waffle. Yes, really.', img: 'assets/food/official/official-fruity-pebbles-chicken-waffles.webp' },
   { cat: 'sandwiches', name: 'Sandwiches',          line: 'Crispy chicken on a toasted bun, chipotle or classic.',                 img: 'assets/food/official/official-buffalo-ranch-sandwich.webp' },
-  { cat: 'starters',   name: 'Quesadillas',         line: 'Four on the menu, from plain cheddar to loaded chicken.',               img: 'assets/food/official/official-quesadilla-stack.webp' },
+  { cat: 'quesadillas', name: 'Quesadillas',        line: 'Four on the menu, from plain cheddar to loaded chicken.',               img: 'assets/food/official/official-quesadilla-stack.webp' },
 ]
 
 export function CraveTrack() {

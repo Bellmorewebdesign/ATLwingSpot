@@ -50,80 +50,53 @@
   border-bottom: 3px solid var(--ink);
 }
 
-.mcat__feats {
+/* ---- cards ----
+   Every official listing has its own photograph now, so the whole menu is one
+   grid instead of a few photo features sitting above text-only rows. */
+.mcat__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
-  gap: clamp(0.8rem, 2vw, 1.4rem);
-  margin-bottom: 1.6rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: clamp(1.1rem, 2.4vw, 1.8rem) clamp(0.8rem, 2vw, 1.4rem);
 }
-.feat { display: flex; flex-direction: column; }
-.feat__img {
+.mcard { display: flex; flex-direction: column; min-width: 0; }
+/* The shots are studio-lit on white; a white card keeps that background from
+   reading as a pasted-on rectangle against the cream page. */
+.mcard__img {
   position: relative;
   aspect-ratio: 5 / 4;
   border-radius: var(--r-md);
   overflow: hidden;
-  background: var(--cream-deep);
+  background: var(--paper);
 }
-.feat__img img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--t-slow) var(--ease); }
-.feat:hover .feat__img img { transform: scale(1.04); }
-.feat__badge {
+/* Absolutely positioned so a portrait shot's intrinsic height cannot drive the
+   box — aspect-ratio governs and every card in a row lines up. */
+.mcard__img img {
   position: absolute;
-  top: 0.7rem; left: 0.7rem;
-  padding: 0.3em 0.75em;
-  border-radius: var(--r-pill);
-  background: var(--cyan);
-  color: var(--ink);
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform var(--t-slow) var(--ease);
 }
-.feat__body { padding-top: 0.9rem; display: flex; flex-direction: column; flex: 1; }
-.feat__name { font-size: clamp(1.2rem, 2.6vw, 1.6rem); line-height: 1; margin-bottom: 0.4rem; }
-.feat__desc { color: var(--ink-mute); font-size: var(--step--1); flex: 1; }
-.feat__foot {
-  margin-top: 0.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-.feat__price { font-family: var(--font-display); font-size: 1.35rem; color: var(--orange-deep); }
+.mcard:hover .mcard__img img { transform: scale(1.04); }
 
-/* ---- list rows ---- */
-.mcat__rows { display: flex; flex-direction: column; }
-.mi {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem 2rem;
-  padding-block: 0.95rem;
-  border-bottom: 2px solid var(--line);
-}
-.mi__l { min-width: 0; }
-.mi__name {
+.mcard__body { padding-top: 0.85rem; display: flex; flex-direction: column; flex: 1; }
+.mcard__name {
   font-size: 1.02rem;
   font-weight: 800;
+  line-height: 1.25;
   color: var(--ink);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  margin-bottom: 0.3rem;
 }
-.mi__tag {
-  padding: 0.2em 0.55em;
-  border-radius: var(--r-pill);
-  background: var(--orange);
-  color: var(--ink);
-  font-size: 0.6rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.mcard__desc {
+  color: var(--ink-mute);
+  font-size: var(--step--1);
+  flex: 1;
+  margin-bottom: 0.8rem;
 }
-.mi__desc { color: var(--ink-mute); font-size: var(--step--1); margin-top: 0.15rem; max-width: 62ch; }
-.mi__r { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
-.mi__price { font-family: var(--font-display); font-size: 1.15rem; color: var(--ink); }
-.mi__order {
+.mcard__order {
+  align-self: flex-start;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -136,7 +109,7 @@
   padding-bottom: 2px;
   transition: gap var(--t-fast) var(--ease);
 }
-.mi__order:hover { gap: 0.6rem; }
+.mcard__order:hover { gap: 0.6rem; }
 
 .menu__empty { color: var(--ink-mute); }
 
@@ -171,7 +144,16 @@
   .mrail__cat:hover { padding-left: 0.95rem; }
   .mrail__cat.on { background: var(--orange); border-color: var(--orange); color: var(--ink); }
 }
-@media (max-width: 520px) {
-  .mi { flex-direction: column; gap: 0.5rem; }
-  .mi__r { width: 100%; justify-content: space-between; }
+/* Two across on a phone rather than one giant card per screen, so a category
+   still reads as a menu you can scan. */
+@media (max-width: 560px) {
+  .mcat__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.1rem 0.7rem;
+  }
+  .mcard__name { font-size: 0.92rem; }
+  .mcard__desc { font-size: 0.78rem; }
+}
+@media (max-width: 360px) {
+  .mcat__grid { grid-template-columns: minmax(0, 1fr); }
 }

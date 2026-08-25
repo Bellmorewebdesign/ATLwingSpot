@@ -3,24 +3,26 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "ATL Wing Spot — brand redesign concept",
+  "description": "ATL Wing Spot \u2014 brand redesign concept",
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/publish-to-root.mjs",
     "build:app": "vite build",
     "publish": "node scripts/publish-to-root.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "menu:data": "node scripts/build-menu-data.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/manrope": "^5.0.20",
     "@fontsource/anton": "^5.0.20",
     "@fontsource/archivo": "^5.0.20",
-    "@fontsource-variable/manrope": "^5.0.20",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
+    "image-size": "^2.0.2",
     "vite": "^5.4.8"
   }
 }

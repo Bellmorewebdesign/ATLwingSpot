@@ -58,7 +58,7 @@ export default function Catering() {
       <section className="sec ch-cream">
         <div className="wrap">
           <h2 className="dsp dsp-sm cat__h2">Trays</h2>
-          <p className="cat__note">Prices and availability vary by location.</p>
+          <p className="cat__note">Availability varies by location.</p>
 
           {GROUPS.map((g) => {
             const set = CATERING_PACKAGES.filter((p) => p.tag === g)
@@ -72,7 +72,6 @@ export default function Catering() {
                       <span className="tray__name">
                         {p.name}{p.qty && <em> · {p.qty}</em>}
                       </span>
-                      <span className="tray__price">{p.price}</span>
                     </Reveal>
                   ))}
                 </ul>

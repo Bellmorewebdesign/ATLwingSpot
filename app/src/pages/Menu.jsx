@@ -9,65 +9,51 @@ import './Menu.css'
 
 const CATS = MENU_CATEGORIES.filter((c) => c.id !== 'all')
 
-function OrderLink({ label = 'Order' }) {
+/**
+ * Every listing in the official pack ships with its own photograph, so the menu
+ * is one consistent grid of cards rather than the old split of a few photo
+ * features above a list of text-only rows.
+ *
+ * Name, description, photo, category. No price — intentionally, everywhere.
+ */
+function Card({ item }) {
   return (
-    <a className="mi__order" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-      {label} <ArrowRight />
-    </a>
-  )
-}
-
-/* Items with photography get scale; everything else reads as a real menu
-   list rather than another rounded card. */
-function Feature({ item }) {
-  return (
-    <article className="feat">
-      <div className="feat__img">
-        <img src={asset(item.image)} alt={item.name} loading="lazy" decoding="async" />
-        {item.badge && <span className="feat__badge">{item.badge}</span>}
+    <li className="mcard">
+      <div className="mcard__img">
+        <img
+          src={asset(item.image)}
+          alt={item.name}
+          width={item.w}
+          height={item.h}
+          loading="lazy"
+          decoding="async"
+        />
       </div>
-      <div className="feat__body">
-        <h3 className="dsp feat__name">{item.name}</h3>
-        <p className="feat__desc">{item.desc}</p>
-        <div className="feat__foot">
-          <span className="feat__price">{item.price}</span>
-          <OrderLink />
-        </div>
-      </div>
-    </article>
-  )
-}
-
-function Row({ item }) {
-  return (
-    <li className="mi">
-      <div className="mi__l">
-        <h3 className="mi__name">
-          {item.name}
-          {item.badge && <span className="mi__tag">{item.badge}</span>}
-        </h3>
-        <p className="mi__desc">{item.desc}</p>
-      </div>
-      <div className="mi__r">
-        <span className="mi__price">{item.price}</span>
-        <OrderLink />
+      <div className="mcard__body">
+        <h3 className="mcard__name">{item.name}</h3>
+        <p className="mcard__desc">{item.desc}</p>
+        <a className="mcard__order" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+          Order <ArrowRight />
+        </a>
       </div>
     </li>
   )
 }
 
+function Grid({ items }) {
+  return (
+    <ul className="mcat__grid">
+      {items.map((i) => <Card key={i.id} item={i} />)}
+    </ul>
+  )
+}
+
 function Section({ cat, items }) {
-  const feats = items.filter((i) => i.image && i.feature)
-  const rows = items.filter((i) => !(i.image && i.feature))
+  if (!items.length) return null
   return (
     <section className="mcat" id={`cat-${cat.id}`}>
       <h2 className="dsp mcat__h">{cat.label}</h2>
-      {feats.length > 0 && (
-        <div className="mcat__feats">
-          {feats.map((i) => <Feature key={i.id} item={i} />)}
-        </div>
-      )}
-      {rows.length > 0 && <ul className="mcat__rows">{rows.map((i) => <Row key={i.id} item={i} />)}</ul>}
+      <Grid items={items} />
     </section>
   )
 }
@@ -107,13 +93,13 @@ export default function Menu() {
     <div className="page menu ch-cream">
       <Seo
         title="Menu"
-        description="The full ATL Wing Spot menu — bone-in wings, boneless, saucy tenders, chicken n' waffles, loaded fries, shakes and more, in 25+ sauces."
+        description="The full ATL Wing Spot menu — bone-in wings, boneless, saucy tenders, chicken n' waffles, quesadillas, loaded fries, shakes and more."
       />
 
       <header className="mast wrap menu__mast">
         <h1 className="dsp dsp-lg">Menu</h1>
-        <p className="menu__sub">Everything is fried once you order it, then tossed in whichever of the 25+ sauces and rubs you pick.</p>
-        <p className="fineprint menu__fine">Prices and availability vary by location.</p>
+        <p className="menu__sub">Everything is fried once you order it, then tossed in whichever sauce or rub you pick.</p>
+        <p className="fineprint menu__fine">Availability varies by location.</p>
       </header>
 
       <div className="menu__body wrap">
@@ -155,7 +141,7 @@ export default function Menu() {
                 {found.length} {found.length === 1 ? 'match' : 'matches'}
               </h2>
               {found.length > 0 ? (
-                <ul className="mcat__rows">{found.map((i) => <Row key={i.id} item={i} />)}</ul>
+                <Grid items={found} />
               ) : (
                 <p className="menu__empty">Nothing by that name. Try “wings”, “waffles” or “shake”.</p>
               )}
