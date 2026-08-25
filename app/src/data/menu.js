@@ -2,21 +2,29 @@
 //
 //   npm run menu:data      (app/scripts/build-menu-data.mjs)
 //
-// Source of truth: menu-items.json at the repo root, published by ATL. It holds
-// 68 listings mapped onto 51 official photographs; several sizes and
-// variations intentionally share one photo. Categories, names, the item-to-image
-// mapping and the substance of every description come from there.
+// Source of truth: menu-items.json at the repo root, published by ATL. It lists
+// 68 entries, one per portion size, which is why bone-in wings alone appear
+// there as six near-identical rows sharing two photographs. Here those portion
+// sizes are folded into a single card whose copy names the sizes on offer, so
+// the menu reads as 45 dishes rather than 68 repetitions. Every one of the
+// 68 official listings is still represented; the build fails if one is not.
+//
+// 10 cards stand for more than one listing. Categories, names, the item-to-image
+// mapping and the substance of every description come from the pack.
+//
+// 3 cards carry image: null. The pack maps each of them to a photograph of a
+// DIFFERENT dish, and it has no correct shot for them. They render an explicit
+// "no photo" state; a lookalike would misrepresent the product.
 //
 // Descriptions are copy-edited only: typos fixed, shouting normalised, terminal
-// punctuation added, and sibling sizes made distinguishable from one another.
-// Where the source disagreed with itself about how many sauces exist ("over 30"
-// in some rows, "over 25" in others) the count is left out entirely rather than
-// guessed at.
+// punctuation added. Where the source disagreed with itself about how many
+// sauces exist ("over 30" in some rows, "over 25" in others) the count is left
+// out entirely rather than guessed at.
 //
 // There is NO price field, by design — the customer-facing menu shows the name,
 // the description, the photo and the category, and nothing else.
 //
-// DO NOT EDIT BY HAND. Change the pack (or the copy table in the script) and
+// DO NOT EDIT BY HAND. Change the pack (or the CARDS table in the script) and
 // regenerate, or the next run will overwrite you.
 
 export const MENU_CATEGORIES = [
@@ -66,177 +74,51 @@ export const MENU_ITEMS = [
     image: 'assets/menu/mozzarella-sticks.jpg', w: 1920, h: 1079,
   },
 
-  // ---------------- WINGS (8) ----------------
+  // ---------------- WINGS (2) ----------------
   {
-    id: '6pc-bone-in-wings-combo-meal', cat: 'wings',
-    name: '6pc Bone In Wings Combo Meal',
+    id: 'bone-in-wings-combo', cat: 'wings',
+    name: 'Bone-In Wings Combo',
     desc:
-      'Six of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with your choice of side, beverage and dip.',
+      'Our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with your choice of side, beverage and dip. Comes as a 6-piece or a 10-piece.',
     image: 'assets/menu/6pc-bone-in-wings-combo-meal.jpg', w: 1920, h: 1080,
   },
   {
-    id: '10pc-bone-in-wings-combo', cat: 'wings',
-    name: '10pc Bone In Wings Combo',
+    id: 'bone-in-wings', cat: 'wings',
+    name: 'Bone-In Wings',
     desc:
-      'Ten of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with your choice of side, beverage and dip.',
-    image: 'assets/menu/6pc-bone-in-wings-combo-meal.jpg', w: 1920, h: 1080,
-  },
-  {
-    id: '4-bone-in-wings', cat: 'wings',
-    name: '4 Bone In Wings',
-    desc:
-      'Four of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
+      'Our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip. Order 4, 6, 10, 20, 50 or 100 pieces.',
     image: 'assets/menu/wings-e1746184196401.jpg', w: 1894, h: 1078,
-  },
-  {
-    id: '6-bone-in-wings', cat: 'wings',
-    name: '6 Bone In Wings',
-    desc:
-      'Six of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
-    image: 'assets/menu/wings-e1746184196401.jpg', w: 1894, h: 1078,
-  },
-  {
-    id: '10-bone-in-wings', cat: 'wings',
-    name: '10 Bone In Wings',
-    desc:
-      'Ten of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
-    image: 'assets/menu/wings-e1746184196401.jpg', w: 1894, h: 1078,
-  },
-  {
-    id: '20-bone-in-wings', cat: 'wings',
-    name: '20 Bone In Wings',
-    desc:
-      'Twenty of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
-    image: 'assets/menu/wings-e1746184196401.jpg', w: 1894, h: 1078,
-  },
-  {
-    id: '50-bone-in-wings', cat: 'wings',
-    name: '50 Bone In Wings',
-    desc:
-      'Fifty of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
-    image: 'assets/menu/50-bone-in-wings.webp', w: 1920, h: 1080,
-  },
-  {
-    id: '100-bone-in-wings', cat: 'wings',
-    name: '100 Bone In Wings',
-    desc:
-      'One hundred of our classic bone-in wings, always fresh, never frozen. Choose from a wide selection of flavors. Served with celery and your choice of dip.',
-    image: 'assets/menu/50-bone-in-wings.webp', w: 1920, h: 1080,
   },
 
-  // ---------------- BONELESS WINGS (8) ----------------
+  // ---------------- BONELESS WINGS (2) ----------------
   {
-    id: '6pc-boneless-wings-combo', cat: 'boneless',
-    name: '6pc Boneless Wings Combo',
+    id: 'boneless-wings-combo', cat: 'boneless',
+    name: 'Boneless Wings Combo',
     desc:
-      'Six of our fan-favorite boneless wings, now in a combo. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Served with your choice of sauce, side, beverage and dip.',
+      'Our fan-favorite boneless wings, now in a combo. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Served with your choice of sauce, side, beverage and dip. Comes as a 6-piece or a 10-piece.',
     image: 'assets/menu/6pc-boneless-wings-combo.jpg', w: 1920, h: 1080,
   },
   {
-    id: '10pc-boneless-wings-combo', cat: 'boneless',
-    name: '10pc Boneless Wings Combo',
+    id: 'boneless-wings', cat: 'boneless',
+    name: 'Boneless Wings',
     desc:
-      'Ten of our fan-favorite boneless wings, now in a combo. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Served with your choice of sauce, side, beverage and dip.',
-    image: 'assets/menu/6pc-boneless-wings-combo.jpg', w: 1920, h: 1080,
-  },
-  {
-    id: '4-boneless-wings', cat: 'boneless',
-    name: '4 Boneless Wings',
-    desc:
-      'Four of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
+      'Our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip. Order 4, 6, 10, 20, 50 or 100 pieces.',
     image: 'assets/menu/4-boneless-wings.jpg', w: 1920, h: 1079,
-  },
-  {
-    id: '6-boneless-wings', cat: 'boneless',
-    name: '6 Boneless Wings',
-    desc:
-      'Six of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
-    image: 'assets/menu/4-boneless-wings.jpg', w: 1920, h: 1079,
-  },
-  {
-    id: '10-boneless-wings', cat: 'boneless',
-    name: '10 Boneless Wings',
-    desc:
-      'Ten of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
-    image: 'assets/menu/4-boneless-wings.jpg', w: 1920, h: 1079,
-  },
-  {
-    id: '20-boneless-wings', cat: 'boneless',
-    name: '20 Boneless Wings',
-    desc:
-      'Twenty of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
-    image: 'assets/menu/4-boneless-wings.jpg', w: 1920, h: 1079,
-  },
-  {
-    id: '50-boneless-wings', cat: 'boneless',
-    name: '50 Boneless Wings',
-    desc:
-      'Fifty of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
-    image: 'assets/menu/50-boneless-wings.jpg', w: 1920, h: 1080,
-  },
-  {
-    id: '100-boneless-wings', cat: 'boneless',
-    name: '100 Boneless Wings',
-    desc:
-      'One hundred of our fan-favorite boneless wings. Fresh, never frozen white-meat chicken, hand breaded and fried till golden brown. Choose your sauce and dip.',
-    image: 'assets/menu/50-boneless-wings.jpg', w: 1920, h: 1080,
   },
 
-  // ---------------- SAUCY TENDERS (8) ----------------
+  // ---------------- SAUCY TENDERS (2) ----------------
   {
-    id: '3-saucy-tenders', cat: 'tenders',
-    name: '3 Saucy Tenders',
+    id: 'saucy-tenders', cat: 'tenders',
+    name: 'Saucy Tenders',
     desc:
-      'Three hand-breaded jumbo tenders. Pick your favorite sauce and have them tossed, or with the sauce on the side.',
-    image: 'assets/menu/3-jumbo-tenders.jpg', w: 1920, h: 1079,
-  },
-  {
-    id: '5-saucy-tenders', cat: 'tenders',
-    name: '5 Saucy Tenders',
-    desc:
-      'Five hand-breaded jumbo tenders. Pick your favorite sauce and have them tossed, or with the sauce on the side.',
-    image: 'assets/menu/5-jumbo-tenders.jpg', w: 1920, h: 1080,
-  },
-  {
-    id: '10-saucy-tenders', cat: 'tenders',
-    name: '10 Saucy Tenders',
-    desc:
-      'Ten hand-breaded jumbo tenders. Pick your favorite sauces and have them tossed, or with the sauce on the side.',
+      'Hand-breaded jumbo tenders. Pick your favorite sauce and have them tossed, or with the sauce on the side. Order 3, 5, 10, 20, 50 or 100 pieces.',
     image: 'assets/menu/10-jumbo-tenders.webp', w: 1920, h: 1080,
   },
   {
-    id: '20-saucy-tenders', cat: 'tenders',
-    name: '20 Saucy Tenders',
+    id: 'tender-combo', cat: 'tenders',
+    name: 'Tender Combo',
     desc:
-      'Twenty hand-breaded jumbo tenders. Pick your favorite sauces and have them tossed, or with the sauce on the side.',
-    image: 'assets/menu/20-jumbo-tenders.webp', w: 1920, h: 1080,
-  },
-  {
-    id: '50-saucy-tenders', cat: 'tenders',
-    name: '50 Saucy Tenders',
-    desc:
-      'Fifty hand-breaded jumbo tenders. Pick your favorite sauces and have them tossed, or with the sauce on the side.',
-    image: 'assets/menu/50-jumbo-tenders.webp', w: 1920, h: 1080,
-  },
-  {
-    id: '100-saucy-tenders', cat: 'tenders',
-    name: '100 Saucy Tenders',
-    desc:
-      'One hundred hand-breaded jumbo tenders. Pick your favorite sauces and have them tossed, or with the sauce on the side.',
-    image: 'assets/menu/50-jumbo-tenders.webp', w: 1920, h: 1080,
-  },
-  {
-    id: '3pc-tender-combo', cat: 'tenders',
-    name: '3pc Tender Combo',
-    desc:
-      'Three hand-breaded jumbo tenders, tossed or with the sauce on the side. Served with your choice of side and drink.',
-    image: 'assets/menu/3pc-tender-combo.webp', w: 1920, h: 1370,
-  },
-  {
-    id: '5pc-tender-combo', cat: 'tenders',
-    name: '5pc Tender Combo',
-    desc:
-      'Five hand-breaded jumbo tenders, tossed or with the sauce on the side. Served with your choice of side and drink.',
+      'Hand-breaded jumbo tenders, tossed or with the sauce on the side. Served with your choice of side and drink. Comes as a 3-piece or a 5-piece.',
     image: 'assets/menu/3pc-tender-combo.webp', w: 1920, h: 1370,
   },
 
@@ -274,27 +156,27 @@ export const MENU_ITEMS = [
     name: 'Waffle',
     desc:
       'The OG. Our original waffle topped with powdered sugar, no chicken. Served with syrup on the side.',
-    image: 'assets/menu/cinnamon-toast-crunch-chicken-n-waffles.webp', w: 1920, h: 1534,
+    image: null,   // the pack maps this listing to a photo of a different dish
   },
   {
     id: 'oreo-waffle', cat: 'waffles',
     name: 'Oreo Waffle',
     desc:
-      'Crispy Oreo waffle topped with Hershey’s syrup, powdered sugar and more Oreos.',
+      'Crispy Oreo waffle topped with Hershey’s syrup, powdered sugar and more Oreos. No chicken.',
     image: 'assets/menu/oreo-waffle.png', w: 1920, h: 1762,
   },
   {
     id: 'fruity-pebbles-waffle', cat: 'waffles',
     name: 'Fruity Pebbles Waffle',
     desc:
-      'Crispy Fruity Pebbles waffle topped with strawberry syrup, powdered sugar and more Fruity Pebbles.',
+      'Crispy Fruity Pebbles waffle topped with strawberry syrup, powdered sugar and more Fruity Pebbles. No chicken.',
     image: 'assets/menu/fruity-pebbles-waffle.png', w: 1920, h: 1534,
   },
   {
     id: 'cinnamon-toast-crunch-waffle', cat: 'waffles',
     name: 'Cinnamon Toast Crunch Waffle',
     desc:
-      'Crispy Cinnamon Toast Crunch waffle topped with caramel syrup, powdered sugar and more Cinnamon Toast Crunch.',
+      'Crispy Cinnamon Toast Crunch waffle topped with caramel syrup, powdered sugar and more Cinnamon Toast Crunch. No chicken.',
     image: 'assets/menu/cinnamon-toast-crunch-waffle.png', w: 1920, h: 1534,
   },
 
@@ -372,7 +254,7 @@ export const MENU_ITEMS = [
     id: 'waffle-fries', cat: 'fries',
     name: 'Waffle Fries',
     desc:
-      'Golden waffle fries, available in small or large servings.',
+      'Golden waffle fries. Order a small or a large.',
     image: 'assets/menu/waffle-fries.webp', w: 1920, h: 1621,
   },
   {
@@ -401,13 +283,13 @@ export const MENU_ITEMS = [
     name: 'Nashville Hot Loaded Waffle Fries',
     desc:
       'Waffle fries loaded up with crispy chicken, Nashville hot sauce and ranch.',
-    image: 'assets/menu/cajun-fried-corn.jpg', w: 1920, h: 1080,
+    image: null,   // the pack maps this listing to a photo of a different dish
   },
   {
     id: 'sweet-potato-fries', cat: 'fries',
     name: 'Sweet Potato Fries',
     desc:
-      'Sweet potato fries, available in small or large servings.',
+      'Sweet potato fries. Order a small or a large.',
     image: 'assets/menu/sweet-potato-fries.webp', w: 1920, h: 1576,
   },
   {
@@ -418,34 +300,13 @@ export const MENU_ITEMS = [
     image: 'assets/menu/bbq-loaded-waffle-fries.webp', w: 1920, h: 1079,
   },
 
-  // ---------------- DESSERTS N SHAKES (6) ----------------
+  // ---------------- DESSERTS N SHAKES (3) ----------------
   {
     id: 'milkshake', cat: 'desserts',
     name: 'Milkshake',
     desc:
       'Shake it up with one of our fan-favorite milkshakes. Choose from flavors like Reese’s, Fruity Pebbles, Oreo Blast and Cinnamon Toast Crunch, or keep it classic with Hershey’s Chocolate, Vanilla or Strawberry Shortcake.',
     image: 'assets/menu/milkshake.webp', w: 1024, h: 1255,
-  },
-  {
-    id: 'cinnamon-toast-crunch-waffle-desserts', cat: 'desserts',
-    name: 'Cinnamon Toast Crunch Waffle',
-    desc:
-      'Crispy Cinnamon Toast Crunch waffle topped with caramel syrup, powdered sugar and more Cinnamon Toast Crunch.',
-    image: 'assets/menu/cinnamon-toast-crunch-waffle.png', w: 1920, h: 1534,
-  },
-  {
-    id: 'fruity-pebbles-waffle-desserts', cat: 'desserts',
-    name: 'Fruity Pebbles Waffle',
-    desc:
-      'Crispy Fruity Pebbles waffle topped with strawberry syrup, powdered sugar and more Fruity Pebbles.',
-    image: 'assets/menu/fruity-pebbles-waffle.webp', w: 600, h: 300,
-  },
-  {
-    id: 'oreo-waffle-desserts', cat: 'desserts',
-    name: 'Oreo Waffle',
-    desc:
-      'Crispy Oreo waffle topped with Hershey’s syrup, powdered sugar and more Oreos.',
-    image: 'assets/menu/oreo-waffle.webp', w: 1024, h: 939,
   },
   {
     id: 'fried-oreos', cat: 'desserts',
@@ -462,12 +323,12 @@ export const MENU_ITEMS = [
     image: 'assets/menu/funnel-cake-fries.webp', w: 1024, h: 575,
   },
 
-  // ---------------- BEVERAGES (5) ----------------
+  // ---------------- BEVERAGES (3) ----------------
   {
-    id: 'can-soda', cat: 'drinks',
-    name: 'Can Soda',
+    id: 'soda', cat: 'drinks',
+    name: 'Soda',
     desc:
-      'Canned soda, including Pepsi, Diet Pepsi, Orange Crush, Ginger Ale, Brisk Iced Tea and Lemonade.',
+      'Fountain, can or bottle. The range covers Pepsi and Diet Pepsi, Orange Crush, Ginger Ale, Mountain Dew Baja Blast, Brisk Iced Tea, Country Time lemonade and Sunny D Fruit Punch, and varies by format.',
     image: 'assets/menu/bottled-soda.webp', w: 1024, h: 576,
   },
   {
@@ -482,21 +343,7 @@ export const MENU_ITEMS = [
     name: 'Bottled Water',
     desc:
       'Pure and refreshing bottled water.',
-    image: 'assets/menu/bottled-soda.webp', w: 1024, h: 576,
-  },
-  {
-    id: 'large-soda', cat: 'drinks',
-    name: 'Large Soda',
-    desc:
-      'Large fountain soda: Pepsi, Orange Crush or Ginger Ale.',
-    image: 'assets/menu/large-soda.webp', w: 1024, h: 731,
-  },
-  {
-    id: 'bottled-soda', cat: 'drinks',
-    name: 'Bottled Soda',
-    desc:
-      'Bottled soda, including classic Pepsi variants, Crush flavors, Mountain Dew Baja Blast, Country Time lemonades, Sunny D Fruit Punch and Brisk Iced Tea.',
-    image: 'assets/menu/bottled-soda.webp', w: 1024, h: 576,
+    image: null,   // the pack maps this listing to a photo of a different dish
   },
 
   // ---------------- EXTRAS (5) ----------------

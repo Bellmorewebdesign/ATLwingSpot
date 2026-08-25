@@ -81,6 +81,24 @@
 }
 .mcard:hover .mcard__img img { transform: scale(1.04); }
 
+/* No correct photograph exists for this listing. A muted, clearly empty box in
+   the same footprint keeps the grid even and is honest about the gap. */
+.mcard__img--none {
+  display: grid;
+  place-items: center;
+  background: var(--cream-deep);
+  border: 2px dashed var(--line);
+}
+.mcard__img--none span {
+  font-weight: 800;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  text-align: center;
+  padding-inline: 1rem;
+}
+
 .mcard__body { padding-top: 0.85rem; display: flex; flex-direction: column; flex: 1; }
 .mcard__name {
   font-size: 1.02rem;

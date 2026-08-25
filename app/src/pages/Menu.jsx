@@ -19,16 +19,25 @@ const CATS = MENU_CATEGORIES.filter((c) => c.id !== 'all')
 function Card({ item }) {
   return (
     <li className="mcard">
-      <div className="mcard__img">
-        <img
-          src={asset(item.image)}
-          alt={item.name}
-          width={item.w}
-          height={item.h}
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
+      {item.image ? (
+        <div className="mcard__img">
+          <img
+            src={asset(item.image)}
+            alt={item.name}
+            width={item.w}
+            height={item.h}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      ) : (
+        /* ATL's pack maps this listing to a photo of a different dish, so the
+           card says so rather than showing the wrong food. Same box, same
+           footprint, so the grid does not go ragged. */
+        <div className="mcard__img mcard__img--none" role="img" aria-label={`${item.name} — no photo available`}>
+          <span aria-hidden="true">No photo available</span>
+        </div>
+      )}
       <div className="mcard__body">
         <h3 className="mcard__name">{item.name}</h3>
         <p className="mcard__desc">{item.desc}</p>
