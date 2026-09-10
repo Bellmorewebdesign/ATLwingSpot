@@ -20,7 +20,10 @@
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.34), rgba(255,255,255,0.10) 46%, transparent 68%);
+  /* plain fallback first, for engines without color-mix() */
+  background: radial-gradient(circle, var(--tone-disc), transparent 62%);
+  background: radial-gradient(circle, var(--tone-disc),
+              color-mix(in srgb, var(--tone-disc) 30%, transparent) 46%, transparent 68%);
   pointer-events: none;
 }
 
@@ -32,7 +35,7 @@
   margin-top: 0.8rem;
   font-size: var(--step-1);
   font-weight: 600;
-  opacity: 0.72;
+  color: var(--tone-mute);
 }
 
 /* ---- controls ---- */
@@ -49,7 +52,7 @@
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  opacity: 0.78;
+  color: var(--tone-mute);
   margin-bottom: 0.6rem;
   width: 100%;
   text-align: center;
@@ -71,16 +74,14 @@
   font-size: clamp(0.72rem, 1.6vw, 0.88rem);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: inherit;
-  opacity: 0.72;
+  color: var(--tone-mute);
   transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
-              opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+              transform var(--t-fast) var(--ease);
 }
-.heat__b:hover, .wetdry__b:hover { opacity: 1; }
+.heat__b:hover, .wetdry__b:hover { color: var(--tone-fg); }
 .heat__b.on, .wetdry__b.on {
   background: var(--ink);
   color: var(--cream);
-  opacity: 1;
 }
 
 /* ---- result ---- */
@@ -90,7 +91,7 @@
   font-size: 0.74rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  opacity: 0.66;
+  color: var(--tone-mute);
   margin-bottom: 0.5rem;
   animation: st-up 0.45s var(--ease) both;
 }
@@ -104,7 +105,7 @@
   margin-top: 0.7rem;
   font-size: var(--step-1);
   font-style: italic;
-  opacity: 0.78;
+  color: var(--tone-mute);
   animation: st-up 0.5s var(--ease) 0.12s both;
 }
 
@@ -122,12 +123,12 @@
   border: 2px solid currentColor;
   font-weight: 700;
   font-size: 0.78rem;
-  opacity: 0.7;
-  transition: opacity var(--t-fast), background var(--t-fast), color var(--t-fast);
+  color: var(--tone-mute);
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
 }
-.chip:hover { opacity: 1; background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.chip:hover { background: var(--ink); color: var(--cream); border-color: var(--ink); }
 
-.stage__note { margin-top: 1.4rem; font-size: 0.78rem; opacity: 0.78; }
+.stage__note { margin-top: 1.4rem; font-size: 0.78rem; color: var(--tone-mute); }
 
 @keyframes st-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
