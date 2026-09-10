@@ -6,21 +6,24 @@
   align-items: center;
 }
 
-/* Overlapping stack — photography and type sharing space */
+/* Overlapping stack of prints — photography and type sharing space.
+   The shots are cut-outs, so each sits on a white card and is CONTAINED
+   inside it: a cover crop would slice the fork off the mac and cheese. */
 .sband__shots {
   position: relative;
-  min-height: clamp(320px, 42vw, 520px);
+  min-height: clamp(340px, 44vw, 540px);
 }
 .sband__shot {
   position: absolute;
+  background: var(--paper);
   border-radius: var(--r-md);
   overflow: hidden;
-  box-shadow: 0 24px 50px -22px rgba(40, 20, 4, 0.45);
+  box-shadow: 0 24px 50px -22px rgba(40, 20, 4, 0.4);
 }
-.sband__shot img { width: 100%; height: 100%; object-fit: cover; }
-.sband__shot.s0 { width: 54%; aspect-ratio: 4/5; left: 0;    top: 0;    transform: rotate(-4deg); z-index: 2; }
-.sband__shot.s1 { width: 44%; aspect-ratio: 4/5; right: 4%;  top: 12%;  transform: rotate(5deg);  z-index: 1; }
-.sband__shot.s2 { width: 42%; aspect-ratio: 1;   left: 22%;  bottom: 0; transform: rotate(-1.5deg); z-index: 3; }
+.sband__shot img { width: 100%; height: 100%; object-fit: contain; padding: 7%; }
+.sband__shot.s0 { width: 43%; aspect-ratio: 4/5; left: 0;    top: 0;    transform: rotate(-4deg); z-index: 2; }
+.sband__shot.s1 { width: 52%; aspect-ratio: 5/4; right: 0;   top: 8%;   transform: rotate(4deg);  z-index: 1; }
+.sband__shot.s2 { width: 50%; aspect-ratio: 5/4; left: 12%;  bottom: 0; transform: rotate(-2deg); z-index: 3; }
 
 .sband__seal {
   position: absolute;

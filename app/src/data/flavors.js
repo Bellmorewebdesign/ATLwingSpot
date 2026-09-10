@@ -8,7 +8,9 @@ export const HEAT_LEVELS = [
   { id: 1, label: 'Mild',    blurb: 'All flavor, no burn.',         color: '#22c1da' },
   { id: 2, label: 'Medium',  blurb: 'A little kick. Nothing scary.', color: '#f4a020' },
   { id: 3, label: 'Hot',     blurb: 'Now you feel it.',              color: '#f4601f' },
-  { id: 4, label: 'No Fear', blurb: 'Ask for extra ranch.',          color: '#e0342a' },
+  // deep red rather than the bright one: this tier carries cream type, and
+  // neither cream nor ink clears AA for body text on the brighter shade
+  { id: 4, label: 'No Fear', blurb: 'Ask for extra ranch.',          color: '#b52a1e' },
 ]
 
 export const STYLES = [

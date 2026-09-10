@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ORDER_URL } from '../data/site'
+import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { ArrowRight, MapPin } from './Icons'
 import './StickyMobileBar.css'
 
@@ -16,7 +16,7 @@ export function StickyMobileBar() {
         rel="noopener noreferrer"
         className="mbar__b mbar__b--order"
       >
-        Order now <ArrowRight />
+        {ORDER_LABEL} <ArrowRight />
       </a>
     </div>
   )

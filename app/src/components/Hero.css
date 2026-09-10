@@ -6,12 +6,12 @@
   min-height: 100svh;
   display: flex;
 }
-/* Warm light behind the basket so the white-shot food melts into the page */
+/* Warm light behind the basket so the studio-lit food melts into the page */
 .hero::before {
   content: '';
   position: absolute;
-  left: 50%; top: 46%;
-  width: 92vw; max-width: 1200px;
+  left: 50%; top: 52%;
+  width: 96vw; max-width: 1180px;
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   background: radial-gradient(circle, rgba(244,123,32,0.20), rgba(244,123,32,0.06) 45%, transparent 68%);
@@ -25,8 +25,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: calc(var(--nav-h) + clamp(0.75rem, 2.5vh, 2rem));
-  padding-bottom: clamp(1.25rem, 3vh, 2.5rem);
+  justify-content: center;
+  gap: clamp(1.4rem, 4vh, 3rem);
+  padding-top: calc(var(--nav-h) + clamp(1rem, 3vh, 2.25rem));
+  padding-bottom: clamp(1.75rem, 5vh, 3.5rem);
 }
 
 /* ---------- fact line ---------- */
@@ -46,14 +48,15 @@
 }
 .hero__facts i { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); }
 
-/* ---------- type + food stage ---------- */
+/* ---------- type + food stage ----------
+   The stage is sized by the type, not by the viewport, so the lockup keeps
+   the same proportions on a phone, a tablet and a wide desktop instead of
+   floating in a column of dead space. */
 .hero__stage {
   position: relative;
   width: 100%;
-  flex: 1;
   display: grid;
   place-items: center;
-  margin-block: clamp(0.4rem, 1.5vh, 1.4rem);
   min-height: 0;
 }
 .hero__h1 { grid-area: 1 / 1; width: 100%; margin: 0; }
@@ -73,36 +76,38 @@
    SAUCY. below it — the two lines lock into one block. */
 .hero__l1 {
   /* sized by width AND height so the lockup never overflows the fold */
-  font-size: max(1.9rem, min(20vw, 30vh, 24rem));
+  font-size: max(1.9rem, min(19vw, 25vh, 23rem));
   letter-spacing: 0.62em;
   text-indent: 0.31em; /* half the tracking: cancels the trailing letter-space */
 }
 .hero__l2 {
-  font-size: max(3.4rem, min(31vw, 46vh, 38rem));
+  font-size: max(3.4rem, min(30vw, 39vh, 36rem));
   letter-spacing: -0.03em;
   color: var(--orange);
 }
 
-/* The front copy is clipped to its lower half, so the basket is sandwiched
-   between the top and bottom of the letterforms. */
+/* The front copy is clipped exactly at SAUCY.'s cap line, so the whole second
+   line is repainted over the basket and stays perfectly crisp, while the wings
+   above it break forward through the wide tracking of STAY. */
 .hero__type--front {
   z-index: 3;
-  clip-path: inset(59% 0 0 0);
+  clip-path: inset(39% 0 0 0);
 }
 
-/* ATL's own basket, keyed off the studio white. It is close to square, so it
-   is set narrower and dropped lower than the old letterbox crop was — enough
-   to burst through the middle of the lockup without swallowing STAY. */
+/* ATL's own basket, keyed off the studio white. Wide and shallow, so it
+   straddles the seam between the two lines: the wings read clear against the
+   cream above SAUCY, and only the cyan box slips behind the letterforms. */
 .hero__food {
   grid-area: 1 / 1;
   z-index: 2;
-  width: min(42vw, 590px);
+  position: relative;
+  top: clamp(4px, 1vw, 16px);
+  width: min(38vw, 520px);
   height: auto;
   justify-self: center;
   align-self: center;
-  margin-top: 8%;
-  filter: drop-shadow(0 26px 26px rgba(84, 40, 8, 0.26))
-          drop-shadow(0 6px 8px rgba(84, 40, 8, 0.16));
+  filter: drop-shadow(0 22px 24px rgba(84, 40, 8, 0.22))
+          drop-shadow(0 5px 7px rgba(84, 40, 8, 0.14));
   animation: h-food 0.85s var(--ease) 0.3s both;
   will-change: transform;
 }
@@ -119,7 +124,7 @@
 .hero__menu { margin-left: 0.4rem; }
 
 @keyframes h-fade { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@keyframes h-food { from { opacity: 0; transform: scale(0.9) translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes h-food { from { opacity: 0; transform: scale(0.92) translateY(16px); } to { opacity: 1; transform: none; } }
 
 /* Entrance for the wordmark (both copies stay in sync) */
 .hero__l1, .hero__l2 { animation: h-rise 0.8s var(--ease) both; }
@@ -128,23 +133,29 @@
 @keyframes h-rise { from { opacity: 0; transform: translateY(0.14em); } to { opacity: 1; transform: none; } }
 
 /* ---------- responsive ---------- */
-@media (max-width: 860px) {
-  .hero__food { width: min(66vw, 400px); margin-top: 6%; }
-  .hero__type--front { clip-path: inset(62% 0 0 0); }
+/* Tablet portrait: the viewport is tall but not wide, so the lockup is driven
+   harder off the width — otherwise the poster floats in a column of air. */
+@media (max-width: 1024px) {
+  .hero__l1 { font-size: max(1.9rem, min(20.5vw, 22vh, 16rem)); }
+  .hero__l2 { font-size: max(3.4rem, min(33vw, 34vh, 24rem)); }
+  .hero__food { width: min(56vw, 460px); top: clamp(4px, 1.2vw, 16px); }
+  .hero__type--front { clip-path: inset(40% 0 0 0); }
 }
 @media (max-width: 560px) {
   .hero { min-height: auto; }
   /* keep the fold clear of the fixed order bar */
   .hero__inner {
     min-height: 100svh;
-    padding-bottom: calc(var(--bar-h) + env(safe-area-inset-bottom) + 0.75rem);
+    gap: clamp(1.1rem, 3.5vh, 2rem);
+    padding-bottom: calc(var(--bar-h) + env(safe-area-inset-bottom) + 1rem);
   }
   /* type carries the composition on a phone; the basket supports it */
-  .hero__l1 { font-size: max(1.9rem, min(22vw, 12vh, 6rem)); }
-  .hero__l2 { font-size: max(3.4rem, min(34vw, 19vh, 9rem)); }
-  .hero__food { width: min(62vw, 290px); }
-  /* more of SAUCY. in front so the wordmark still reads on a phone */
-  .hero__type--front { clip-path: inset(52% 0 0 0); }
+  .hero__l1 { font-size: max(1.9rem, min(19.5vw, 11vh, 5.5rem)); }
+  .hero__l2 { font-size: max(3.4rem, min(30.5vw, 18vh, 8.5rem)); }
+  /* On a phone the lockup is small, so the basket steps back to an accent:
+     the wings clear the top of SAUCY. and STAY stays completely legible. */
+  .hero__food { width: min(55vw, 250px); top: clamp(12px, 5vw, 26px); }
+  .hero__type--front { clip-path: inset(39% 0 0 0); }
   .hero__actions { width: 100%; flex-direction: column; align-items: stretch; }
   .hero__actions .btn { width: 100%; }
   .hero__menu { align-self: center; margin-left: 0; margin-top: 0.2rem; }

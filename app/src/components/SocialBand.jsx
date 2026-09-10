@@ -4,23 +4,33 @@ import { Reveal } from './Reveal'
 import { Instagram, TikTok, ArrowUpRight } from './Icons'
 import './SocialBand.css'
 
-// Real ATL food photography, presented as ATL's own pictures — no invented
-// handles, captions, comments or follower counts. The only number here is
-// the verified 1M+ view breakout.
+// Real ATL food photography, presented as ATL's own pictures. No invented
+// handles, captions, comments or follower counts. The only number here is the
+// verified 1M+ view breakout.
+//
+// Three dishes the rest of the page does not show, so the feed adds something
+// instead of repeating the sections above it.
 const SHOTS = [
-  { src: 'assets/food/official/official-oreo-chicken-waffles.webp', alt: "Oreo chicken and waffles" },
-  { src: 'assets/food/official/official-wings-30pc.webp', alt: 'Three baskets of wings in different sauces' },
-  { src: 'assets/food/official/official-classic-chicken-sandwich.webp', alt: 'Crispy chicken sandwich' },
+  { src: 'assets/food/client-refresh/mac-and-cheese.webp',      w: 700, h: 1008, alt: 'A cup of ATL Wing Spot mac and cheese, forkful lifted out' },
+  { src: 'assets/food/client-refresh/honey-bbq-club-wrap.webp', w: 820, h: 586,  alt: 'A honey BBQ club wrap cut open' },
+  { src: 'assets/food/client-refresh/sauced-waffle-fries.webp', w: 820, h: 625,  alt: 'Waffle fries tossed in buffalo sauce in a cyan ATL box' },
 ]
 
 export function SocialBand() {
   return (
     <section className="sband ch-cream" id="social">
       <div className="wrap sband__in">
-        <div className="sband__shots" aria-hidden="true">
+        <div className="sband__shots">
           {SHOTS.map((s, i) => (
             <Reveal key={s.src} className={`sband__shot s${i}`} delay={i * 80}>
-              <img src={asset(s.src)} alt="" loading="lazy" decoding="async" />
+              <img
+                src={asset(s.src)}
+                alt={s.alt}
+                width={s.w}
+                height={s.h}
+                loading="lazy"
+                decoding="async"
+              />
             </Reveal>
           ))}
           <span className="seal sband__seal">

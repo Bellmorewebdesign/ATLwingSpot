@@ -21,7 +21,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(255deg, rgba(10,9,12,0.9) 22%, rgba(10,9,12,0.55) 52%, rgba(10,9,12,0.1) 78%);
+  background: linear-gradient(255deg, rgba(10,9,12,0.94) 30%, rgba(10,9,12,0.66) 56%, rgba(10,9,12,0.14) 82%);
 }
 
 .cband__in { width: 100%; display: flex; justify-content: flex-end; }

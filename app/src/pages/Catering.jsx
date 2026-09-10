@@ -3,7 +3,7 @@ import { LOCATIONS } from '../data/locations'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { Reveal } from '../components/Reveal'
-import { MockupForm } from '../components/MockupForm'
+import { InquiryForm } from '../components/InquiryForm'
 import { ArrowRight } from '../components/Icons'
 import './Catering.css'
 
@@ -15,7 +15,7 @@ const FIELDS = [
   { name: 'guests', label: 'How many people', type: 'number', placeholder: 'e.g. 40' },
   {
     name: 'location', label: 'Which shop', type: 'select',
-    options: LOCATIONS.map((l) => `${l.name} — ${l.city}, ${l.state}`),
+    options: LOCATIONS.map((l) => `${l.name}, ${l.city}, ${l.state}`),
     placeholder: 'Pick a location',
   },
   { name: 'message', label: 'Anything else', type: 'textarea', full: true, placeholder: 'Sauces, timing, drop-off…' },
@@ -28,12 +28,21 @@ export default function Catering() {
     <div className="page cat">
       <Seo
         title="Catering"
-        description="ATL Wing Spot catering — trays of wings, tenders, mozzarella sticks and waffle fries for game day, the office or a party. Tell us the headcount."
+        description="ATL Wing Spot catering. Trays of wings, tenders, mozzarella sticks and waffle fries for game day, the office or a party. Tell us the headcount."
       />
 
       {/* Orange takeover masthead with the food at full scale */}
       <header className="cat__mast ch-orange">
-        <img className="cat__food" src={asset('assets/food/wings-basket-cutout.webp')} alt="" loading="lazy" aria-hidden="true" />
+        <img
+          className="cat__food"
+          src={asset('assets/food/wings-basket-cutout.webp')}
+          alt=""
+          width="591"
+          height="422"
+          loading="lazy"
+          decoding="async"
+          aria-hidden="true"
+        />
         <div className="wrap cat__mast-in">
           <h1 className="dsp dsp-lg cat__h1">Feed<br />everybody.</h1>
           <p className="cat__sub">
@@ -90,14 +99,13 @@ export default function Catering() {
             </p>
           </div>
           <div className="cat__card">
-            <MockupForm
+            <InquiryForm
               fields={FIELDS}
               submitLabel="Send request"
-              concept={{
-                title: 'Request received',
-                summary: 'That would have gone to your local shop',
+              notice={{
+                title: 'Not connected yet',
                 message:
-                  'This is a preview of the proposed catering request. Submission is switched off in this website concept.',
+                  'The catering request form does not reach the shops yet, so this request was not sent anywhere.',
               }}
             />
           </div>

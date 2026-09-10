@@ -32,7 +32,7 @@
   font-size: 0.68rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  opacity: 0.65;
+  opacity: 0.82;
   margin-bottom: 0.3rem;
 }
 .pf__v { font-size: clamp(0.95rem, 2.2vw, 1.5rem); line-height: 1.05; color: var(--ink); }
@@ -51,7 +51,9 @@
   font-family: var(--font-display);
   font-size: clamp(1.6rem, 4vw, 2.8rem);
   line-height: 1;
-  color: var(--orange);
+  /* deep orange rather than the display orange: at numeral size the lighter
+     tone only reaches 2.4:1 on cream */
+  color: var(--orange-deep);
 }
 .chap__when {
   display: block;

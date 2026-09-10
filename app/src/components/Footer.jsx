@@ -20,6 +20,7 @@ export function Footer() {
             alt="ATL Wing Spot"
             width="200" height="88"
             loading="lazy"
+            decoding="async"
           />
           <p className="foot__facts">100% Halal · Fresh, never frozen · 25+ sauces</p>
         </div>
@@ -50,8 +51,8 @@ export function Footer() {
         <div className="foot__legal">
           <p>© {year} ATL Wing Spot</p>
           <p className="foot__disc">
-            Website concept. Availability varies by location. Ordering is handled on ATL&rsquo;s
-            own ordering page.
+            Availability varies by location. Ordering runs on Snackpass, ATL&rsquo;s own
+            ordering platform.
           </p>
         </div>
       </div>

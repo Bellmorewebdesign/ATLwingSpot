@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { NAV_LINKS } from '../data/navigation'
-import { ORDER_URL } from '../data/site'
+import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { Logo } from './Logo'
 import { MobileMenu } from './MobileMenu'
 import { ArrowRight } from './Icons'
@@ -20,7 +20,7 @@ export function Header() {
 
   return (
     <>
-      <header className={`head ${stuck ? 'is-stuck' : ''}`}>
+      <header className={`head ${stuck ? 'is-stuck' : ''} ${open ? 'is-menu' : ''}`}>
         <div className="head__in">
           <Logo className="head__logo" />
 
@@ -34,7 +34,7 @@ export function Header() {
 
           <div className="head__right">
             <a className="btn btn-orange btn-sm head__order" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-              Order <ArrowRight />
+              {ORDER_LABEL} <ArrowRight />
             </a>
             <button
               className={`burger ${open ? 'on' : ''}`}

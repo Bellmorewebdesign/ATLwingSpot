@@ -1,11 +1,22 @@
 import { useMemo, useState } from 'react'
 import { HEAT_LEVELS, STYLES, FLAVORS, FLAVOR_COUNT } from '../data/flavors'
-import { ORDER_URL } from '../data/site'
+import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { ArrowRight } from './Icons'
 import './FlavorStage.css'
 
-// Heat 4 is dark enough to need light type; the rest read on ink.
-const FG = { 1: '#121012', 2: '#121012', 3: '#121012', 4: '#f6efe1' }
+/**
+ * Each heat tier carries its own type colour, its own muted tone and its own
+ * sauce-disc glow, because the ground changes underneath all three. Muting is
+ * a colour rather than an opacity so the contrast is known rather than
+ * whatever the ground happens to make of it: every value below clears WCAG AA
+ * for body text on its own tier.
+ */
+const TONE = {
+  1: { fg: '#121012', mute: 'rgba(18,16,18,0.82)',    disc: 'rgba(255,255,255,0.34)' },
+  2: { fg: '#121012', mute: 'rgba(18,16,18,0.82)',    disc: 'rgba(255,255,255,0.34)' },
+  3: { fg: '#121012', mute: 'rgba(18,16,18,0.84)',    disc: 'rgba(255,255,255,0.30)' },
+  4: { fg: '#f6efe1', mute: 'rgba(246,239,225,0.94)', disc: 'rgba(0,0,0,0.14)' },
+}
 
 export function FlavorStage({ heading = 'Pick your flavor.' }) {
   const [heat, setHeat] = useState(1)
@@ -26,7 +37,12 @@ export function FlavorStage({ heading = 'Pick your flavor.' }) {
     <section
       className="stage"
       id="flavors"
-      style={{ '--tone': level.color, '--tone-fg': FG[heat] }}
+      style={{
+        '--tone': level.color,
+        '--tone-fg': TONE[heat].fg,
+        '--tone-mute': TONE[heat].mute,
+        '--tone-disc': TONE[heat].disc,
+      }}
     >
       {/* Abstract sauce field — colour, not fake product photography */}
       <div className="stage__disc" aria-hidden="true" />
@@ -82,7 +98,7 @@ export function FlavorStage({ heading = 'Pick your flavor.' }) {
 
         <div className="stage__foot">
           <a className="btn btn-ink btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-            Order this <ArrowRight />
+            {ORDER_LABEL} <ArrowRight />
           </a>
           <ul className="stage__also">
             {others.map((f) => (

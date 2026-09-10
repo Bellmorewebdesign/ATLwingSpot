@@ -17,8 +17,8 @@ function setMeta(attr, key, content) {
 export function Seo({ title, description, suffix = true }) {
   useEffect(() => {
     const full = title
-      ? suffix ? `${title} — ${BASE_TITLE}` : title
-      : `${BASE_TITLE} — Stay Saucy.`
+      ? suffix ? `${title} | ${BASE_TITLE}` : title
+      : `${BASE_TITLE} | Stay Saucy.`
     document.title = full
     if (description) {
       setMeta('name', 'description', description)

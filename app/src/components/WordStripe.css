@@ -3,6 +3,10 @@
   width: 100%;
   --ws-fg: #fff;
 }
+/* The words stay WHITE on the cyan. Orange was tried on the cyan first, as
+   asked: ATL orange (#f47b20) against ATL cyan (#22c1da) measures 1.26:1, so
+   even at Anton display size the words go muddy and they break down completely
+   at phone size. White holds the packaging look and stays legible. */
 .ws--cyan   { background: var(--cyan);   --ws-fg: #fff; }
 .ws--orange { background: var(--orange); --ws-fg: var(--ink); }
 .ws--ink    { background: var(--ink);    --ws-fg: var(--cream); }

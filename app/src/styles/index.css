@@ -55,5 +55,7 @@
 
 /* 404 */
 .nf { display: grid; place-items: center; min-height: 78vh; text-align: center; background: var(--cream); }
+/* cyan ink, not the display orange: a kicker is body-sized text */
+.nf__kick { color: var(--cyan-ink); }
 .nf__t { margin: 0.5rem 0 0.8rem; }
 .nf__actions { display: flex; gap: 0.7rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }

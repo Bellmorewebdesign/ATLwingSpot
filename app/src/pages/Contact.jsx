@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { SOCIAL, BRAND } from '../data/site'
 import { LOCATIONS } from '../data/locations'
 import { Seo } from '../components/Seo'
-import { MockupForm } from '../components/MockupForm'
+import { InquiryForm } from '../components/InquiryForm'
 import { Instagram, TikTok, ArrowUpRight } from '../components/Icons'
 import './Contact.css'
 
@@ -16,7 +16,7 @@ const FIELDS = [
   { name: 'phone', label: 'Phone', type: 'tel', autoComplete: 'tel' },
   {
     name: 'location', label: 'Which shop', type: 'select',
-    options: LOCATIONS.map((l) => `${l.name} — ${l.city}, ${l.state}`),
+    options: LOCATIONS.map((l) => `${l.name}, ${l.city}, ${l.state}`),
     placeholder: 'Pick a location',
   },
   { name: 'message', label: 'Message', type: 'textarea', full: true, required: true },
@@ -52,14 +52,13 @@ export default function Contact() {
         </div>
 
         <div className="contact__card">
-          <MockupForm
+          <InquiryForm
             fields={FIELDS}
             submitLabel="Send"
-            concept={{
-              title: 'Message sent',
-              summary: 'That would have reached the team',
+            notice={{
+              title: 'Not connected yet',
               message:
-                'This is a preview of the proposed contact form. Submission is switched off in this website concept.',
+                'The contact form does not have an inbox behind it yet, so this message was not sent anywhere.',
             }}
           />
         </div>
