@@ -1,0 +1,66 @@
+.gband {
+  position: relative;
+  padding-block: clamp(2.5rem, 6vw, 5.5rem);
+  overflow: hidden;
+}
+/* Same warm light as the hero, so the two cream chapters read as one opening
+   rather than two stacked bands. */
+.gband::before {
+  content: '';
+  position: absolute;
+  left: 34%; top: 46%;
+  width: 70vw; max-width: 900px;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(34,193,218,0.16), rgba(34,193,218,0.05) 48%, transparent 70%);
+  pointer-events: none;
+}
+
+.gband__in {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 4rem);
+}
+
+.gband__shot {
+  /* the baskets run wider than the text column, out towards the page edge,
+     but never all the way to it — the group keeps a margin so the leading
+     basket does not read as clipped */
+  margin-left: calc(-1 * clamp(0rem, 1.4vw, 1.5rem));
+}
+.gband__shot img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 30px 34px rgba(84, 40, 8, 0.16));
+}
+
+/* cyan ink rather than orange: at kicker size orange on cream only
+   reaches about 2.5:1 */
+.gband__kick { color: var(--cyan-ink); }
+.gband__title { color: var(--ink); margin-block: 0.35rem 0.7rem; }
+.gband__line {
+  color: var(--ink-mute);
+  max-width: 32ch;
+  margin-bottom: 1.5rem;
+}
+.gband__acts {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem 1.1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 860px) {
+  .gband__in {
+    grid-template-columns: 1fr;
+    gap: clamp(1.25rem, 4vw, 2rem);
+  }
+  /* copy first on a phone: the hero has just handed off, so the words carry
+     the transition and the photograph confirms it */
+  .gband__copy { order: -1; }
+  .gband__shot { margin-left: 0; margin-inline: calc(-1 * clamp(0.5rem, 3vw, 2rem)); }
+  .gband__line { max-width: 44ch; margin-bottom: 1.25rem; }
+}

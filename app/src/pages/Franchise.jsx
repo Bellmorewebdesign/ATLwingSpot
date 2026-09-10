@@ -1,7 +1,7 @@
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { Reveal } from '../components/Reveal'
-import { MockupForm } from '../components/MockupForm'
+import { InquiryForm } from '../components/InquiryForm'
 import { ArrowRight } from '../components/Icons'
 import './Franchise.css'
 
@@ -52,7 +52,14 @@ export default function Franchise() {
             <a href="#enquire" className="btn btn-orange btn-lg fr__cta">Request information <ArrowRight /></a>
           </div>
           <div className="fr__award">
-            <img src={asset('assets/brand/long-island-choice-award.png')} alt="Long Island Choice Awards winner" />
+            <img
+                src={asset('assets/brand/long-island-choice-award.png')}
+                alt="Long Island Choice Awards winner"
+                width="110"
+                height="105"
+                loading="lazy"
+                decoding="async"
+              />
             <span>Voted best wings<br />on Long Island</span>
           </div>
         </div>
@@ -100,14 +107,13 @@ export default function Franchise() {
             <p className="fr__form-sub">Send your market and we&rsquo;ll take it from there.</p>
           </div>
           <div className="fr__card">
-            <MockupForm
+            <InquiryForm
               fields={FIELDS}
               submitLabel="Request information"
-              concept={{
-                title: 'Request received',
-                summary: 'That would have reached the franchise team',
+              notice={{
+                title: 'Not connected yet',
                 message:
-                  'This is a preview of the proposed franchise enquiry. Submission is switched off in this website concept.',
+                  'The franchise enquiry form does not reach the franchise team yet, so this request was not sent anywhere.',
               }}
             />
           </div>

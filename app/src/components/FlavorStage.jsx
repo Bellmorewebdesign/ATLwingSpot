@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { HEAT_LEVELS, STYLES, FLAVORS, FLAVOR_COUNT } from '../data/flavors'
-import { ORDER_URL } from '../data/site'
+import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { ArrowRight } from './Icons'
 import './FlavorStage.css'
 
@@ -82,7 +82,7 @@ export function FlavorStage({ heading = 'Pick your flavor.' }) {
 
         <div className="stage__foot">
           <a className="btn btn-ink btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-            Order this <ArrowRight />
+            {ORDER_LABEL} <ArrowRight />
           </a>
           <ul className="stage__also">
             {others.map((f) => (

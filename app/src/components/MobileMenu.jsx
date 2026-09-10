@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { NAV_LINKS } from '../data/navigation'
-import { SOCIAL, ORDER_URL } from '../data/site'
+import { SOCIAL, ORDER_URL, ORDER_LABEL } from '../data/site'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { Instagram, TikTok, ArrowRight, ArrowUpRight } from './Icons'
 import './MobileMenu.css'
@@ -31,7 +31,7 @@ export function MobileMenu({ open, onClose }) {
 
       <div className="mm__foot">
         <a className="btn btn-ink btn-lg btn-block" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-          Order now <ArrowRight />
+          {ORDER_LABEL} <ArrowRight />
         </a>
         <div className="mm__social">
           <a href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer">

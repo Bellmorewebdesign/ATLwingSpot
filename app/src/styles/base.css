@@ -30,7 +30,8 @@ input, textarea, select { font: inherit; color: inherit; }
   outline-offset: 2px;
   border-radius: 2px;
 }
-.ch-dark :focus-visible, .ch-cyan :focus-visible { outline-color: var(--ink); }
+.ch-dark :focus-visible { outline-color: var(--cream); }
+.ch-cyan :focus-visible, .ch-orange :focus-visible { outline-color: var(--ink); }
 ::selection { background: var(--orange); color: var(--ink); }
 
 /* ============================================================
@@ -49,8 +50,10 @@ input, textarea, select { font: inherit; color: inherit; }
 .dsp-md { font-size: var(--d-md); letter-spacing: -0.01em; line-height: 0.88; }
 .dsp-sm { font-size: var(--d-sm); letter-spacing: -0.005em; line-height: 0.9; }
 
-.t-cyan { color: var(--cyan); }
-.t-orange { color: var(--orange); }
+/* Accent text takes the tone its chapter declares, so ATL's cyan and orange
+   stay themselves without washing out on cream or going muddy on ink. */
+.t-cyan { color: var(--accent-cyan); }
+.t-orange { color: var(--accent-orange); }
 .t-cream { color: var(--cream); }
 .t-ink { color: var(--ink); }
 .outline {

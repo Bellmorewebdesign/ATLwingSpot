@@ -135,14 +135,14 @@ export const MENU_ITEMS = [
     name: 'Oreo Chicken N’ Waffles',
     desc:
       'Three hand-breaded chicken tenders served with a crispy Oreo waffle topped with powdered sugar and chocolate syrup. Syrup on the side.',
-    image: 'assets/menu/oreo-chicken-n-waffles.png', w: 1920, h: 1534,
+    image: 'assets/menu/client-oreo-chicken-n-waffles.webp', w: 1000, h: 800,
   },
   {
     id: 'fruity-pebbles-chicken-n-waffles', cat: 'waffles',
     name: 'Fruity Pebbles Chicken N’ Waffles',
     desc:
       'Three hand-breaded chicken tenders served with a crispy Fruity Pebbles waffle topped with powdered sugar and strawberry syrup. Syrup on the side.',
-    image: 'assets/menu/fruity-pebbles-chicken-n-waffles.jpg', w: 1920, h: 1608,
+    image: 'assets/menu/client-fruity-pebbles-chicken-n-waffles.webp', w: 1000, h: 800,
   },
   {
     id: 'cinnamon-toast-crunch-chicken-n-waffles', cat: 'waffles',
@@ -216,14 +216,14 @@ export const MENU_ITEMS = [
     name: 'Honey Mustard Wrap',
     desc:
       'Crispy boneless chicken topped with cheddar cheese, lettuce, tomatoes and honey mustard, wrapped to go.',
-    image: 'assets/menu/honey-mustard-wrap-scaled.webp', w: 2560, h: 1829,
+    image: 'assets/menu/client-honey-mustard-wrap.webp', w: 1000, h: 800,
   },
   {
     id: 'buffalo-ranch-chicken-wrap', cat: 'wraps',
     name: 'Buffalo Ranch Chicken Wrap',
     desc:
       'Crispy buffalo chicken topped with lettuce, tomatoes and ranch dressing, wrapped to go.',
-    image: 'assets/menu/buffalo-ranch-chicken-wrap.jpg', w: 1920, h: 1080,
+    image: 'assets/menu/client-buffalo-ranch-chicken-wrap.webp', w: 1000, h: 800,
   },
   {
     id: 'chipotle-chicken-wrap', cat: 'wraps',
@@ -255,28 +255,28 @@ export const MENU_ITEMS = [
     name: 'Waffle Fries',
     desc:
       'Golden waffle fries. Order a small or a large.',
-    image: 'assets/menu/waffle-fries.webp', w: 1920, h: 1621,
+    image: 'assets/menu/client-waffle-fries.webp', w: 1000, h: 800,
   },
   {
     id: 'cheese-fries', cat: 'fries',
     name: 'Cheese Fries',
     desc:
       'Golden fries topped with melted cheddar cheese.',
-    image: 'assets/menu/cheese-fries.webp', w: 1920, h: 1578,
+    image: 'assets/menu/client-cheese-fries.webp', w: 1000, h: 800,
   },
   {
     id: 'battered-onion-rings', cat: 'fries',
     name: 'Battered Onion Rings',
     desc:
       'Crispy, golden-battered onion rings, perfectly seasoned for a delightful crunch.',
-    image: 'assets/menu/battered-onion-rings.webp', w: 1920, h: 1079,
+    image: 'assets/menu/client-battered-onion-rings.webp', w: 1000, h: 800,
   },
   {
     id: 'buffalo-ranch-loaded-waffle-fries', cat: 'fries',
     name: 'Buffalo Ranch Loaded Waffle Fries',
     desc:
       'Waffle fries loaded up with crispy chicken, buffalo sauce and ranch.',
-    image: 'assets/menu/buffalo-ranch-loaded-waffle-fries.webp', w: 1920, h: 1079,
+    image: 'assets/menu/client-buffalo-ranch-loaded-waffle-fries.webp', w: 1000, h: 800,
   },
   {
     id: 'nashville-hot-loaded-waffle-fries', cat: 'fries',

@@ -8,7 +8,16 @@ export function FranchiseStrip() {
   return (
     <section className="fstrip ch-cyan">
       <div className="wrap fstrip__in">
-        <img className="fstrip__award" src={asset('assets/brand/long-island-choice-award.png')} alt="" loading="lazy" aria-hidden="true" />
+        <img
+        className="fstrip__award"
+        src={asset('assets/brand/long-island-choice-award.png')}
+        alt=""
+        width="110"
+        height="105"
+        loading="lazy"
+        decoding="async"
+        aria-hidden="true"
+      />
         <p className="dsp fstrip__txt">Want to open an ATL?</p>
         <Link className="btn btn-ink" to="/franchise">Franchising <ArrowRight /></Link>
       </div>

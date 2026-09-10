@@ -36,12 +36,16 @@
   --dark-mute: #9a9498;
   --dark-line: rgba(246, 239, 225, 0.16);
 
-  /* Chapter theming — every section sets these three,
-     so type/lines/CTAs stay correct without bespoke rules. */
+  /* Chapter theming — every section sets these, so type/lines/CTAs stay
+     correct without bespoke rules. The two accents are part of it: ATL's
+     display cyan and orange are bright enough to wash out on cream, so each
+     chapter names the tone of the accent that reads on its own ground. */
   --bg: var(--cream);
   --fg: var(--ink);
   --fg-mute: var(--ink-mute);
   --line: rgba(18, 16, 18, 0.14);
+  --accent-cyan: var(--cyan-deep);
+  --accent-orange: var(--orange-deep);
 
   /* Type */
   --font-display: 'Anton', 'Archivo', system-ui, sans-serif;
@@ -86,12 +90,12 @@
 
 /* ---------- CHAPTER SURFACES ----------
    Applied to a <section> to switch the whole colour context. */
-.ch-cream { --bg: var(--cream); --fg: var(--ink); --fg-mute: var(--ink-mute); --line: rgba(18,16,18,0.14); }
-.ch-warm  { --bg: var(--cream-warm); --fg: var(--ink); --fg-mute: var(--ink-mute); --line: rgba(18,16,18,0.12); }
-.ch-paper { --bg: var(--paper); --fg: var(--ink); --fg-mute: var(--ink-mute); --line: rgba(18,16,18,0.12); }
-.ch-dark  { --bg: var(--ink); --fg: var(--cream); --fg-mute: var(--dark-mute); --line: var(--dark-line); }
-.ch-cyan  { --bg: var(--cyan); --fg: var(--ink); --fg-mute: rgba(18,16,18,0.66); --line: rgba(18,16,18,0.2); }
-.ch-orange{ --bg: var(--orange); --fg: var(--ink); --fg-mute: rgba(18,16,18,0.66); --line: rgba(18,16,18,0.2); }
+.ch-cream { --bg: var(--cream); --fg: var(--ink); --fg-mute: var(--ink-mute); --line: rgba(18,16,18,0.14); --accent-cyan: var(--cyan-deep); --accent-orange: var(--orange-deep); }
+.ch-warm  { --bg: var(--cream-warm); --fg: var(--ink); --fg-mute: var(--ink-mute); --line: rgba(18,16,18,0.12); --accent-cyan: var(--cyan-deep); --accent-orange: var(--orange-deep); }
+.ch-paper { --bg: var(--paper); --fg: var(--ink); --fg-mute: var(--ink-mute); --line: rgba(18,16,18,0.12); --accent-cyan: var(--cyan-deep); --accent-orange: var(--orange-deep); }
+.ch-dark  { --bg: var(--ink); --fg: var(--cream); --fg-mute: var(--dark-mute); --line: var(--dark-line); --accent-cyan: var(--cyan); --accent-orange: var(--orange); }
+.ch-cyan  { --bg: var(--cyan); --fg: var(--ink); --fg-mute: rgba(18,16,18,0.66); --line: rgba(18,16,18,0.2); --accent-cyan: var(--cyan-ink); --accent-orange: var(--ink); }
+.ch-orange{ --bg: var(--orange); --fg: var(--ink); --fg-mute: rgba(18,16,18,0.66); --line: rgba(18,16,18,0.2); --accent-cyan: var(--cyan-ink); --accent-orange: var(--ink); }
 
 .ch-cream, .ch-warm, .ch-paper, .ch-dark, .ch-cyan, .ch-orange {
   background: var(--bg);

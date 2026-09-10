@@ -1,5 +1,6 @@
 import { Seo } from '../components/Seo'
 import { Hero } from '../components/Hero'
+import { GroupBand } from '../components/GroupBand'
 import { WordStripe } from '../components/WordStripe'
 import { CraveTrack } from '../components/CraveTrack'
 import { SpreadBand } from '../components/SpreadBand'
@@ -18,18 +19,18 @@ export default function Home() {
   return (
     <>
       <Seo
-        title="Stay Saucy"
-        suffix={false}
         description="Fresh, never frozen wings fried to order in 25+ sauces. 100% halal. Voted best wings on Long Island. Order pickup or delivery across NY, NJ and CA."
       />
 
       {/* cream */}
       <Hero />
-      {/* cyan — ATL's own packaging pattern */}
+      {/* warm cream — the step down out of the hero, on the group shot */}
+      <GroupBand />
+      {/* cyan, ATL's own packaging pattern */}
       <WordStripe words={BOX_WORDS} tone="cyan" size="md" />
       {/* dark, horizontal */}
       <CraveTrack />
-      {/* warm cream — official studio photography, backgrounds blend in */}
+      {/* white, official studio photography, backgrounds blend in */}
       <SpreadBand />
       {/* signature scroll moment: fall through the slogan into the sauce */}
       <SauceZoom />
@@ -37,7 +38,7 @@ export default function Home() {
       <FlavorStage />
       {/* orange */}
       <CrewCalc />
-      {/* white, split — location step sits early in the ordering path */}
+      {/* white, split: the location step sits early in the ordering path */}
       <LocationsBand />
       {/* dark, right-led */}
       <StoryScale />

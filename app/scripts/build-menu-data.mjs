@@ -159,6 +159,34 @@ const CARDS = [
   { from: [68], desc: 'Crisp celery stalks, freshly cut and ready as a refreshing side or snack.' },
 ]
 
+/**
+ * September 2026 client photo pack overrides.
+ *
+ * The pack at the repo root is a scrape of ATL's old site, and several of its
+ * listings are photographed badly there (or share a shot with a size variant).
+ * The client supplied a fresh studio set; these entries repoint the affected
+ * LISTING INDEX at the reframed 5:4 file that
+ * app/scripts/process-client-photos.py writes into images-web/.
+ *
+ * Living here rather than in menu.js is the point: regenerating the menu data
+ * keeps the new photography instead of reverting to the old shots.
+ *
+ * Only listings whose dish the new photograph actually shows are remapped. The
+ * pack's mac-and-cheese-cup and honey-BBQ-wrap shots have no matching listing,
+ * so they are used as section photography on the homepage instead of being
+ * pinned to an item they do not depict.
+ */
+const PHOTO_OVERRIDES = {
+  34: 'images-web/client-oreo-chicken-n-waffles.webp',            // Oreo Chicken N' Waffles
+  35: 'images-web/client-fruity-pebbles-chicken-n-waffles.webp',  // Fruity Pebbles Chicken N' Waffles
+  41: 'images-web/client-honey-mustard-wrap.webp',                // Honey Mustard Wrap
+  42: 'images-web/client-buffalo-ranch-chicken-wrap.webp',        // Buffalo Ranch Chicken Wrap
+  46: 'images-web/client-waffle-fries.webp',                      // Waffle Fries
+  47: 'images-web/client-cheese-fries.webp',                      // Cheese Fries
+  48: 'images-web/client-battered-onion-rings.webp',              // Battered Onion Rings
+  49: 'images-web/client-buffalo-ranch-loaded-waffle-fries.webp', // Buffalo Ranch Loaded Waffle Fries
+}
+
 const slug = (s) =>
   s.toLowerCase().replace(/[’'".,()]/g, '').replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
@@ -179,6 +207,17 @@ for (const c of CARDS) {
   }
 }
 
+// ---- every override must land on a card that renders a photo ----------------
+const photographed = new Set(
+  CARDS.filter((c) => !c.noPhoto).map((c) => c.img ?? c.from[0])
+)
+for (const idx of Object.keys(PHOTO_OVERRIDES).map(Number)) {
+  if (!byIndex.has(idx)) throw new Error(`photo override for unknown listing: ${idx}`)
+  if (!photographed.has(idx)) {
+    throw new Error(`photo override ${idx} is not the shot any card uses`)
+  }
+}
+
 // ---- build ------------------------------------------------------------------
 rmSync(OUT_IMG, { recursive: true, force: true })
 mkdirSync(OUT_IMG, { recursive: true })
@@ -195,9 +234,10 @@ const rows = CARDS.map((card) => {
   let width = 0
   let height = 0
   if (!card.noPhoto) {
-    const src = resolve(ROOT, shot.web_image)
-    if (!existsSync(src)) throw new Error(`missing image: ${shot.web_image}`)
-    const file = basename(shot.web_image)
+    const web = PHOTO_OVERRIDES[shot.index] ?? shot.web_image
+    const src = resolve(ROOT, web)
+    if (!existsSync(src)) throw new Error(`missing image: ${web}`)
+    const file = basename(web)
     if (!dims.has(file)) {
       copyFileSync(src, resolve(OUT_IMG, file))
       const d = sizeOf(readFileSync(src))

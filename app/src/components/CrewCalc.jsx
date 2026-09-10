@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ORDER_URL } from '../data/site'
+import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { asset } from '../lib/asset'
 import { ArrowRight } from './Icons'
 import './CrewCalc.css'
@@ -29,7 +29,16 @@ export function CrewCalc() {
 
   return (
     <section className="crew ch-orange" id="crew">
-      <img className="crew__food" src={asset('assets/food/crispy-tenders-cutout.webp')} alt="" loading="lazy" aria-hidden="true" />
+      <img
+        className="crew__food"
+        src={asset('assets/food/crispy-tenders-cutout.webp')}
+        alt=""
+        width="314"
+        height="190"
+        loading="lazy"
+        decoding="async"
+        aria-hidden="true"
+      />
 
       <div className="crew__in wrap-tight">
         <h2 className="dsp dsp-sm crew__title">Feeding a crew?</h2>
@@ -68,7 +77,7 @@ export function CrewCalc() {
 
         <div className="crew__cta">
           <a className="btn btn-ink btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-            Order for the crew <ArrowRight />
+            {ORDER_LABEL} <ArrowRight />
           </a>
           <p className="crew__note">It&rsquo;s a starting point, not a rule. You know your people better than we do.</p>
         </div>

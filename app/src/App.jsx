@@ -1,11 +1,11 @@
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
-import { ConceptProvider } from './components/ConceptModal'
+import { FormNoticeProvider } from './components/FormNotice'
 import { ScrollToTop } from './components/ScrollToTop'
 import { Header } from './components/Header'
 import { Footer } from './components/Footer'
 import { StickyMobileBar } from './components/StickyMobileBar'
 import { Seo } from './components/Seo'
-import { ORDER_URL } from './data/site'
+import { ORDER_URL, ORDER_LABEL } from './data/site'
 import { ArrowRight } from './components/Icons'
 
 import Home from './pages/Home'
@@ -22,7 +22,7 @@ function NotFound() {
     <div className="page nf">
       <Seo title="Not found" description="That page doesn’t exist. Head back to the wings." />
       <div className="wrap-tight">
-        <p className="kicker t-orange">404</p>
+        <p className="kicker nf__kick">404</p>
         <h1 className="dsp dsp-md nf__t">Nothing<br />here.</h1>
         <p className="measure-sm" style={{ marginInline: 'auto', color: 'var(--ink-mute)' }}>
           That link is broken. The wings are fine.
@@ -30,7 +30,7 @@ function NotFound() {
         <div className="nf__actions">
           <Link to="/" className="btn btn-ink btn-lg">Back home</Link>
           <a className="btn btn-orange btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-            Order now <ArrowRight />
+            {ORDER_LABEL} <ArrowRight />
           </a>
         </div>
       </div>
@@ -48,7 +48,7 @@ export default function App() {
   }
 
   return (
-    <ConceptProvider>
+    <FormNoticeProvider>
       <a href="#main" className="skip" onClick={focusMain}>Skip to content</a>
       <ScrollToTop />
       <Header />
@@ -67,6 +67,6 @@ export default function App() {
       </main>
       <Footer />
       <StickyMobileBar />
-    </ConceptProvider>
+    </FormNoticeProvider>
   )
 }

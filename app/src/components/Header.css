@@ -88,3 +88,8 @@
 @media (max-width: 380px) {
   .head__logo img { height: 32px; }
 }
+
+/* While the cyan menu panel is open the header sits on top of it, and the
+   logo's cyan half disappears into that cyan. Solid ink keeps the mark
+   readable, the same treatment the rest of the site uses on cyan. */
+.head.is-menu .logo img { filter: brightness(0); }

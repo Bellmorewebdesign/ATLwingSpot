@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { MENU_CATEGORIES, MENU_ITEMS } from '../data/menu'
-import { ORDER_URL } from '../data/site'
+import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { ArrowRight, Search } from '../components/Icons'
@@ -34,7 +34,7 @@ function Card({ item }) {
         /* ATL's pack maps this listing to a photo of a different dish, so the
            card says so rather than showing the wrong food. Same box, same
            footprint, so the grid does not go ragged. */
-        <div className="mcard__img mcard__img--none" role="img" aria-label={`${item.name} — no photo available`}>
+        <div className="mcard__img mcard__img--none" role="img" aria-label={`${item.name}, no photo available`}>
           <span aria-hidden="true">No photo available</span>
         </div>
       )}
@@ -42,7 +42,7 @@ function Card({ item }) {
         <h3 className="mcard__name">{item.name}</h3>
         <p className="mcard__desc">{item.desc}</p>
         <a className="mcard__order" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-          Order <ArrowRight />
+          {ORDER_LABEL} <ArrowRight />
         </a>
       </div>
     </li>
@@ -102,7 +102,7 @@ export default function Menu() {
     <div className="page menu ch-cream">
       <Seo
         title="Menu"
-        description="The full ATL Wing Spot menu — bone-in wings, boneless, saucy tenders, chicken n' waffles, quesadillas, loaded fries, shakes and more."
+        description="The full ATL Wing Spot menu: bone-in wings, boneless, saucy tenders, chicken n' waffles, quesadillas, loaded fries, shakes and more."
       />
 
       <header className="mast wrap menu__mast">

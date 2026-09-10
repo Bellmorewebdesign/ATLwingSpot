@@ -31,7 +31,15 @@ export function SauceZoom() {
   if (reduced) {
     return (
       <section className="zoom zoom--static" aria-label="Sauce it up">
-        <img className="zoom__bg" src={url} alt="A basket of ATL Wing Spot wings" loading="lazy" />
+        <img
+          className="zoom__bg"
+          src={url}
+          alt="A basket of ATL Wing Spot wings"
+          width="1888"
+          height="1072"
+          loading="lazy"
+          decoding="async"
+        />
         <p className="zoom__still dsp">Sauce<br />it up.</p>
       </section>
     )
@@ -51,6 +59,8 @@ export function SauceZoom() {
           className="zoom__bg"
           src={url}
           alt="A basket of ATL Wing Spot wings"
+          width="1888"
+          height="1072"
           loading="lazy"
           decoding="async"
         />

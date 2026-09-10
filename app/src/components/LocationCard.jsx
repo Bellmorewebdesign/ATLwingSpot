@@ -1,4 +1,4 @@
-import { ORDER_URL } from '../data/site'
+import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { mapsUrl } from '../data/locations'
 import { ArrowUpRight } from './Icons'
 import './LocationCard.css'
@@ -16,7 +16,7 @@ export function LocationCard({ loc }) {
       </div>
       <div className="loc__acts">
         <a className="btn btn-orange btn-sm" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-          Order
+          {ORDER_LABEL}
         </a>
         <a className="loc__dir" href={mapsUrl(loc)} target="_blank" rel="noopener noreferrer">
           Directions <ArrowUpRight size={13} />

@@ -1,26 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ORDER_URL } from '../data/site'
+import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { asset } from '../lib/asset'
 import { ArrowRight, ArrowLeft } from './Icons'
 import './CraveTrack.css'
 
 /**
- * Official ATL product photography. Every shot is lit on white, so each panel
- * is a WHITE card: the studio background matches the card exactly and leaves no
- * visible rectangle against the dark section. Captions sit under the image so no
- * scrim ever greys out the food.
+ * One panel per menu category, each on the dish ATL photographed best. Every
+ * shot is lit on a studio ground, so the panels that use the September client
+ * pack are keyed cut-outs (see app/scripts/process-client-photos.py) and the
+ * older official shots are lit on white to match the white card exactly —
+ * either way no rectangle shows against the dark section. Captions sit under
+ * the image so no scrim ever greys out the food.
  *
  * `official-quesadilla-stack` has no confirmed product identity, so it is used
  * at category level only.
  */
 const PANELS = [
-  { cat: 'wings',      name: 'Bone-In\nWings',      line: "Never frozen. They don't hit the fryer until you order them.",          img: 'assets/food/official/official-bone-in-wings.webp' },
-  { cat: 'boneless',   name: 'Boneless',            line: 'All white meat, breaded by hand, and every sauce on the board works on these too.', img: 'assets/food/official/official-boneless-20pc.webp' },
-  { cat: 'tenders',    name: 'Saucy\nTenders',      line: 'Jumbo. Ask for them tossed, or with the sauce on the side.',            img: 'assets/food/official/official-saucy-chicken-drip.webp' },
-  { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch on the waffle. Yes, really.', img: 'assets/food/official/official-fruity-pebbles-chicken-waffles.webp' },
-  { cat: 'sandwiches', name: 'Sandwiches',          line: 'Crispy chicken on a toasted bun, chipotle or classic.',                 img: 'assets/food/official/official-buffalo-ranch-sandwich.webp' },
-  { cat: 'quesadillas', name: 'Quesadillas',        line: 'Four on the menu, from plain cheddar to loaded chicken.',               img: 'assets/food/official/official-quesadilla-stack.webp' },
+  { cat: 'wings',      name: 'Bone-In\nWings',      line: "Never frozen. They don't hit the fryer until you order them.",          img: 'assets/food/official/official-bone-in-wings.webp', w: 1800, h: 1440 },
+  { cat: 'boneless',   name: 'Boneless',            line: 'All white meat, breaded by hand, and every sauce on the board works on these too.', img: 'assets/food/official/official-boneless-20pc.webp', w: 1800, h: 778 },
+  { cat: 'tenders',    name: 'Saucy\nTenders',      line: 'Jumbo. Ask for them tossed, or with the sauce on the side.',            img: 'assets/food/official/official-saucy-chicken-drip.webp', w: 1441, h: 1800 },
+  { cat: 'fries',      name: 'Loaded\nWaffle Fries', line: 'Waffle fries under crispy chicken, buffalo sauce and ranch.',           img: 'assets/food/client-refresh/loaded-waffle-fries.webp', w: 920, h: 651 },
+  { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch on the waffle. Yes, really.', img: 'assets/food/client-refresh/fruity-pebbles-chicken-waffles.webp', w: 920, h: 700 },
+  { cat: 'wraps',      name: 'Wraps',               line: 'Buffalo ranch, chipotle or honey mustard, wrapped to go.',              img: 'assets/food/client-refresh/buffalo-ranch-wrap.webp', w: 920, h: 609 },
+  { cat: 'sandwiches', name: 'Sandwiches',          line: 'Crispy chicken on a toasted bun, chipotle or classic.',                 img: 'assets/food/official/official-buffalo-ranch-sandwich.webp', w: 1800, h: 1440 },
+  { cat: 'quesadillas', name: 'Quesadillas',        line: 'Four on the menu, from plain cheddar to loaded chicken.',               img: 'assets/food/official/official-quesadilla-stack.webp', w: 1800, h: 1440 },
 ]
 
 export function CraveTrack() {
@@ -70,14 +74,21 @@ export function CraveTrack() {
         {PANELS.map((p) => (
           <li className="crave__panel" key={p.cat}>
             <div className="crave__media">
-              <img src={asset(p.img)} alt={p.name.replace('\n', ' ')} loading="lazy" decoding="async" />
+              <img
+                src={asset(p.img)}
+                alt={`ATL Wing Spot ${p.name.replace('\n', ' ').toLowerCase()}`}
+                width={p.w}
+                height={p.h}
+                loading="lazy"
+                decoding="async"
+              />
             </div>
             <div className="crave__body">
               <h3 className="dsp crave__name">{p.name.split('\n').map((l, i) => <span key={i}>{l}</span>)}</h3>
               <p className="crave__line">{p.line}</p>
               <div className="crave__links">
                 <Link className="btn btn-ink btn-sm" to={`/menu?cat=${p.cat}`}>See it</Link>
-                <a className="btn btn-line btn-sm" href={ORDER_URL} target="_blank" rel="noopener noreferrer">Order</a>
+                <a className="btn btn-line btn-sm" href={ORDER_URL} target="_blank" rel="noopener noreferrer">{ORDER_LABEL}</a>
               </div>
             </div>
           </li>

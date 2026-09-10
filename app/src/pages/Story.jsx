@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { STORY_CHAPTERS, PROOF } from '../data/story'
-import { ORDER_URL } from '../data/site'
+import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { Reveal } from '../components/Reveal'
@@ -56,9 +56,12 @@ export default function Story() {
       </section>
 
       <section className="story-p__feast" aria-hidden="true">
-        <img src={asset('assets/food/official/official-bone-in-wings.webp')} alt="" loading="lazy" />
-        <img src={asset('assets/food/official/official-chipotle-chicken-quesadilla.webp')} alt="" loading="lazy" />
-        <img src={asset('assets/food/official/official-fruity-pebbles-chicken-waffles.webp')} alt="" loading="lazy" />
+        <img src={asset('assets/food/official/official-bone-in-wings.webp')} alt=""
+          width="1800" height="1440" loading="lazy" decoding="async" />
+        <img src={asset('assets/food/official/official-chipotle-chicken-quesadilla.webp')} alt=""
+          width="1800" height="1440" loading="lazy" decoding="async" />
+        <img src={asset('assets/food/client-refresh/fruity-pebbles-chicken-waffles.webp')} alt=""
+          width="920" height="700" loading="lazy" decoding="async" />
       </section>
 
       <section className="sec ch-dark story-p__end">
@@ -66,7 +69,7 @@ export default function Story() {
           <h2 className="dsp dsp-md">Same wings.<br /><span className="t-cyan">More counters.</span></h2>
           <div className="story-p__acts">
             <a className="btn btn-orange btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-              Order now <ArrowRight />
+              {ORDER_LABEL} <ArrowRight />
             </a>
             <Link className="btn btn-line btn-lg" to="/locations">Find a shop</Link>
           </div>

@@ -13,6 +13,8 @@ export function CateringBand() {
         className="cband__bg"
         src={asset('assets/food/hero-wings.jpg')}
         alt="A tray of ATL Wing Spot wings"
+        width="1894"
+        height="1078"
         loading="lazy"
         decoding="async"
       />

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ORDER_URL } from '../data/site'
+import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { asset } from '../lib/asset'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 import { ArrowRight } from './Icons'
@@ -11,6 +11,13 @@ import './Hero.css'
  * identical position — once behind the basket, once in front but clipped to
  * its lower half. The basket therefore sits between the upper and lower
  * halves of the letterforms and genuinely breaks through the type.
+ *
+ * The basket is a keyed cut-out of ATL's own studio shot (see
+ * app/scripts/process-client-photos.py): the studio white is removed and each
+ * edge pixel un-premultiplied, so there is no rectangle and no pale halo on
+ * the cream ground. It is set wide and low so the wings clear STAY and only
+ * the box body disappears behind SAUCY — the letters stay readable at every
+ * width, and it never reaches the buttons.
  */
 export function Hero() {
   const foodRef = useRef(null)
@@ -25,18 +32,18 @@ export function Hero() {
     let px = 0, py = 0, sy = 0, raf = 0
     const draw = () => {
       raf = 0
-      food.style.transform = `translate3d(${px}px, ${sy + py}px, 0) scale(${1 + sy * 0.0004})`
+      food.style.transform = `translate3d(${px}px, ${sy + py}px, 0) scale(${1 + sy * 0.0003})`
     }
     const tick = () => { if (!raf) raf = requestAnimationFrame(draw) }
 
     const onMove = (e) => {
-      px = (e.clientX / window.innerWidth - 0.5) * 22
-      py = (e.clientY / window.innerHeight - 0.5) * 14
+      px = (e.clientX / window.innerWidth - 0.5) * 18
+      py = (e.clientY / window.innerHeight - 0.5) * 11
       tick()
     }
     const onScroll = () => {
       if (window.scrollY > window.innerHeight) return
-      sy = window.scrollY * 0.09
+      sy = window.scrollY * 0.07
       tick()
     }
     window.addEventListener('pointermove', onMove, { passive: true })
@@ -64,16 +71,16 @@ export function Hero() {
 
         <div className="hero__stage">
           <h1 className="hero__h1">
-            <span className="sr-only">ATL Wing Spot — stay saucy</span>
+            <span className="sr-only">ATL Wing Spot. Stay saucy.</span>
             <Word />
           </h1>
 
           <img
             ref={foodRef}
             className="hero__food"
-            src={asset('assets/food/hero-wings-cutout.webp')}
-            alt="A basket of ATL Wing Spot bone-in wings"
-            width="1531" height="1191"
+            src={asset('assets/food/client-refresh/hero-wing-basket.webp')}
+            alt="A basket of ATL Wing Spot bone-in wings tossed in buffalo sauce"
+            width="1400" height="764"
             fetchpriority="high" decoding="async"
           />
 
@@ -82,7 +89,7 @@ export function Hero() {
 
         <div className="hero__actions">
           <a className="btn btn-orange btn-lg hero__order" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-            Order now <ArrowRight />
+            {ORDER_LABEL} <ArrowRight />
           </a>
           <Link className="btn btn-line hero__find" to="/locations">Find a location</Link>
           <Link className="tlink hero__menu" to="/menu">See the menu <ArrowRight /></Link>

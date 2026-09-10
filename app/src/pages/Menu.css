@@ -33,7 +33,7 @@
   font-weight: 800;
   font-size: 0.9rem;
   color: var(--ink);
-  opacity: 0.55;
+  opacity: 0.72;
   border-bottom: 2px solid transparent;
   transition: opacity var(--t-fast), padding-left var(--t-fast) var(--ease);
 }
@@ -94,7 +94,7 @@
   font-size: 0.68rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-mute);
+  color: #5a5459;
   text-align: center;
   padding-inline: 1rem;
 }

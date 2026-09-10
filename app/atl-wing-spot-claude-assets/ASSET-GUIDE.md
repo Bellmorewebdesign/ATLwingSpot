@@ -29,7 +29,7 @@
 - Neutral base: white / off-white / near-black
 
 ## Important external links
-- Order online: https://order.online/en/business/-11591828?hideModal=true&lat=40.655167&lng=-73.67489&pickup=true&redirected=true
+- Ordering (Snackpass, the POS ATL runs): https://order.snackpass.co/atlwingspot
 - Instagram: https://www.instagram.com/atlwingspot/
 - TikTok: https://www.tiktok.com/@atlwingspot
 - Current website: https://www.atlwingspot.com/
