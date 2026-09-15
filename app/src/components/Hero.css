@@ -94,15 +94,16 @@
   clip-path: inset(39% 0 0 0);
 }
 
-/* ATL's own basket, keyed off the studio white. Wide and shallow, so it
-   straddles the seam between the two lines: the wings read clear against the
-   cream above SAUCY, and only the cyan box slips behind the letterforms. */
+/* ATL's own tray, keyed off the studio white. Wide and shallow, so it straddles
+   the seam between the two lines: the sauced tenders read clear against the
+   cream above SAUCY, and the orange tray slips behind the letterforms, where it
+   shares their colour instead of competing with it. */
 .hero__food {
   grid-area: 1 / 1;
   z-index: 2;
   position: relative;
-  top: clamp(4px, 1vw, 16px);
-  width: min(38vw, 520px);
+  top: clamp(0px, 0.5vw, 8px);
+  width: min(45vw, 620px);
   height: auto;
   justify-self: center;
   align-self: center;
@@ -138,7 +139,7 @@
 @media (max-width: 1024px) {
   .hero__l1 { font-size: max(1.9rem, min(20.5vw, 22vh, 16rem)); }
   .hero__l2 { font-size: max(3.4rem, min(33vw, 34vh, 24rem)); }
-  .hero__food { width: min(56vw, 460px); top: clamp(4px, 1.2vw, 16px); }
+  .hero__food { width: min(62vw, 520px); top: clamp(0px, 0.5vw, 8px); }
   .hero__type--front { clip-path: inset(40% 0 0 0); }
 }
 @media (max-width: 560px) {
@@ -152,9 +153,9 @@
   /* type carries the composition on a phone; the basket supports it */
   .hero__l1 { font-size: max(1.9rem, min(19.5vw, 11vh, 5.5rem)); }
   .hero__l2 { font-size: max(3.4rem, min(30.5vw, 18vh, 8.5rem)); }
-  /* On a phone the lockup is small, so the basket steps back to an accent:
-     the wings clear the top of SAUCY. and STAY stays completely legible. */
-  .hero__food { width: min(55vw, 250px); top: clamp(12px, 5vw, 26px); }
+  /* On a phone the lockup is small, so the tray steps back to an accent: the
+     sauce clears the top of SAUCY. and STAY stays completely legible. */
+  .hero__food { width: min(60vw, 250px); top: clamp(10px, 4vw, 20px); }
   .hero__type--front { clip-path: inset(39% 0 0 0); }
   .hero__actions { width: 100%; flex-direction: column; align-items: stretch; }
   .hero__actions .btn { width: 100%; }

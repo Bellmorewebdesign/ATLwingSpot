@@ -12,12 +12,17 @@ import './Hero.css'
  * its lower half. The basket therefore sits between the upper and lower
  * halves of the letterforms and genuinely breaks through the type.
  *
- * The basket is a keyed cut-out of ATL's own studio shot (see
+ * The tray is a keyed cut-out of ATL's own studio shot (see
  * app/scripts/process-client-photos.py): the studio white is removed and each
  * edge pixel un-premultiplied, so there is no rectangle and no pale halo on
- * the cream ground. It is set wide and low so the wings clear STAY and only
- * the box body disappears behind SAUCY — the letters stay readable at every
- * width, and it never reaches the buttons.
+ * the cream ground.
+ *
+ * It is an ORANGE-tray shot on purpose. The wordmark behind it is ATL orange
+ * on cream, so the cyan takeout box that used to sit here read as a third
+ * colour fighting the type, and the slivers of it showing through the counters
+ * of SAUCY. looked like a mistake. The orange tray sits inside the same palette
+ * and simply disappears behind the letterforms. It is also the widest, shallowest
+ * complete object in ATL's photography, which is the shape this lockup needs.
  */
 export function Hero() {
   const foodRef = useRef(null)
@@ -78,9 +83,9 @@ export function Hero() {
           <img
             ref={foodRef}
             className="hero__food"
-            src={asset('assets/food/client-refresh/hero-wing-basket.webp')}
-            alt="A basket of ATL Wing Spot bone-in wings tossed in buffalo sauce"
-            width="1400" height="764"
+            src={asset('assets/food/client-refresh/hero-saucy-tenders.webp')}
+            alt="A tray of ATL Wing Spot tenders tossed in sauce"
+            width="1400" height="655"
             fetchpriority="high" decoding="async"
           />
 
