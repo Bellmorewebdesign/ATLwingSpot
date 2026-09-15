@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Prepare the September client photo pack for the web.
+Prepare ATL's studio photography for the web.
 
     pip install pillow numpy
     python3 app/scripts/process-client-photos.py        (run from the repo root)
 
 Inputs
     ATL-Wing-Spot-September-Photo-Pack/ATL-Wing-Spot-September-Photo-Pack/photos/
+    app/atl-wing-spot-claude-assets/public/assets/food/   (ATL's earlier library)
 
 Outputs
     app/public/assets/food/client-refresh/*.webp   cut-out feature shots (alpha)
@@ -26,6 +27,7 @@ The cut-out
     is what stops the white halo the old hero cut-out had.
 
 Not used, on purpose
+    01  the hero moved to an orange-tray shot; see LIBRARY_FEATURES below
     02  the small package lettering renders as "aEL", not "atl"
     10  a second mac-and-cheese cup; 11 is the cleaner of the pair
     12  a second onion-ring shot; its white paper liner keys transparent, which
@@ -42,6 +44,8 @@ from PIL import Image, ImageFilter
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PACK = os.path.join(ROOT, 'ATL-Wing-Spot-September-Photo-Pack',
                     'ATL-Wing-Spot-September-Photo-Pack', 'photos')
+LIBRARY = os.path.join(ROOT, 'app', 'atl-wing-spot-claude-assets',
+                       'public', 'assets', 'food')
 FOOD_OUT = os.path.join(ROOT, 'app', 'public', 'assets', 'food', 'client-refresh')
 MENU_OUT = os.path.join(ROOT, 'images-web')
 
@@ -128,7 +132,6 @@ def _pad_to(im, w, h, fill):
 # --------------------------------------------------------------- recipes ----
 # name -> (source file, max width, keying threshold pair)
 FEATURES = {
-    'hero-wing-basket':               ('01-single-wing-basket.png',        1400, (14, 48)),
     'wing-basket-group':              ('03-multi-basket-wing-group.png',   1600, (12, 42)),
     'loaded-waffle-fries':            ('04-loaded-waffle-fries.jpg',        920, (14, 46)),
     'fruity-pebbles-chicken-waffles': ('05-fruity-pebbles-chicken-waffles.jpg', 920, (14, 46)),
@@ -139,6 +142,20 @@ FEATURES = {
     'onion-rings-orange-box':         ('17-onion-rings-orange-box.jpg',    1100, (14, 46)),
     'mac-and-cheese':                 ('11-mac-and-cheese-cup-white.png',   700, (14, 46)),
     'sauced-waffle-fries':            ('16-sauced-waffle-fries-blue-box.jpg', 820, (14, 46)),
+}
+
+# Same treatment, sourced from ATL's earlier photo library rather than the
+# September pack.
+#
+# The hero is the one slot where packaging colour matters more than the dish:
+# the wordmark behind it is ATL orange on cream, so a cyan takeout box reads as
+# a third colour fighting the type, and the slivers of it that show through the
+# counters of SAUCY. look like a mistake. The orange-tray shots sit inside the
+# same palette, and the tray simply disappears behind the letterforms. This one
+# is also the widest and shallowest complete object in either set, which is the
+# shape the lockup needs.
+LIBRARY_FEATURES = {
+    'hero-saucy-tenders': ('saucy-tenders.jpg', 1400, (14, 46)),
 }
 
 # menu-items.json listing index -> (source file, output name)
@@ -160,8 +177,10 @@ def main():
     os.makedirs(FOOD_OUT, exist_ok=True)
 
     print('feature cut-outs -> app/public/assets/food/client-refresh/')
-    for name, (src, maxw, (lo, hi)) in FEATURES.items():
-        im = trim(cutout(os.path.join(PACK, src), t_lo=lo, t_hi=hi))
+    jobs = [(n, PACK, *v) for n, v in FEATURES.items()]
+    jobs += [(n, LIBRARY, *v) for n, v in LIBRARY_FEATURES.items()]
+    for name, root, src, maxw, (lo, hi) in jobs:
+        im = trim(cutout(os.path.join(root, src), t_lo=lo, t_hi=hi))
         if im.width > maxw:
             im = im.resize((maxw, round(im.height * maxw / im.width)), Image.LANCZOS)
         dst = os.path.join(FOOD_OUT, name + '.webp')
