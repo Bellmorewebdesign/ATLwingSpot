@@ -31,7 +31,7 @@ export function FinalCTA() {
             <a className="btn btn-ink btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
               {ORDER_LABEL} <ArrowRight />
             </a>
-            <p className="fcta__note">Pickup or delivery. The button opens ATL&rsquo;s Snackpass ordering page.</p>
+            <p className="fcta__note">Pickup or delivery. The button opens our Snackpass ordering page.</p>
           </div>
         </div>
       </div>

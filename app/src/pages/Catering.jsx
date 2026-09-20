@@ -56,7 +56,7 @@ export default function Catering() {
       <section className="cat__wide ch-paper" aria-label="Wings by the tray">
         <img
           src={asset('assets/food/official/official-wings-30pc.webp')}
-          alt="Three trays of ATL wings in different sauces"
+          alt="Three trays of our wings in different sauces"
           width="1800" height="712"
           loading="lazy"
           decoding="async"

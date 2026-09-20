@@ -1,7 +1,7 @@
 // Brand-level constants + external links. Facts only.
 
-// ATL Wing Spot runs Snackpass across its restaurants. Every ordering control
-// on the site points here — there is no internal checkout.
+// We run Snackpass across our restaurants. Every ordering control on the site
+// points here — there is no internal checkout, and no other ATL page to defer to.
 export const ORDER_URL = 'https://order.snackpass.co/atlwingspot'
 
 // One label for every ordering control, so the path reads the same everywhere.

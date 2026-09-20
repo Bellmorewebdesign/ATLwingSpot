@@ -26,7 +26,7 @@ export default function Home() {
       <Hero />
       {/* warm cream — the step down out of the hero, on the group shot */}
       <GroupBand />
-      {/* cyan, ATL's own packaging pattern */}
+      {/* cyan, our own packaging pattern */}
       <WordStripe words={BOX_WORDS} tone="cyan" size="md" />
       {/* dark, horizontal */}
       <CraveTrack />
