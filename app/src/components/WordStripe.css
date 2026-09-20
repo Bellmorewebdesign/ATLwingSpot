@@ -40,13 +40,15 @@
   font-weight: 400;
 }
 
+/* One copy's width, measured in JS. The -50% fallback is only ever used for the
+   first paint, where there are exactly two copies and it means the same thing. */
 @keyframes ws-run {
   from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  to   { transform: translateX(calc(-1 * var(--ws-shift, 50%))); }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* The stripe stops, but it is still a printed band: the repeats stay so it
+     reads full edge to edge rather than as one short run floating in colour. */
   .ws__viewport { animation: none; }
-  .ws__track[aria-hidden='true'] { display: none; }
-  .ws__viewport { justify-content: center; }
 }
