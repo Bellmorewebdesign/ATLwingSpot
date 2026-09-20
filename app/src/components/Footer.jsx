@@ -51,8 +51,7 @@ export function Footer() {
         <div className="foot__legal">
           <p>© {year} ATL Wing Spot</p>
           <p className="foot__disc">
-            Availability varies by location. Ordering runs on Snackpass, ATL&rsquo;s own
-            ordering platform.
+            Availability varies by location. Ordering runs on Snackpass.
           </p>
         </div>
       </div>

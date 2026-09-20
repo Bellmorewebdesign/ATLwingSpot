@@ -4,9 +4,12 @@ A bold, animated, mobile-first site for **ATL Wing Spot**, built with React + Vi
 deployed straight from **GitHub Pages (Deploy from a branch → `main` → `/root`)** with no
 GitHub Actions.
 
-Ordering is not a checkout. Every ordering control on the site opens ATL's live
-**Snackpass** page (`https://order.snackpass.co/atlwingspot`) in a new tab, from the single
-`ORDER_URL` constant in `app/src/data/site.js`.
+This site is ATL Wing Spot's own site, so its copy speaks in the first person and never
+defers to some other "official" ATL page.
+
+Ordering is not a checkout. Every ordering control opens our **Snackpass** ordering page
+(`https://order.snackpass.co/atlwingspot`) in a new tab, from the single `ORDER_URL`
+constant in `app/src/data/site.js`.
 
 The contact, catering and franchise forms are front-end only. There is no server, so a
 valid submit opens a notice that says the form is not connected yet and points at
@@ -129,10 +132,11 @@ Copy and figures use ATL's own materials and public press (QSR Magazine, Long Is
 press) only. Sauce names are real ATL flavours, shown as a featured selection of the board.
 
 **The customer-facing menu shows no prices anywhere**, by design: name, description, photo
-and category only, because prices vary by location. The franchise page carries ATL's own
-published investment figures, labelled as ATL-published and covered by an FDD disclaimer,
-with no earnings claims.
+and category only, because prices vary by location. The franchise page speaks as the
+franchisor, in the first person, and carries our published investment figures under an FDD
+disclaimer with no earnings claims. The figures on that page are unverified against the
+current FDD: see the NEEDS CONFIRMATION block at the top of `app/src/pages/Franchise.jsx`.
 
 No invented reviews, follower counts, handles, hours, awards or location totals. Distances
-are not faked: "use my location" hands off to ATL's Snackpass page, which does the real
-lookup.
+are not faked: "use my location" hands off to our Snackpass ordering page, which does the
+real lookup.

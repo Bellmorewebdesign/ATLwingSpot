@@ -5,23 +5,41 @@ import { InquiryForm } from '../components/InquiryForm'
 import { ArrowRight } from '../components/Icons'
 import './Franchise.css'
 
-// Everything below is ATL's own published material, labelled as such.
-// No projections, no ROI, no earnings claims.
+// This site IS ATL Wing Spot, so the franchise page speaks as the franchisor:
+// first person throughout, no "ATL reports" or "the brand" third-person framing.
+// Still no projections, no ROI and no earnings claims.
 const POINTS = [
-  { t: 'Most orders come in online', d: 'ATL reports more than 65% of its customers order digitally.' },
-  { t: 'Small footprint', d: 'Around 1,000 sq ft on ATL’s published average. The first shop was 800.' },
-  { t: 'Vendor pricing already negotiated', d: 'Supply agreements are set at the brand level.' },
-  { t: 'Delivery rates already contracted', d: 'Third-party delivery terms negotiated by the brand.' },
+  { t: 'Most orders come in online', d: 'More than 65% of our customers order digitally.' },
+  { t: 'Small footprint', d: 'About 1,000 sq ft on average. Our first shop was 800.' },
+  { t: 'Vendor pricing already negotiated', d: 'We set supply agreements across the system, so you buy on our terms from day one.' },
+  { t: 'Delivery rates already contracted', d: 'We negotiate third-party delivery terms, so you are not starting that conversation yourself.' },
   { t: '25+ sauces and a secret menu', d: 'A board built for regulars who want something different each visit.' },
-  { t: 'Training and ongoing support', d: 'Onboarding plus continued operational support.' },
+  { t: 'Training and ongoing support', d: 'We train your team before you open and stay on the phone after you do.' },
 ]
 
+/**
+ * These are the figures already published in ATL's franchise materials, now
+ * stated in the first person because this is ATL's own site.
+ *
+ * NEEDS CONFIRMATION before this page goes live:
+ *   $1.68M  the source material said only "sales figure", with no unit, period
+ *           or scope. "Average unit volume" is the most likely reading of a
+ *           franchisor figure at that magnitude, but it is an ESTIMATE of what
+ *           the number means, not a verified label. A sales number like this is
+ *           a Financial Performance Representation: in the US it can only be
+ *           published if it appears in Item 19 of the current FDD, with the
+ *           wording Item 19 requires. Confirm it is in Item 19 and confirm what
+ *           it measures, or delete this row.
+ *   The three investment figures and the sq ft average are ATL-published but
+ *   undated. Confirm they match the current FDD.
+ *   65% digital orders is ATL-published but undated. Confirm it still holds.
+ */
 const FIGURES = [
-  { v: '$242,000', l: 'Average investment', n: 'ATL-listed figure' },
-  { v: '$216,300', l: 'Minimum initial investment, including franchise fee', n: 'ATL-listed figure' },
-  { v: '$25,000', l: 'Franchise fee', n: 'ATL-listed figure' },
-  { v: '~1,000 sq ft', l: 'Average store size', n: 'ATL published average' },
-  { v: '$1.68M', l: 'Sales figure shown in ATL materials', n: 'Not a projection or guarantee' },
+  { v: '$242,000', l: 'Average investment', n: 'Our published figure' },
+  { v: '$216,300', l: 'Minimum initial investment, including franchise fee', n: 'Our published figure' },
+  { v: '$25,000', l: 'Franchise fee', n: 'Our published figure' },
+  { v: '~1,000 sq ft', l: 'Average store size', n: 'Our published average' },
+  { v: '$1.68M', l: 'Average unit volume', n: 'Not a projection or guarantee' },
 ]
 
 const FIELDS = [
@@ -38,7 +56,7 @@ export default function Franchise() {
     <div className="page fr">
       <Seo
         title="Franchise"
-        description="Open an ATL Wing Spot. A halal wing concept with a compact footprint and a digital-first customer base, proven on Long Island since 2023."
+        description="Open an ATL Wing Spot. Halal wings out of a compact kitchen with a digital-first customer base, proven on Long Island since 2023."
       />
 
       <header className="fr__mast ch-dark">
@@ -46,8 +64,8 @@ export default function Franchise() {
           <div>
             <h1 className="dsp dsp-lg fr__h1">Open<br />an <span className="t-orange">ATL.</span></h1>
             <p className="fr__lede">
-              Wings, tenders and waffles out of a small kitchen, with a sauce board people drive across
-              the island for. Now opening in new markets.
+              Wings, tenders and waffles out of a small kitchen, with a sauce board people drive
+              across the island for. We&rsquo;re opening in new markets now.
             </p>
             <a href="#enquire" className="btn btn-orange btn-lg fr__cta">Request information <ArrowRight /></a>
           </div>
@@ -81,7 +99,7 @@ export default function Franchise() {
 
       <section className="sec ch-paper">
         <div className="wrap">
-          <h2 className="dsp dsp-sm fr__h2">The numbers ATL publishes</h2>
+          <h2 className="dsp dsp-sm fr__h2">The numbers we publish</h2>
           <ul className="fr__figs">
             {FIGURES.map((f) => (
               <li className="fig" key={f.l}>
@@ -92,10 +110,10 @@ export default function Franchise() {
             ))}
           </ul>
           <p className="fineprint fr__disc">
-            These figures come from ATL&rsquo;s current published franchise materials and describe different
-            things, so they are not directly comparable. Nothing here is a projection, guarantee or
-            promise of earnings, sales or profitability. Franchise information is informational only and
-            is subject to the current Franchise Disclosure Document.
+            These figures come from our current franchise materials and describe different things, so
+            they are not directly comparable. Nothing here is a projection, guarantee or promise of
+            earnings, sales or profitability. This page is informational only and is subject to our
+            current Franchise Disclosure Document, which we will send you before anything is signed.
           </p>
         </div>
       </section>
@@ -113,7 +131,7 @@ export default function Franchise() {
               notice={{
                 title: 'Not connected yet',
                 message:
-                  'The franchise enquiry form does not reach the franchise team yet, so this request was not sent anywhere.',
+                  'This form does not reach our franchise team yet, so your request was not sent anywhere.',
               }}
             />
           </div>

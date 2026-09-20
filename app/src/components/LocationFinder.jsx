@@ -64,7 +64,7 @@ export function LocationFinder() {
           <span>Use my location to order</span>
           <ArrowUpRight size={13} />
         </a>
-        <p className="finder__geonote">Opens ATL&rsquo;s Snackpass ordering page, which finds the shop closest to you.</p>
+        <p className="finder__geonote">Opens our Snackpass ordering page, which finds the shop closest to you.</p>
       </aside>
 
       <div className="finder__results">
