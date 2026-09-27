@@ -46,6 +46,13 @@ PACK = os.path.join(ROOT, 'ATL-Wing-Spot-September-Photo-Pack',
                     'ATL-Wing-Spot-September-Photo-Pack', 'photos')
 LIBRARY = os.path.join(ROOT, 'app', 'atl-wing-spot-claude-assets',
                        'public', 'assets', 'food')
+# The September 2026 release package (Releases -> Tag1 -> Images-...zip). It is
+# 1.1 GB, so it is NOT committed; point RELEASE_PACK at an extracted copy to
+# re-run. Everything it produces IS committed, so a normal build needs nothing.
+RELEASE_PACK = os.environ.get('ATL_RELEASE_PACK', '')
+_SELECTS = 'Images/food pics/Selects'
+_SHOOT = 'Images/food pics/Wing Spot_ATL_03_06_26'
+_CUPS = 'Images/food pics/DIP AND SAUCE CUPS/Dipping Sauces 12-2024'
 FOOD_OUT = os.path.join(ROOT, 'app', 'public', 'assets', 'food', 'client-refresh')
 MENU_OUT = os.path.join(ROOT, 'images-web')
 
@@ -158,6 +165,31 @@ LIBRARY_FEATURES = {
     'hero-saucy-tenders': ('saucy-tenders.jpg', 1400, (14, 46)),
 }
 
+# From the release package. Cut-outs for the slots that place food over colour.
+RELEASE_FEATURES = {
+    'boneless-basket':   (f'{_SELECTS}/WingSpot_05-20250008.jpg',       920, (14, 46)),
+    'hand-waffle':       (f'{_SHOOT}/WingSpot_ATL_03_06_265255.jpg',   1100, (14, 46)),
+}
+
+# Already in the repo's images-web/. One matched trio: same box, same angle,
+# same light, so they line up on the page the way the shakes do.
+REPO_FEATURES = {
+    'waffle-oreo':                  ('images-web/tom02248-2048x1638.jpg', 900, (14, 46)),
+    'waffle-fruity-pebbles':        ('images-web/tom02263-2048x1638.jpg', 900, (14, 46)),
+    'waffle-cinnamon-toast-crunch': ('images-web/tom02240-2048x1638.jpg', 900, (14, 46)),
+}
+
+# From the release package, framed 5:4 for menu cards.
+# listing index -> (source, output name)
+RELEASE_MENU = {
+    37: (f'{_SELECTS}/WingSpot_05-20254483.jpg', 'client-waffle-og'),
+    50: (f'{_SELECTS}/WingSpot_05-20253222.jpg', 'client-nashville-loaded-waffle-fries'),
+    61: (f'{_SELECTS}/WingSpot_05-20254452.jpg', 'client-bottled-water'),
+    64: (f'{_CUPS}/RANCH CUP.jpg',               'client-ranch-cup'),
+    65: (f'{_CUPS}/BLUE CHEESE CUP.jpg',         'client-blue-cheese-cup'),
+    66: (f'{_CUPS}/BUFFALO SAUCE CUP.jpg',       'client-extra-sauce-cup'),
+}
+
 # menu-items.json listing index -> (source file, output name)
 MENU = {
     35: ('05-fruity-pebbles-chicken-waffles.jpg', 'client-fruity-pebbles-chicken-n-waffles'),
@@ -179,6 +211,11 @@ def main():
     print('feature cut-outs -> app/public/assets/food/client-refresh/')
     jobs = [(n, PACK, *v) for n, v in FEATURES.items()]
     jobs += [(n, LIBRARY, *v) for n, v in LIBRARY_FEATURES.items()]
+    jobs += [(n, ROOT, *v) for n, v in REPO_FEATURES.items()]
+    if RELEASE_PACK:
+        jobs += [(n, RELEASE_PACK, *v) for n, v in RELEASE_FEATURES.items()]
+    else:
+        print('  (set ATL_RELEASE_PACK to regenerate the release-package assets)')
     for name, root, src, maxw, (lo, hi) in jobs:
         im = trim(cutout(os.path.join(root, src), t_lo=lo, t_hi=hi))
         if im.width > maxw:
@@ -190,8 +227,11 @@ def main():
         print(f'  {name+".webp":40s} {im.width}x{im.height}  {os.path.getsize(dst)/1024:6.1f} KB')
 
     print('menu 5:4 frames -> images-web/')
-    for idx, (src, name) in sorted(MENU.items()):
-        im = frame_5x4(os.path.join(PACK, src))
+    menu_jobs = [(i, PACK, *v) for i, v in MENU.items()]
+    if RELEASE_PACK:
+        menu_jobs += [(i, RELEASE_PACK, *v) for i, v in RELEASE_MENU.items()]
+    for idx, root, src, name in sorted(menu_jobs):
+        im = frame_5x4(os.path.join(root, src))
         dst = os.path.join(MENU_OUT, name + '.webp')
         im.save(dst, 'WEBP', quality=84, method=6)
         print(f'  [{idx:>2}] {name+".webp":48s} {im.width}x{im.height}  {os.path.getsize(dst)/1024:6.1f} KB')

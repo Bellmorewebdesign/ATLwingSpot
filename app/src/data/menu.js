@@ -12,7 +12,7 @@
 // 10 cards stand for more than one listing. Categories, names, the item-to-image
 // mapping and the substance of every description come from the pack.
 //
-// 3 cards carry image: null. The pack maps each of them to a photograph of a
+// 0 cards carry image: null. The pack maps each of them to a photograph of a
 // DIFFERENT dish, and it has no correct shot for them. They render an explicit
 // "no photo" state; a lookalike would misrepresent the product.
 //
@@ -156,7 +156,7 @@ export const MENU_ITEMS = [
     name: 'Waffle',
     desc:
       'The OG. Our original waffle topped with powdered sugar, no chicken. Served with syrup on the side.',
-    image: null,   // the pack maps this listing to a photo of a different dish
+    image: 'assets/menu/client-waffle-og.webp', w: 1000, h: 800,
   },
   {
     id: 'oreo-waffle', cat: 'waffles',
@@ -283,7 +283,7 @@ export const MENU_ITEMS = [
     name: 'Nashville Hot Loaded Waffle Fries',
     desc:
       'Waffle fries loaded up with crispy chicken, Nashville hot sauce and ranch.',
-    image: null,   // the pack maps this listing to a photo of a different dish
+    image: 'assets/menu/client-nashville-loaded-waffle-fries.webp', w: 1000, h: 800,
   },
   {
     id: 'sweet-potato-fries', cat: 'fries',
@@ -343,7 +343,7 @@ export const MENU_ITEMS = [
     name: 'Bottled Water',
     desc:
       'Pure and refreshing bottled water.',
-    image: null,   // the pack maps this listing to a photo of a different dish
+    image: 'assets/menu/client-bottled-water.webp', w: 1000, h: 800,
   },
 
   // ---------------- EXTRAS (5) ----------------
@@ -352,21 +352,21 @@ export const MENU_ITEMS = [
     name: 'Ranch Cup',
     desc:
       'Every hero needs a sidekick. Our ATL Wing Spot ranch is the perfect addition to any wing or munchie order.',
-    image: 'assets/menu/ranch-cup.webp', w: 1024, h: 1190,
+    image: 'assets/menu/client-ranch-cup.webp', w: 1000, h: 800,
   },
   {
     id: 'blue-cheese-cup', cat: 'extras',
     name: 'Blue Cheese Cup',
     desc:
       'A cup of blue cheese dip.',
-    image: 'assets/menu/blue-cheese-cup.webp', w: 1024, h: 1182,
+    image: 'assets/menu/client-blue-cheese-cup.webp', w: 1000, h: 800,
   },
   {
     id: 'extra-sauce-cup', cat: 'extras',
     name: 'Extra Sauce Cup',
     desc:
       'Add a side cup of your favorite sauce, from right across the sauce board.',
-    image: 'assets/menu/extra-sauce-cup.webp', w: 1024, h: 1165,
+    image: 'assets/menu/client-extra-sauce-cup.webp', w: 1000, h: 800,
   },
   {
     id: 'cheese-sauce-cup', cat: 'extras',

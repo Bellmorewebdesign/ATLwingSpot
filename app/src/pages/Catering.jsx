@@ -1,25 +1,11 @@
 import { CATERING_PACKAGES } from '../data/catering'
-import { LOCATIONS } from '../data/locations'
+import { CATERING_URL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { Reveal } from '../components/Reveal'
-import { InquiryForm } from '../components/InquiryForm'
-import { ArrowRight } from '../components/Icons'
+import { ZipLookup } from '../components/ZipLookup'
+import { ArrowRight, ArrowUpRight } from '../components/Icons'
 import './Catering.css'
-
-const FIELDS = [
-  { name: 'name', label: 'Name', type: 'text', required: true, autoComplete: 'name' },
-  { name: 'email', label: 'Email', type: 'email', required: true, autoComplete: 'email' },
-  { name: 'phone', label: 'Phone', type: 'tel', required: true, autoComplete: 'tel' },
-  { name: 'date', label: 'Event date', type: 'date' },
-  { name: 'guests', label: 'How many people', type: 'number', placeholder: 'e.g. 40' },
-  {
-    name: 'location', label: 'Which shop', type: 'select',
-    options: LOCATIONS.map((l) => `${l.name}, ${l.city}, ${l.state}`),
-    placeholder: 'Pick a location',
-  },
-  { name: 'message', label: 'Anything else', type: 'textarea', full: true, placeholder: 'Sauces, timing, drop-off…' },
-]
 
 const GROUPS = ['Wings', 'Boneless', 'Tenders', 'Starter', 'Side']
 
@@ -90,24 +76,45 @@ export default function Catering() {
         </div>
       </section>
 
-      <section className="sec ch-paper cat__form-sec" id="request">
-        <div className="wrap-tight cat__form-wrap">
-          <div>
-            <h2 className="dsp dsp-sm">Tell us<br />the headcount.</h2>
-            <p className="cat__form-sub">
-              Send the details and your local shop picks it up from there.
+      {/* Two real routes instead of a form that went nowhere: order the trays
+          on DoorDash, or call the shop that is going to make them. */}
+      <section className="sec ch-paper cat__order" id="request">
+        <div className="wrap wrap-tight cat__order-in">
+          <div className="cat__order-head">
+            <h2 className="dsp dsp-sm">Two ways<br />to book it.</h2>
+            <p className="cat__order-sub">
+              Trays go through DoorDash catering. For a big headcount, a date or anything
+              particular about the sauces, call the shop first.
             </p>
           </div>
-          <div className="cat__card">
-            <InquiryForm
-              fields={FIELDS}
-              submitLabel="Send request"
-              notice={{
-                title: 'Not connected yet',
-                message:
-                  'The catering request form does not reach the shops yet, so this request was not sent anywhere.',
-              }}
-            />
+
+          <div className="cat__routes">
+            <div className="cat__route">
+              <span className="cat__route-n">01</span>
+              <h3 className="cat__route-h">Order the trays</h3>
+              <p className="cat__route-d">
+                DoorDash carries the catering trays for pickup or delivery.
+              </p>
+              <a
+                className="btn btn-orange btn-lg cat__route-cta"
+                href={CATERING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                DoorDash catering <ArrowUpRight size={14} />
+              </a>
+            </div>
+
+            <div className="cat__route">
+              <span className="cat__route-n">02</span>
+              <h3 className="cat__route-h">Call the shop</h3>
+              <p className="cat__route-d">
+                Find the shop nearest the address you are feeding and talk it through.
+              </p>
+              <div className="cat__route-zip">
+                <ZipLookup heading="Shop nearest your event" />
+              </div>
+            </div>
           </div>
         </div>
       </section>

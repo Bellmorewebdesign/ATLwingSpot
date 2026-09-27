@@ -83,3 +83,85 @@
 @media (prefers-reduced-motion: reduce) {
   .shake__img img { transition: none; }
 }
+
+/* ---- waffles ----
+   Same row mechanics as the shakes above, so the two read as a pair. The hand
+   shot sits beside the label rather than in the row: it is the one photograph
+   here with a person in it, and lining it up with three packshots would flatten
+   it into just another product tile. */
+.spread__waffles { position: relative; margin-top: clamp(2.5rem, 6vw, 4.5rem); }
+
+.waffles__head { margin-bottom: 1rem; }
+.waffles__label {
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+/* Pinned to the top-right and allowed to overlap the row, so it does not
+   inflate the header and leave a hole under the shakes. */
+.waffles__hand {
+  position: absolute;
+  right: 0;
+  top: clamp(-2.5rem, -3vw, -1rem);
+  z-index: 2;
+  width: clamp(104px, 13vw, 168px);
+  pointer-events: none;
+}
+.waffles__hand img { width: 100%; height: auto; display: block; }
+
+.waffles__row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(0.6rem, 2vw, 1.6rem);
+  align-items: end;
+}
+.waffle { display: flex; flex-direction: column; align-items: center; }
+/* stagger so it reads as a shot, not three equal cards */
+.waffle:nth-child(2) { transform: translateY(-5%); }
+.waffle:nth-child(3) { transform: translateY(3%); }
+
+.waffle__img {
+  width: 100%;
+  aspect-ratio: 5 / 4;
+  display: grid;
+  place-items: center;
+}
+.waffle__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform var(--t-slow) var(--ease);
+}
+.waffle:hover .waffle__img img { transform: translateY(-6px) scale(1.03); }
+
+.waffle__name {
+  margin-top: 0.5rem;
+  font-weight: 800;
+  font-size: clamp(0.7rem, 1.6vw, 0.85rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .waffles__hand { width: clamp(88px, 24vw, 130px); top: -1rem; }
+  /* keep the label clear of the hand shot pinned to the right */
+  .waffles__label { padding-right: 30vw; }
+  .waffles__row {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    gap: 0.8rem;
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+  }
+  .waffles__row::-webkit-scrollbar { display: none; }
+  .waffle { flex: 0 0 auto; width: 62vw; scroll-snap-align: center; transform: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .waffle__img img { transition: none; }
+}

@@ -111,9 +111,7 @@ const CARDS = [
   { from: [36], desc: 'Three hand-breaded chicken tenders served with a crispy Cinnamon Toast Crunch waffle topped with powdered sugar and caramel syrup. Syrup on the side.' },
   // ATL lists the four plain waffles under both Waffles and Desserts. One card
   // each, kept with the rest of the waffle family.
-  // Mapped to the Cinnamon Toast Crunch Chicken N' Waffles shot, which has
-  // both chicken and cereal on it. Not this dish.
-  { from: [37], noPhoto: true, desc: 'The OG. Our original waffle topped with powdered sugar, no chicken. Served with syrup on the side.' },
+  { from: [37], desc: 'The OG. Our original waffle topped with powdered sugar, no chicken. Served with syrup on the side.' },
   { from: [38, 56], desc: 'Crispy Oreo waffle topped with Hershey’s syrup, powdered sugar and more Oreos. No chicken.' },
   { from: [39, 55], desc: 'Crispy Fruity Pebbles waffle topped with strawberry syrup, powdered sugar and more Fruity Pebbles. No chicken.' },
   { from: [40, 54], desc: 'Crispy Cinnamon Toast Crunch waffle topped with caramel syrup, powdered sugar and more Cinnamon Toast Crunch. No chicken.' },
@@ -132,9 +130,7 @@ const CARDS = [
   { from: [47], desc: 'Golden fries topped with melted cheddar cheese.' },
   { from: [48], desc: 'Crispy, golden-battered onion rings, perfectly seasoned for a delightful crunch.' },
   { from: [49], desc: 'Waffle fries loaded up with crispy chicken, buffalo sauce and ranch.' },
-  // The pack maps this to the Cajun Fried Corn photograph. No shot of these
-  // fries exists in the pack, so the card goes without one.
-  { from: [50], noPhoto: true, desc: 'Waffle fries loaded up with crispy chicken, Nashville hot sauce and ranch.' },
+  { from: [50], desc: 'Waffle fries loaded up with crispy chicken, Nashville hot sauce and ranch.' },
   { from: [51], desc: 'Sweet potato fries. Order a small or a large.' },
   { from: [52], desc: 'Waffle fries loaded up with crispy chicken, pineapple BBQ sauce and ranch.' },
 
@@ -148,8 +144,7 @@ const CARDS = [
   { from: [59, 62, 63], name: 'Soda',
     desc: 'Fountain, can or bottle. The range covers Pepsi and Diet Pepsi, Orange Crush, Ginger Ale, Mountain Dew Baja Blast, Brisk Iced Tea, Country Time lemonade and Sunny D Fruit Punch, and varies by format.' },
   { from: [60], desc: 'A crisp, satisfying taste to quench thirst and energize without caffeine.' },
-  // Mapped to the bottled soda line-up, which contains no water.
-  { from: [61], noPhoto: true, desc: 'Pure and refreshing bottled water.' },
+  { from: [61], desc: 'Pure and refreshing bottled water.' },
 
   // ---- extras ----
   { from: [64], desc: 'Every hero needs a sidekick. Our ATL Wing Spot ranch is the perfect addition to any wing or munchie order.' },
@@ -185,6 +180,22 @@ const PHOTO_OVERRIDES = {
   47: 'images-web/client-cheese-fries.webp',                      // Cheese Fries
   48: 'images-web/client-battered-onion-rings.webp',              // Battered Onion Rings
   49: 'images-web/client-buffalo-ranch-loaded-waffle-fries.webp', // Buffalo Ranch Loaded Waffle Fries
+
+  // September 2026 release package. These three listings had no correct shot in
+  // the old scrape and rendered an explicit "no photo" state; the package has
+  // all three, so the empty state is gone from the menu.
+  37: 'images-web/client-waffle-og.webp',                      // Waffle (the OG, no chicken)
+  // Any loaded-fries shot reads for this one: the build is identical across the
+  // loaded range and only the sauce changes.
+  50: 'images-web/client-nashville-loaded-waffle-fries.webp',  // Nashville Hot Loaded Waffle Fries
+  61: 'images-web/client-bottled-water.webp',                  // Bottled Water
+
+  // The dipping-sauce set, shot as one matched series on white.
+  64: 'images-web/client-ranch-cup.webp',                      // Ranch Cup
+  65: 'images-web/client-blue-cheese-cup.webp',                // Blue Cheese Cup
+  66: 'images-web/client-extra-sauce-cup.webp',                // Extra Sauce Cup
+  // 67 Cheese Sauce Cup keeps its old shot: the package's sauce-cup series has
+  // no cheese sauce in it, and no other cup may stand in for one.
 }
 
 const slug = (s) =>

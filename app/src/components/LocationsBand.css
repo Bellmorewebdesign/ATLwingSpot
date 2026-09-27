@@ -51,3 +51,6 @@
   .lband__row { grid-template-columns: minmax(0, 1fr) auto auto; }
   .lband__meta { display: none; }
 }
+
+/* the ZIP lookup under the band headline */
+.lband__zip { margin-top: clamp(1.25rem, 3vw, 1.9rem); max-width: 30rem; }

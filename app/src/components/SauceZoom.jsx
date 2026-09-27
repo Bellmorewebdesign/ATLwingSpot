@@ -22,6 +22,12 @@ const IMG = 'assets/food/sauce-wall.webp'
  * Growth is driven by font-size rather than transform: a transform would scale
  * the letter's slice of the image too, magnifying it into a soft blur and
  * breaking the illusion.
+ *
+ * THE ZOOM IS CAPPED. It used to run the type up 8x and dissolve the cream
+ * ground away entirely, which ended with the photograph filling the viewport
+ * and the words gone. Now the type grows to a little under 3x and stops, the
+ * cream never fully clears, and the words never retire: the section is a
+ * moment the page passes through, not a takeover.
  */
 export function SauceZoom() {
   const [ref, p] = useScrollProgress()
@@ -48,9 +54,11 @@ export function SauceZoom() {
   const ease = (t) => 1 - Math.pow(1 - t, 3)
   const clamp01 = (t) => Math.min(Math.max(t, 0), 1)
 
-  const k = 1 + ease(clamp01(p / 0.85)) * 7        // type grows
-  const veil = 1 - clamp01((p - 0.42) / 0.34)      // cream ground dissolves
-  const fade = 1 - clamp01((p - 0.82) / 0.14)      // type retires once matched
+  // the scrub finishes well before the runway does, so the last stretch of
+  // scroll holds the finished frame instead of pushing it further
+  const t = clamp01(p / 0.62)
+  const k = 1 + ease(t) * 1.85                     // type grows, then stops
+  const veil = 1 - ease(t) * 0.42                  // cream thins, never clears
 
   return (
     <section className="zoom" ref={ref} aria-label="Sauce it up">
@@ -69,7 +77,7 @@ export function SauceZoom() {
 
         <p
           className="zoom__word dsp"
-          style={{ '--k': k, opacity: fade, backgroundImage: `url(${url})` }}
+          style={{ '--k': k, backgroundImage: `url(${url})` }}
           aria-hidden="true"
         >
           <span className="zoom__lines">
@@ -78,7 +86,7 @@ export function SauceZoom() {
           </span>
         </p>
 
-        <span className="zoom__cue" style={{ opacity: veil }} aria-hidden="true">Keep scrolling</span>
+        <span className="zoom__cue" style={{ opacity: 1 - t }} aria-hidden="true">Keep scrolling</span>
       </div>
     </section>
   )

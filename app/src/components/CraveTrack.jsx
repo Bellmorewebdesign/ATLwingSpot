@@ -18,7 +18,7 @@ import './CraveTrack.css'
  */
 const PANELS = [
   { cat: 'wings',      name: 'Bone-In\nWings',      line: "Never frozen. They don't hit the fryer until you order them.",          img: 'assets/food/official/official-bone-in-wings.webp', w: 1800, h: 1440 },
-  { cat: 'boneless',   name: 'Boneless',            line: 'All white meat, breaded by hand, and every sauce on the board works on these too.', img: 'assets/food/official/official-boneless-20pc.webp', w: 1800, h: 778 },
+  { cat: 'boneless',   name: 'Boneless',            line: 'All white meat, breaded by hand, and every sauce on the board works on these too.', img: 'assets/food/client-refresh/boneless-basket.webp', w: 920, h: 732 },
   { cat: 'tenders',    name: 'Saucy\nTenders',      line: 'Jumbo. Ask for them tossed, or with the sauce on the side.',            img: 'assets/food/official/official-saucy-chicken-drip.webp', w: 1441, h: 1800 },
   { cat: 'fries',      name: 'Loaded\nWaffle Fries', line: 'Waffle fries under crispy chicken, buffalo sauce and ranch.',           img: 'assets/food/client-refresh/loaded-waffle-fries.webp', w: 920, h: 651 },
   { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch on the waffle. Yes, really.', img: 'assets/food/client-refresh/fruity-pebbles-chicken-waffles.webp', w: 920, h: 700 },

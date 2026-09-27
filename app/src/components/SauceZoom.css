@@ -2,7 +2,9 @@
    child is the only thing ever painted. */
 .zoom {
   position: relative;
-  height: 300vh;
+  /* shorter runway: the scrub is capped now, so a 3x viewport of scroll would
+     just be dead travel at the end */
+  height: 190vh;
   background: var(--cream);
 }
 .zoom__sticky {
@@ -108,7 +110,7 @@
 
 /* shorter runway on phones so the scrub doesn't outstay its welcome */
 @media (max-width: 700px) {
-  .zoom { height: 220vh; }
+  .zoom { height: 165vh; }
   .zoom__word { font-size: calc(clamp(2.2rem, 15vw, 6rem) * var(--k, 1)); }
 }
 
