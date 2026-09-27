@@ -109,7 +109,7 @@ export default function Catering() {
               <span className="cat__route-n">02</span>
               <h3 className="cat__route-h">Call the shop</h3>
               <p className="cat__route-d">
-                Find the shop nearest the address you are feeding and talk it through.
+                Put in the ZIP you are feeding and call the shop that will be making it.
               </p>
               <div className="cat__route-zip">
                 <ZipLookup heading="Shop nearest your event" />

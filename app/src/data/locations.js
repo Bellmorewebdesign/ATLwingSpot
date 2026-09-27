@@ -2,22 +2,25 @@
 // they're location-specific and change. Directions links are generated
 // from the address at render time.
 //
-// `phone` is null on every shop because no number has been supplied yet. The
-// ZIP lookup and the location cards both render the phone line only when a
-// number is present, so filling these in is a one-line-per-shop data edit and
-// needs no code change.
+// Phone numbers as supplied by the client. Most came off atlwingspot.com;
+// Copiague came from Restaurantji and Babylon Village from Apple Maps, so those
+// two are the ones to re-check if a call ever bounces.
+//
+// The ZIP lookup and the location cards render the phone line only when a
+// number is present, so a shop without one degrades to address + directions
+// rather than breaking.
 
 export const LOCATIONS = [
-  { id: 'east-meadow', name: 'East Meadow', street: '1860 Front St', city: 'East Meadow', state: 'NY', zip: '11554', region: 'Long Island', phone: null },
-  { id: 'lynbrook', name: 'Lynbrook', street: '97 Broadway', city: 'Lynbrook', state: 'NY', zip: '11563', region: 'Long Island', phone: null },
-  { id: 'garden-city-park', name: 'Garden City Park', street: '2441 Jericho Tpke', city: 'Garden City Park', state: 'NY', zip: '11040', region: 'Long Island', phone: null },
-  { id: 'copiague', name: 'Copiague', street: '854 Montauk Hwy', city: 'Copiague', state: 'NY', zip: '11726', region: 'Long Island', phone: null },
-  { id: 'north-babylon', name: 'North Babylon', street: '1290 Deer Park Ave', city: 'North Babylon', state: 'NY', zip: '11703', region: 'Long Island', phone: null },
-  { id: 'babylon-village', name: 'Babylon Village', street: '14 Railroad Ave', city: 'Babylon', state: 'NY', zip: '11702', region: 'Long Island', phone: null },
-  { id: 'richmond-hill', name: 'Richmond Hill', street: '87-17 Lefferts Blvd', city: 'Richmond Hill', state: 'NY', zip: '11418', region: 'Queens', phone: null },
-  { id: 'east-harlem', name: 'East Harlem', street: '2128 2nd Ave', city: 'New York', state: 'NY', zip: '10029', region: 'Manhattan', phone: null },
-  { id: 'south-orange', name: 'South Orange', street: '319 South Orange Ave', city: 'South Orange', state: 'NJ', zip: '07079', region: 'New Jersey', phone: null },
-  { id: 'redlands', name: 'Redlands', street: '1755 E Lugonia Ave, Suite 210', city: 'Redlands', state: 'CA', zip: '92374', region: 'California', phone: null },
+  { id: 'east-meadow', name: 'East Meadow', street: '1860 Front St', city: 'East Meadow', state: 'NY', zip: '11554', region: 'Long Island', phone: '(516) 833-9464' },
+  { id: 'lynbrook', name: 'Lynbrook', street: '97 Broadway', city: 'Lynbrook', state: 'NY', zip: '11563', region: 'Long Island', phone: '(516) 218-2245' },
+  { id: 'garden-city-park', name: 'Garden City Park', street: '2441 Jericho Tpke', city: 'Garden City Park', state: 'NY', zip: '11040', region: 'Long Island', phone: '(516) 916-4199' },
+  { id: 'copiague', name: 'Copiague', street: '854 Montauk Hwy', city: 'Copiague', state: 'NY', zip: '11726', region: 'Long Island', phone: '(631) 531-5538' },
+  { id: 'north-babylon', name: 'North Babylon', street: '1290 Deer Park Ave', city: 'North Babylon', state: 'NY', zip: '11703', region: 'Long Island', phone: '(631) 940-8916' },
+  { id: 'babylon-village', name: 'Babylon Village', street: '14 Railroad Ave', city: 'Babylon', state: 'NY', zip: '11702', region: 'Long Island', phone: '(631) 314-4161' },
+  { id: 'richmond-hill', name: 'Richmond Hill', street: '87-17 Lefferts Blvd', city: 'Richmond Hill', state: 'NY', zip: '11418', region: 'Queens', phone: '(718) 674-6034' },
+  { id: 'east-harlem', name: 'East Harlem', street: '2128 2nd Ave', city: 'New York', state: 'NY', zip: '10029', region: 'Manhattan', phone: '(646) 454-9162' },
+  { id: 'south-orange', name: 'South Orange', street: '319 South Orange Ave', city: 'South Orange', state: 'NJ', zip: '07079', region: 'New Jersey', phone: '(973) 275-1234' },
+  { id: 'redlands', name: 'Redlands', street: '1755 E Lugonia Ave, Suite 210', city: 'Redlands', state: 'CA', zip: '92374', region: 'California', phone: '(909) 321-4746' },
 ]
 
 /**
