@@ -42,6 +42,30 @@ const FIGURES = [
   { v: '$1.68M', l: 'Average unit volume', n: 'Not a projection or guarantee' },
 ]
 
+/**
+ * Franchise disclosures, shown under the enquiry form.
+ *
+ * INCOMPLETE. The brief was to copy the disclosures from atlwingspot.com's
+ * franchise page verbatim, and this container's network policy blocks that
+ * domain, so the live wording could not be read. What is here is the language
+ * already carried elsewhere on this page, which is accurate but is NOT the
+ * full set: a franchise offering normally also carries the "this is not an
+ * offer to sell a franchise" statement and the registration-state notices.
+ *
+ * Paste the live blocks in here as further entries and they render in order.
+ * Nothing in this array is drafted from scratch: legal disclosures are not
+ * something to approximate.
+ */
+const DISCLOSURES = [
+  'This information is for informational purposes only and is not a franchise offer. ' +
+  'Any offer of a franchise is made solely by our Franchise Disclosure Document, which ' +
+  'we will provide to you before any agreement is signed.',
+
+  'Nothing on this page is a projection, guarantee or promise of earnings, sales or ' +
+  'profitability. Figures shown are drawn from our current franchise materials, describe ' +
+  'different things, and are not directly comparable.',
+]
+
 const FIELDS = [
   { name: 'firstName', label: 'First name', type: 'text', required: true, autoComplete: 'given-name' },
   { name: 'lastName', label: 'Last name', type: 'text', required: true, autoComplete: 'family-name' },
@@ -135,6 +159,13 @@ export default function Franchise() {
               }}
             />
           </div>
+        </div>
+
+        <div className="wrap wrap-tight fr__legal">
+          <h2 className="fr__legal-h">Disclosures</h2>
+          {DISCLOSURES.map((d) => (
+            <p className="fineprint fr__legal-p" key={d.slice(0, 40)}>{d}</p>
+          ))}
         </div>
       </section>
     </div>

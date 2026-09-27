@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { LOCATIONS } from '../data/locations'
 import { Reveal } from './Reveal'
+import { ZipLookup } from './ZipLookup'
 import { ArrowRight } from './Icons'
 import './LocationsBand.css'
 
@@ -18,6 +19,7 @@ export function LocationsBand() {
       <div className="wrap lband__grid">
         <div className="lband__left">
           <Reveal><h2 className="dsp dsp-md lband__title">Find your<br /><span className="t-cyan">ATL.</span></h2></Reveal>
+          <Reveal className="lband__zip" delay={60}><ZipLookup heading="Closest shop to you" /></Reveal>
           <Reveal delay={90}>
             <p className="lband__sub">
               {LOCATIONS.length} shops open across New York, New Jersey and California. Pick one and

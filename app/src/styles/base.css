@@ -50,10 +50,12 @@ input, textarea, select { font: inherit; color: inherit; }
 .dsp-md { font-size: var(--d-md); letter-spacing: -0.01em; line-height: 0.88; }
 .dsp-sm { font-size: var(--d-sm); letter-spacing: -0.005em; line-height: 0.9; }
 
-/* Accent text takes the tone its chapter declares, so ATL's cyan and orange
-   stay themselves without washing out on cream or going muddy on ink. */
-.t-cyan { color: var(--accent-cyan); }
-.t-orange { color: var(--accent-orange); }
+/* The brand pair, exactly as the branding package specifies. Every .t-cyan and
+   .t-orange on the site is display-size type, where the brand tones hold up;
+   anywhere a kicker or a numeral needed more contrast carries its own deeper
+   tone instead (.gband__kick, .nf__kick, .chap__n, .mform__req). */
+.t-cyan { color: var(--cyan); }
+.t-orange { color: var(--orange); }
 .t-cream { color: var(--cream); }
 .t-ink { color: var(--ink); }
 .outline {

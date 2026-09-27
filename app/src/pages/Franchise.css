@@ -85,3 +85,20 @@
   .fr__form { grid-template-columns: 1fr; }
   .fr__cta { width: 100%; }
 }
+
+/* ---- disclosures, under the enquiry form ---- */
+.fr__legal {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+  padding-top: clamp(1.25rem, 3vw, 2rem);
+  border-top: 2px solid var(--line);
+}
+.fr__legal-h {
+  font-weight: 800;
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 0.8rem;
+}
+.fr__legal-p { max-width: 78ch; }
+.fr__legal-p + .fr__legal-p { margin-top: 0.7rem; }
