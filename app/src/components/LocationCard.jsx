@@ -1,10 +1,11 @@
 import { ORDER_URL, ORDER_LABEL } from '../data/site'
-import { mapsUrl } from '../data/locations'
+import { mapsUrl, formatPhone } from '../data/locations'
 import { ArrowUpRight } from './Icons'
 import './LocationCard.css'
 
 // A scannable row, not a boxed card — reads fast on a phone.
 export function LocationCard({ loc }) {
+  const phone = formatPhone(loc.phone)
   return (
     <li className="loc">
       <div className="loc__main">
@@ -12,6 +13,11 @@ export function LocationCard({ loc }) {
         <address className="loc__addr">
           {loc.street}, {loc.city}, {loc.state} {loc.zip}
         </address>
+        {phone && (
+          <a className="loc__phone" href={`tel:${String(loc.phone).replace(/\D/g, '')}`}>
+            {phone}
+          </a>
+        )}
         {loc.since && <span className="loc__since">{loc.since}</span>}
       </div>
       <div className="loc__acts">

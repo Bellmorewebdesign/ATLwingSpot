@@ -61,9 +61,15 @@ compiled output to the repository root (replacing only `index.html`, `404.html`,
 | `npm run menu:data` | Regenerates `app/src/data/menu.js` and `app/public/assets/menu/` from `menu-items.json`. |
 | `python3 app/scripts/process-client-photos.py` | Prepares the September client photo pack for the web: keyed cut-outs into `app/public/assets/food/client-refresh/`, 5:4 menu frames into `images-web/`. Needs `pillow` and `numpy`. |
 | `python3 app/scripts/make-favicon.py` | Rebuilds the favicon set in `app/public/assets/brand/` from the official logo. Needs `pillow` and `numpy`. |
+| `node app/scripts/build-zip-areas.mjs <all_us_zipcodes.csv>` | Rebuilds `app/src/data/zip-areas.js`, the table the ZIP lookup ranks against. Run it after adding, moving or closing a shop. The CSV is a couple of megabytes and is not committed; the script's header says where to download it. |
 
 The menu generator holds a `PHOTO_OVERRIDES` table, so regenerating the menu keeps the
 client photography instead of falling back to the older scraped shots.
+
+The ZIP table is the one piece of generated data that goes stale on its own: it is built
+from the shop list in `app/src/data/locations.js`, so a new location will not show up in
+the lookup until the script is re-run. It prints how far off the compression is when it
+finishes, which is worth reading rather than skipping.
 
 ---
 

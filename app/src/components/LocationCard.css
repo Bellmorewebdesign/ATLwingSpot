@@ -54,3 +54,15 @@
   .loc { align-items: flex-start; }
   .loc__acts { width: 100%; justify-content: space-between; }
 }
+
+/* phone sits with the address: on a phone it is a tap-to-call */
+.loc__phone {
+  display: inline-block;
+  margin-top: 0.3rem;
+  font-weight: 800;
+  font-size: var(--step--1);
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.loc__phone:hover { color: var(--orange-deep); }

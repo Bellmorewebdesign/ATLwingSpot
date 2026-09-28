@@ -25,6 +25,8 @@ export function LocationFinder() {
       const inSearch =
         !term ||
         [l.name, l.city, l.state, l.zip, l.street, l.region].join(' ').toLowerCase().includes(term)
+      // note: this is a plain filter over the ten shops. Finding the shop
+      // nearest an arbitrary ZIP is the ZipLookup's job, not this one's.
       return inRegion && inSearch
     })
   }, [q, region])
@@ -39,8 +41,8 @@ export function LocationFinder() {
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="City or ZIP"
-            aria-label="Search locations by city or ZIP"
+            placeholder="Filter by city or region"
+            aria-label="Filter the list of locations by city or region"
           />
         </div>
 
