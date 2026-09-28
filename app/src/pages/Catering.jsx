@@ -1,15 +1,21 @@
+import { useRef } from 'react'
 import { CATERING_PACKAGES } from '../data/catering'
 import { CATERING_URL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { Reveal } from '../components/Reveal'
 import { ZipLookup } from '../components/ZipLookup'
+import { JumpButton } from '../components/JumpButton'
 import { ArrowRight, ArrowUpRight } from '../components/Icons'
 import './Catering.css'
 
 const GROUPS = ['Wings', 'Boneless', 'Tenders', 'Starter', 'Side']
 
 export default function Catering() {
+  // The masthead button is really an invitation to find your shop, so it puts
+  // the caret in the ZIP field rather than just dropping you near it.
+  const zipRef = useRef(null)
+
   return (
     <div className="page cat">
       <Seo
@@ -35,7 +41,9 @@ export default function Catering() {
             Fifty wings or five hundred, plus trays of tenders, mozzarella sticks and waffle fries.
             Give us the headcount and which sauces, and your local shop takes it from there.
           </p>
-          <a href="#request" className="btn btn-ink btn-lg cat__cta">Set up catering <ArrowRight /></a>
+          <JumpButton targetId="request" focusRef={zipRef} className="btn btn-ink btn-lg cat__cta">
+            Set up catering <ArrowRight />
+          </JumpButton>
         </div>
       </header>
 
@@ -112,7 +120,7 @@ export default function Catering() {
                 Put in the ZIP you are feeding and call the shop that will be making it.
               </p>
               <div className="cat__route-zip">
-                <ZipLookup heading="Shop nearest your event" />
+                <ZipLookup ref={zipRef} heading="Shop nearest your event" />
               </div>
             </div>
           </div>

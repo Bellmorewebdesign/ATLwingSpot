@@ -2,6 +2,7 @@ import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { Reveal } from '../components/Reveal'
 import { InquiryForm } from '../components/InquiryForm'
+import { JumpButton } from '../components/JumpButton'
 import { ArrowRight } from '../components/Icons'
 import './Franchise.css'
 
@@ -91,7 +92,7 @@ export default function Franchise() {
               Wings, tenders and waffles out of a small kitchen, with a sauce board people drive
               across the island for. We&rsquo;re opening in new markets now.
             </p>
-            <a href="#enquire" className="btn btn-orange btn-lg fr__cta">Request information <ArrowRight /></a>
+            <JumpButton targetId="enquire" className="btn btn-orange btn-lg fr__cta">Request information <ArrowRight /></JumpButton>
           </div>
           <div className="fr__award">
             <img

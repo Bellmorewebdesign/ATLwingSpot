@@ -102,3 +102,6 @@
 }
 .fr__legal-p { max-width: 78ch; }
 .fr__legal-p + .fr__legal-p { margin-top: 0.7rem; }
+
+/* the hero button jumps to the form, so clear the fixed header */
+#enquire { scroll-margin-top: calc(var(--nav-h) + 1rem); }

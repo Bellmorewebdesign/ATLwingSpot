@@ -82,6 +82,8 @@
 }
 
 /* ---- the two booking routes ---- */
+/* the masthead button jumps here, so clear the fixed header */
+.cat__order { scroll-margin-top: calc(var(--nav-h) + 1rem); }
 .cat__order-in { display: grid; gap: clamp(1.75rem, 4vw, 3rem); }
 .cat__order-sub { margin-top: 0.8rem; color: var(--ink-mute); max-width: 44ch; }
 
