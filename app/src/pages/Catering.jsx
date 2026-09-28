@@ -1,12 +1,11 @@
 import { useRef } from 'react'
 import { CATERING_PACKAGES } from '../data/catering'
-import { CATERING_URL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { Reveal } from '../components/Reveal'
 import { ZipLookup } from '../components/ZipLookup'
 import { JumpButton } from '../components/JumpButton'
-import { ArrowRight, ArrowUpRight } from '../components/Icons'
+import { ArrowRight } from '../components/Icons'
 import './Catering.css'
 
 const GROUPS = ['Wings', 'Boneless', 'Tenders', 'Starter', 'Side']
@@ -84,37 +83,25 @@ export default function Catering() {
         </div>
       </section>
 
-      {/* Two real routes instead of a form that went nowhere: order the trays
-          on DoorDash, or call the shop that is going to make them. */}
+      {/* Booking, in the order it actually works: the shop takes the order by
+          phone today, and ordering trays online is not live yet. The DoorDash
+          card stays on the page so people can see it is coming, but its button
+          is disabled rather than pointing at a search that cannot take a
+          catering order. Wire it to CATERING_URL in data/site.js when it
+          launches. */}
       <section className="sec ch-paper cat__order" id="request">
         <div className="wrap wrap-tight cat__order-in">
           <div className="cat__order-head">
-            <h2 className="dsp dsp-sm">Two ways<br />to book it.</h2>
+            <h2 className="dsp dsp-sm">How to<br />book it.</h2>
             <p className="cat__order-sub">
-              Trays go through DoorDash catering. For a big headcount, a date or anything
-              particular about the sauces, call the shop first.
+              Catering runs through the shop that will be cooking it. Tell them the
+              headcount, the date and which sauces. Ordering trays online is on the way.
             </p>
           </div>
 
           <div className="cat__routes">
             <div className="cat__route">
               <span className="cat__route-n">01</span>
-              <h3 className="cat__route-h">Order the trays</h3>
-              <p className="cat__route-d">
-                DoorDash carries the catering trays for pickup or delivery.
-              </p>
-              <a
-                className="btn btn-orange btn-lg cat__route-cta"
-                href={CATERING_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                DoorDash catering <ArrowUpRight size={14} />
-              </a>
-            </div>
-
-            <div className="cat__route">
-              <span className="cat__route-n">02</span>
               <h3 className="cat__route-h">Call the shop</h3>
               <p className="cat__route-d">
                 Put in the ZIP you are feeding and call the shop that will be making it.
@@ -122,6 +109,17 @@ export default function Catering() {
               <div className="cat__route-zip">
                 <ZipLookup ref={zipRef} heading="Shop nearest your event" />
               </div>
+            </div>
+
+            <div className="cat__route cat__route--soon">
+              <span className="cat__route-n">02</span>
+              <h3 className="cat__route-h">Order the trays online</h3>
+              <p className="cat__route-d">
+                Catering trays for pickup or delivery through DoorDash. Not live yet.
+              </p>
+              <button type="button" className="btn btn-soon btn-lg cat__route-cta" disabled>
+                Coming soon
+              </button>
             </div>
           </div>
         </div>
