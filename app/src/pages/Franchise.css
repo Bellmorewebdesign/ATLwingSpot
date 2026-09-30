@@ -100,8 +100,17 @@
   color: var(--ink);
   margin-bottom: 0.8rem;
 }
-.fr__legal-p { max-width: 78ch; }
-.fr__legal-p + .fr__legal-p { margin-top: 0.7rem; }
+/* Overrides .fineprint upward on purpose. This is the one block on the site
+   where being hard to read is a liability rather than a style choice, so it is
+   bigger than the footer's small type and at full ink rather than muted. It
+   still reads as secondary, through its size and narrow measure rather than
+   through washed-out grey, which is the look this notice must not have. */
+.fr__legal-p {
+  max-width: 72ch;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--ink);
+}
 
 /* the hero button jumps to the form, so clear the fixed header */
 #enquire { scroll-margin-top: calc(var(--nav-h) + 1rem); }

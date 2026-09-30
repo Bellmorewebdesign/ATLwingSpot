@@ -44,28 +44,26 @@ const FIGURES = [
 ]
 
 /**
- * Franchise disclosures, shown under the enquiry form.
+ * Franchise disclaimer, shown under the enquiry form.
  *
- * INCOMPLETE. The brief was to copy the disclosures from atlwingspot.com's
- * franchise page verbatim, and this container's network policy blocks that
- * domain, so the live wording could not be read. What is here is the language
- * already carried elsewhere on this page, which is accurate but is NOT the
- * full set: a franchise offering normally also carries the "this is not an
- * offer to sell a franchise" statement and the registration-state notices.
+ * VERBATIM, and it stays that way. This is the wording ATL supplied, reproduced
+ * exactly: the state-registration language is a legal instrument, not copy, so
+ * it does not get tightened, split, reworded to match the page's voice, or run
+ * through the house style rules the rest of this site follows. If it needs to
+ * change, it changes because ATL or their counsel says so.
  *
- * Paste the live blocks in here as further entries and they render in order.
- * Nothing in this array is drafted from scratch: legal disclosures are not
- * something to approximate.
+ * It sits directly under the form because that is the point at which someone is
+ * being solicited. The financial figures above carry their own inline caveats
+ * in FIGURES rather than being answered down here.
  */
-const DISCLOSURES = [
-  'This information is for informational purposes only and is not a franchise offer. ' +
-  'Any offer of a franchise is made solely by our Franchise Disclosure Document, which ' +
-  'we will provide to you before any agreement is signed.',
-
-  'Nothing on this page is a projection, guarantee or promise of earnings, sales or ' +
-  'profitability. Figures shown are drawn from our current franchise materials, describe ' +
-  'different things, and are not directly comparable.',
-]
+const DISCLAIMER =
+  'This is not a franchise offering. A franchise offering can be made by us only in a ' +
+  'state if we are first registered, excluded, exempted or otherwise qualified to offer ' +
+  'franchises in that state, and only if we provide you with an appropriate franchise ' +
+  'disclosure document. Follow-up or individualized responses to you that involve either ' +
+  'effecting or attempting to effect the sale of a franchise will be made only if we are ' +
+  'first in compliance with state registration requirements, or are covered by an ' +
+  'applicable state exclusion or exemption.'
 
 const FIELDS = [
   { name: 'firstName', label: 'First name', type: 'text', required: true, autoComplete: 'given-name' },
@@ -163,10 +161,8 @@ export default function Franchise() {
         </div>
 
         <div className="wrap wrap-tight fr__legal">
-          <h2 className="fr__legal-h">Disclosures</h2>
-          {DISCLOSURES.map((d) => (
-            <p className="fineprint fr__legal-p" key={d.slice(0, 40)}>{d}</p>
-          ))}
+          <h2 className="fr__legal-h">Franchise disclaimer</h2>
+          <p className="fineprint fr__legal-p">{DISCLAIMER}</p>
         </div>
       </section>
     </div>
