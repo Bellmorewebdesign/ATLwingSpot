@@ -143,3 +143,17 @@
 @media (prefers-reduced-motion: reduce) {
   .stage, .stage__pick, .stage__name, .stage__blurb { transition: none; animation: none; }
 }
+
+/* ---------- touch ----------
+   The sauce controls are the whole point of this page, and on a phone they came
+   out between 34 and 36px tall: tappable, but tighter than anything else on the
+   site. A minimum height costs a few pixels per row and makes picking a sauce
+   with a thumb as easy as it is with a cursor. */
+@media (pointer: coarse) {
+  .heat__b, .wetdry__b, .chip {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

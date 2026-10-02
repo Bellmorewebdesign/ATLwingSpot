@@ -33,7 +33,7 @@
   background: var(--orange);
   color: var(--ink);
   border-color: var(--ink);
-  font-size: clamp(0.56rem, 1.1vw, 0.68rem);
+  font-size: clamp(0.7rem, 1.1vw, 0.76rem);
   transform: rotate(-9deg);
 }
 

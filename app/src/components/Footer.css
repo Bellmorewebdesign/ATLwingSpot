@@ -44,6 +44,14 @@
 }
 .foot__link:hover { color: var(--cyan); }
 
+/* Stacked links, so they take real height rather than an invisible hit box that
+   would overlap the one above. The column gap comes off to pay for it, which
+   leaves the footer the same height with targets nearly twice as tall. */
+@media (pointer: coarse) {
+  .foot__col { gap: 0; }
+  .foot__link { padding-block: 0.55rem; }
+}
+
 .foot__mark {
   justify-self: end;
   align-self: end;

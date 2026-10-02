@@ -7,7 +7,12 @@
    asked: ATL orange (#f47b20) against ATL cyan (#22c1da) measures 1.26:1, so
    even at Anton display size the words go muddy and they break down completely
    at phone size. White holds the packaging look and stays legible. */
-.ws--cyan   { background: var(--cyan);   --ws-fg: #fff; }
+/* Ink on cyan, not white. White on the brand cyan measures 2.15:1, which is
+   under the 3:1 WCAG asks of large text, and this stripe is content: it is
+   where the site says what it sells. Ink on the same cyan is 8.8:1 and matches
+   how the orange stripe below already works, so the pair reads as one system.
+   The cyan itself is untouched; it is the exact value from the palette. */
+.ws--cyan   { background: var(--cyan);   --ws-fg: var(--ink); }
 .ws--orange { background: var(--orange); --ws-fg: var(--ink); }
 .ws--ink    { background: var(--ink);    --ws-fg: var(--cream); }
 .ws--cream  { background: var(--cream);  --ws-fg: var(--ink); }

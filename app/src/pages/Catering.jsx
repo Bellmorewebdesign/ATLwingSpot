@@ -1,20 +1,14 @@
-import { useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { CATERING_PACKAGES } from '../data/catering'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { Reveal } from '../components/Reveal'
-import { ZipLookup } from '../components/ZipLookup'
-import { JumpButton } from '../components/JumpButton'
 import { ArrowRight } from '../components/Icons'
 import './Catering.css'
 
 const GROUPS = ['Wings', 'Boneless', 'Tenders', 'Starter', 'Side']
 
 export default function Catering() {
-  // The masthead button is really an invitation to find your shop, so it puts
-  // the caret in the ZIP field rather than just dropping you near it.
-  const zipRef = useRef(null)
-
   return (
     <div className="page cat">
       <Seo
@@ -40,9 +34,9 @@ export default function Catering() {
             Fifty wings or five hundred, plus trays of tenders, mozzarella sticks and waffle fries.
             Give us the headcount and which sauces, and your local shop takes it from there.
           </p>
-          <JumpButton targetId="request" focusRef={zipRef} className="btn btn-ink btn-lg cat__cta">
+          <Link className="btn btn-ink btn-lg cat__cta" to="/catering/book">
             Set up catering <ArrowRight />
-          </JumpButton>
+          </Link>
         </div>
       </header>
 
@@ -83,45 +77,21 @@ export default function Catering() {
         </div>
       </section>
 
-      {/* Booking, in the order it actually works: the shop takes the order by
-          phone today, and ordering trays online is not live yet. The DoorDash
-          card stays on the page so people can see it is coming, but its button
-          is disabled rather than pointing at a search that cannot take a
-          catering order. Wire it to CATERING_URL in data/site.js when it
-          launches. */}
-      <section className="sec ch-paper cat__order" id="request">
+      {/* Booking lives on its own page now. It was the smallest block on this
+          page and the one thing people come here to do, so all this keeps is
+          the way through to it. */}
+      <section className="sec ch-paper cat__order">
         <div className="wrap wrap-tight cat__order-in">
           <div className="cat__order-head">
-            <h2 className="dsp dsp-sm">How to<br />book it.</h2>
+            <h2 className="dsp dsp-sm">Ready when<br />you are.</h2>
             <p className="cat__order-sub">
-              Catering runs through the shop that will be cooking it. Tell them the
-              headcount, the date and which sauces. Ordering trays online is on the way.
+              Catering goes through the shop that will be cooking it. Find the closest one
+              to your event and give them a call.
             </p>
           </div>
-
-          <div className="cat__routes">
-            <div className="cat__route">
-              <span className="cat__route-n">01</span>
-              <h3 className="cat__route-h">Call the shop</h3>
-              <p className="cat__route-d">
-                Put in the ZIP you are feeding and call the shop that will be making it.
-              </p>
-              <div className="cat__route-zip">
-                <ZipLookup ref={zipRef} heading="Shop nearest your event" />
-              </div>
-            </div>
-
-            <div className="cat__route cat__route--soon">
-              <span className="cat__route-n">02</span>
-              <h3 className="cat__route-h">Order the trays online</h3>
-              <p className="cat__route-d">
-                Catering trays for pickup or delivery through DoorDash. Not live yet.
-              </p>
-              <button type="button" className="btn btn-soon btn-lg cat__route-cta" disabled>
-                Coming soon
-              </button>
-            </div>
-          </div>
+          <Link className="btn btn-orange btn-lg cat__order-cta" to="/catering/book">
+            Set up catering <ArrowRight />
+          </Link>
         </div>
       </section>
     </div>

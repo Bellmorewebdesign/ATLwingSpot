@@ -26,7 +26,7 @@ export function CateringBand() {
             Tell us the headcount and which sauces, and we&rsquo;ll handle the rest.
           </p>
           <div className="cband__acts">
-            <Link className="btn btn-orange btn-lg" to="/catering">Set up catering <ArrowRight /></Link>
+            <Link className="btn btn-orange btn-lg" to="/catering/book">Set up catering <ArrowRight /></Link>
             <Link className="tlink cband__link" to="/catering">See the trays</Link>
           </div>
         </Reveal>

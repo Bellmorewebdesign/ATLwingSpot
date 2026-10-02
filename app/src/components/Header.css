@@ -31,6 +31,13 @@
 }
 .head.is-stuck .head__logo img { height: 33px; }
 
+@media (pointer: coarse) {
+  /* The wordmark shrinks to 32px once the header sticks, which is a small
+     target for the one link that takes you home. Padding gives it full height
+     without making the mark itself any bigger. */
+  .head__logo { display: inline-flex; align-items: center; padding-block: 0.4rem; }
+}
+
 .head__nav {
   display: flex;
   align-items: center;

@@ -121,6 +121,22 @@ input, textarea, select { font: inherit; color: inherit; }
 .btn:active { transform: translateY(0); }
 
 .btn-lg { padding: 1.15em 2.1em; font-size: var(--step-1); }
+
+/* Buttons do not wrap, which is right until the label is wider than the phone.
+   "Request information" at large-button size has a min-content width of about
+   350px, so on a 320px screen it pushed whole pages sideways rather than
+   shrinking. Below the narrowest phone in common use, long labels wrap and the
+   generous padding comes in. Short labels are unaffected: they never reach the
+   width where wrapping would happen. */
+@media (max-width: 400px) {
+  /* Dropping the large button a step keeps every label the site actually uses
+     on one line, which matters because a wrapped label leaves the arrow
+     stranded beside two rows of text. Wrapping stays allowed underneath as a
+     backstop, so a longer label added later shrinks the page instead of
+     breaking it. */
+  .btn { white-space: normal; text-align: center; }
+  .btn-lg { padding: 1em 1.4em; font-size: var(--step-0); }
+}
 .btn-sm { padding: 0.75em 1.25em; font-size: var(--step--1); }
 .btn-block { display: flex; width: 100%; }
 
@@ -167,6 +183,34 @@ input, textarea, select { font: inherit; color: inherit; }
   transition: gap var(--t-fast) var(--ease), opacity var(--t-fast);
 }
 .tlink:hover { gap: 0.75em; }
+
+/* ---------- touch targets ----------
+   A link set in small caps stands about 24px tall. That is a fine target for a
+   cursor and a poor one for a thumb, and this site is mostly read on phones.
+   On touch devices these links grow an invisible hit area to 44px without
+   moving a pixel of the design, so what you see is unchanged and what you can
+   hit is not. It stays inside the link's own left and right edges, so it never
+   steals a tap from anything beside it.
+
+   Links that sit in a stacked list get real padding in their own stylesheet
+   instead, because an invisible box would overlap the link above. The footer
+   and the location phone numbers are the two that work that way. */
+@media (pointer: coarse) {
+  /* The compact button is sized for a cursor; on a thumb it comes up short. */
+  .btn-sm { padding-block: 1em; }
+
+  .tlink, .loc__dir, .zipl__dir, .finder__geo, .mcard__order { position: relative; }
+  .tlink::after, .loc__dir::after, .zipl__dir::after,
+  .finder__geo::after, .mcard__order::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+}
 .ar { display: inline-block; }
 
 /* ============================================================
