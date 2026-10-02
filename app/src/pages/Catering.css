@@ -87,9 +87,10 @@
 .cat__order-in { display: grid; gap: clamp(1.75rem, 4vw, 3rem); }
 .cat__order-sub { margin-top: 0.8rem; color: var(--ink-mute); max-width: 44ch; }
 
+/* The lookup is the route that works, so it gets the wider column. */
 .cat__routes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: clamp(1.25rem, 3vw, 2.5rem);
 }
 .cat__route {
@@ -114,6 +115,12 @@
   color: var(--ink);
 }
 .cat__route-d { color: var(--ink-mute); font-size: var(--step--1); max-width: 34ch; }
+
+/* The route that is not open yet sits back a step: a hairline rule instead of
+   the heavy one, and a muted number, so the eye starts on the one that works. */
+.cat__route--soon { border-top-color: var(--line); }
+.cat__route--soon .cat__route-n { color: var(--ink-mute); }
+.cat__route--soon .cat__route-h { color: var(--ink-mute); }
 .cat__route-cta { margin-top: 0.6rem; }
 .cat__route-zip { width: 100%; margin-top: 0.6rem; }
 

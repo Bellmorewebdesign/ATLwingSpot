@@ -134,6 +134,18 @@ input, textarea, select { font: inherit; color: inherit; }
 .btn-cream:hover { --bbg: #fff; }
 
 /* Outlined — inherits the chapter's foreground colour */
+/* A button for something that is not available yet. It keeps the shape and
+   weight of a real button so the page still reads as a pair of routes, but
+   drops to a flat grey with no hover and no lift, so nobody tries to press it
+   twice. The label carries the meaning; the colour only backs it up. */
+.btn-soon {
+  --bbg: rgba(18, 16, 18, 0.07);
+  --bfg: #5f5c5f;
+  border-color: rgba(18, 16, 18, 0.1);
+  cursor: default;
+}
+.btn-soon:hover, .btn-soon:active { transform: none; }
+
 .btn-line {
   background: transparent;
   color: var(--fg);

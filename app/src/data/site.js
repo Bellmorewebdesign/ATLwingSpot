@@ -7,12 +7,13 @@ export const ORDER_URL = 'https://order.snackpass.co/atlwingspot'
 // One label for every ordering control, so the path reads the same everywhere.
 export const ORDER_LABEL = 'Order Now'
 
-// Catering runs through DoorDash, separately from everyday ordering.
+// Online catering is not live yet, so nothing links to this. The catering page
+// takes orders by phone and shows the DoorDash route as coming soon.
 //
-// TODO: replace with the direct DoorDash catering link once it is to hand. This
-// is DoorDash's own store search for the brand, so it resolves to whichever ATL
-// shops DoorDash lists near the visitor rather than pointing at one store, but
-// it is a search rather than the catering storefront itself.
+// TODO: replace with the direct DoorDash catering link when it launches, then
+// enable the button in pages/Catering.jsx. What is here now is DoorDash's own
+// store search for the brand, which finds the shops but cannot take a catering
+// order, so it is a placeholder rather than something to ship.
 export const CATERING_URL = 'https://www.doordash.com/search/store/atl%20wing%20spot/'
 
 export const SOCIAL = {
