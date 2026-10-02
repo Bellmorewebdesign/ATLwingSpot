@@ -19,8 +19,15 @@ import './ZipLookup.css'
  * so the button is really there for the people who go looking for one.
  *
  * Forwards a ref to the input so a page can send someone straight to it.
+ *
+ * size="lg" is for the booking page, where the lookup is the whole point of
+ * the page rather than one block on it: bigger field, bigger type, results set
+ * as cards. Everything else about it is identical.
  */
-export const ZipLookup = forwardRef(function ZipLookup({ heading = 'Find your closest shop' }, ref) {
+export const ZipLookup = forwardRef(function ZipLookup(
+  { heading = 'Find your closest shop', size = 'md' },
+  ref
+) {
   const id = useId()
   const [value, setValue] = useState('')
   const [result, setResult] = useState(null)
@@ -37,7 +44,7 @@ export const ZipLookup = forwardRef(function ZipLookup({ heading = 'Find your cl
   }
 
   return (
-    <div className="zipl">
+    <div className={size === 'lg' ? 'zipl zipl--lg' : 'zipl'}>
       <form className="zipl__form" onSubmit={submit}>
         <label className="zipl__label" htmlFor={`${id}-zip`}>{heading}</label>
         <div className="zipl__row">
@@ -53,9 +60,14 @@ export const ZipLookup = forwardRef(function ZipLookup({ heading = 'Find your cl
               onChange={onChange}
               placeholder="ZIP code"
               maxLength={5}
+              /* An input with no size attribute reserves room for twenty
+                 characters. At the booking page's type size that is wider than
+                 a 320px phone, and it pushed the whole page sideways. This is a
+                 five-digit field, so five is also the honest answer. */
+              size={5}
             />
           </div>
-          <button type="submit" className="btn btn-ink zipl__go">Find</button>
+          <button type="submit" className={`btn btn-ink zipl__go${size === 'lg' ? ' btn-lg' : ''}`}>Find</button>
         </div>
       </form>
 

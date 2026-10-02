@@ -13,6 +13,7 @@ import Menu from './pages/Menu'
 import Flavors from './pages/Flavors'
 import Locations from './pages/Locations'
 import Catering from './pages/Catering'
+import BookCatering from './pages/BookCatering'
 import Story from './pages/Story'
 import Franchise from './pages/Franchise'
 import Contact from './pages/Contact'
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/flavors" element={<Flavors />} />
           <Route path="/locations" element={<Locations />} />
           <Route path="/catering" element={<Catering />} />
+          <Route path="/catering/book" element={<BookCatering />} />
           <Route path="/story" element={<Story />} />
           <Route path="/franchise" element={<Franchise />} />
           <Route path="/contact" element={<Contact />} />

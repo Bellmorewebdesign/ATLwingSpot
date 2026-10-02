@@ -20,6 +20,12 @@
 }
 .finder__search input { flex: 1; min-width: 0; background: none; border: 0; outline: none; }
 .finder__search input::placeholder { color: var(--fg-mute); }
+@media (pointer: coarse) {
+  /* As on the menu search: the padding belongs to the input, not the box
+     around it, or most of what looks tappable is not. */
+  .finder__search { padding-block: 0; }
+  .finder__search input { padding-block: 0.9rem; }
+}
 
 .finder__regions { display: flex; flex-direction: column; margin-bottom: 1.4rem; }
 .finder__region {

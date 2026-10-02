@@ -25,6 +25,13 @@
 }
 .mrail__search input { flex: 1; min-width: 0; background: none; border: 0; outline: none; }
 .mrail__search input::placeholder { color: var(--ink-mute); }
+@media (pointer: coarse) {
+  /* The box looks 45px tall but the input inside it was 27px, and the padding
+     around it did not take a tap. Move the vertical padding onto the input so
+     the whole field is the target. */
+  .mrail__search { padding-block: 0; }
+  .mrail__search input { padding-block: 0.8rem; }
+}
 
 .mrail__cats { display: flex; flex-direction: column; }
 .mrail__cat {
@@ -91,7 +98,7 @@
 }
 .mcard__img--none span {
   font-weight: 800;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #5a5459;

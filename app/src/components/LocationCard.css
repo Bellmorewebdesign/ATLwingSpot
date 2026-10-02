@@ -65,4 +65,11 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* The phone number is what someone on a phone came for, so it gets real height
+   rather than an invisible hit box: it sits in a stack with the address above
+   and the buttons below, where an overlay would cover its neighbours. */
+@media (pointer: coarse) {
+  .loc__phone { padding-block: 0.75rem; margin-top: 0; }
+}
 .loc__phone:hover { color: var(--orange-deep); }

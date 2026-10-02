@@ -116,3 +116,14 @@
 @media (prefers-reduced-motion: reduce) {
   .crew__num, .counter__n { animation: none; }
 }
+
+@media (pointer: coarse) {
+  /* Same minimum as the flavor controls, so the two sets of buttons feel alike
+     under a thumb. */
+  .hunger__b {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

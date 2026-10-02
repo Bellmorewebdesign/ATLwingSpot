@@ -39,7 +39,7 @@
   flex-wrap: wrap;
   gap: 0.7rem;
   font-weight: 800;
-  font-size: clamp(0.62rem, 1.5vw, 0.8rem);
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--cyan-ink);
@@ -67,18 +67,16 @@
    SAUCY.'s caps read as colliding with STAY rather than nesting under it. */
 .hero__l1 { line-height: 0.9; }
 .hero__l2 { line-height: 0.86; }
-/* Anton's caps are narrow, so STAY is tracked right out to the width of
-   SAUCY. below it and the two lines lock into one block. */
-.hero__l1 {
-  font-size: max(1.9rem, min(20vw, 27vh, 25rem));
-  letter-spacing: 0.62em;
-  text-indent: 0.31em; /* half the tracking: cancels the trailing letter-space */
-}
-.hero__l2 {
-  font-size: max(3.4rem, min(31.5vw, 42vh, 38rem));
+/* Both lines at one size and normal tracking. STAY used to be set small and
+   tracked right out to SAUCY.'s width, which was a way of filling a line that
+   had a photograph sitting next to it; with the photograph gone that spacing
+   just reads as a gap. Same size, same tracking, centred, so the two words
+   stack into one block the way a display lockup should. */
+.hero__l1, .hero__l2 {
+  font-size: max(3rem, min(28vw, 38vh, 34rem));
   letter-spacing: -0.03em;
-  color: var(--orange);
 }
+.hero__l2 { color: var(--orange); }
 
 /* ---------- actions ---------- */
 .hero__actions {
@@ -100,8 +98,7 @@
 
 /* ---------- responsive ---------- */
 @media (max-width: 1024px) {
-  .hero__l1 { font-size: max(1.9rem, min(20.5vw, 24vh, 16rem)); }
-  .hero__l2 { font-size: max(3.4rem, min(33vw, 37vh, 24rem)); }
+  .hero__l1, .hero__l2 { font-size: max(3rem, min(29vw, 33vh, 22rem)); }
 }
 @media (max-width: 560px) {
   .hero { min-height: auto; }
@@ -111,8 +108,7 @@
     gap: clamp(1.4rem, 4.5vh, 2.4rem);
     padding-bottom: calc(var(--bar-h) + env(safe-area-inset-bottom) + 1rem);
   }
-  .hero__l1 { font-size: max(1.9rem, min(19.5vw, 13vh, 5.5rem)); }
-  .hero__l2 { font-size: max(3.4rem, min(30.5vw, 21vh, 8.5rem)); }
+  .hero__l1, .hero__l2 { font-size: max(2.6rem, min(34vw, 23vh, 9rem)); }
   .hero__actions { width: 100%; flex-direction: column; align-items: stretch; }
   .hero__actions .btn { width: 100%; }
   .hero__menu { align-self: center; margin-left: 0; margin-top: 0.2rem; }
