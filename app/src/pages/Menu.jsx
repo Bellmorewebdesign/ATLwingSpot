@@ -96,6 +96,23 @@ export default function Menu() {
     [term, searching]
   )
 
+  /**
+   * Picking a category swaps the whole list for a different, usually much
+   * shorter one. Keeping the scroll position means you land in the middle of a
+   * section you did not pick, or past the end of it looking at nothing, so a
+   * category reads like a new page and opens at the top like one. Route changes
+   * already do this through ScrollToTop; a category only moves a search param,
+   * which that component does not watch.
+   *
+   * Every click goes through here, including Everything while a search is up,
+   * which leaves the category unchanged but still replaces what is on screen.
+   */
+  const choose = (id) => {
+    setActive(id)
+    setQ('')
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+
   const shown = active === 'all' ? CATS : CATS.filter((c) => c.id === active)
 
   return (
@@ -127,7 +144,7 @@ export default function Menu() {
           <nav className="mrail__cats" aria-label="Menu categories">
             <button
               className={`mrail__cat ${active === 'all' && !searching ? 'on' : ''}`}
-              onClick={() => { setActive('all'); setQ('') }}
+              onClick={() => choose('all')}
             >
               Everything
             </button>
@@ -135,7 +152,7 @@ export default function Menu() {
               <button
                 key={c.id}
                 className={`mrail__cat ${active === c.id && !searching ? 'on' : ''}`}
-                onClick={() => { setActive(c.id); setQ('') }}
+                onClick={() => choose(c.id)}
               >
                 {c.label}
               </button>
