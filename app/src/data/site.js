@@ -16,6 +16,18 @@ export const ORDER_LABEL = 'Order Now'
 // order, so it is a placeholder rather than something to ship.
 export const CATERING_URL = 'https://www.doordash.com/search/store/atl%20wing%20spot/'
 
+// The franchising form posts here. A public HTTPS endpoint, nothing secret:
+// the recipient address, the SES identity and the rate-limit key all live in
+// the Lambda's environment and never reach the browser. Handler and setup are
+// in aws/franchise-form/.
+export const FRANCHISE_ENDPOINT =
+  'https://jva4k2azf7.execute-api.us-east-1.amazonaws.com/franchise'
+
+// Cloudflare Turnstile. This is the PUBLIC site key: it is meant to be in the
+// page, it identifies the widget and nothing else. The secret that verifies a
+// token lives only in the Lambda's TURNSTILE_SECRET and must never appear here.
+export const TURNSTILE_SITE_KEY = '0x4AAAAAAFTZFqFTROkQAzkF'
+
 export const SOCIAL = {
   instagram: 'https://www.instagram.com/atlwingspot/',
   tiktok: 'https://www.tiktok.com/@atlwingspot',

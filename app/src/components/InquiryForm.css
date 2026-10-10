@@ -76,3 +76,70 @@
   .mform { grid-template-columns: 1fr; }
   .mform__submit .btn { width: 100%; justify-content: center; }
 }
+
+/* ---------- live submission ---------- */
+
+/* The honeypot. Out of the way rather than display:none, because something
+   that fills every input in the markup should still find it; aria-hidden and
+   tabIndex -1 keep it away from anyone using a keyboard or a screen reader,
+   and the name is bland enough that no autofill heuristic claims it. */
+.mform__hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mform { position: relative; }
+
+/* Same muted treatment as the "Coming soon" button on the booking page, rather
+   than dimming the whole button with opacity: a faded label on a faded
+   background reads as washed out instead of unavailable, and the text drops
+   below the contrast it needs. Flat grey with full-strength text says the same
+   thing and stays legible. */
+.mform__submit .btn[disabled] {
+  --bbg: rgba(18, 16, 18, 0.07);
+  --bfg: #5f5c5f;
+  border-color: rgba(18, 16, 18, 0.1);
+  cursor: default;
+}
+.mform__submit .btn[disabled]:hover,
+.mform__submit .btn[disabled]:active { transform: none; }
+
+.mform__ok {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.9rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--r-md);
+  border: 2px solid var(--cyan);
+  background: color-mix(in srgb, var(--cyan) 12%, transparent);
+  color: var(--ink);
+  font-size: var(--step--1);
+}
+.mform__ok strong { font-weight: 800; }
+.mform__ok:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+.mform__formerr {
+  margin-top: 0.9rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--r-md);
+  /* Deeper than the brand orange: this is an error, and orange on cream does
+     not carry enough contrast at body size to be read as one. */
+  border: 2px solid #b8281f;
+  color: #8f1f18;
+  background: rgba(184, 40, 31, 0.07);
+  font-size: var(--step--1);
+  font-weight: 700;
+}
+
+/* The challenge sits with the fields rather than beside the button, so the
+   form still reads as one column of things to do. */
+.mform__captcha { margin-top: 0.2rem; }

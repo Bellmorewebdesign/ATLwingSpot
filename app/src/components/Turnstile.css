@@ -1,0 +1,22 @@
+/* The widget renders its own iframe at a fixed size; this only gives it room
+   and keeps the surrounding notes in the form's voice. */
+.ts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+/* Reserves the widget's height so the submit button does not jump down the
+   page the moment the iframe appears. */
+.ts__widget { min-height: 65px; }
+
+.ts__note {
+  font-size: var(--step--1);
+  color: var(--ink-mute);
+  margin: 0;
+}
+.ts__note--bad {
+  color: #8f1f18;
+  font-weight: 700;
+}

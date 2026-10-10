@@ -4,6 +4,12 @@ app/dist
 app/.vite
 node_modules
 
+# Python tooling for the Lambda (see aws/franchise-form/README.md)
+aws/**/.venv
+aws/**/__pycache__
+aws/**/.pytest_cache
+aws/**/function.zip
+
 # Logs / OS
 *.log
 npm-debug.log*
