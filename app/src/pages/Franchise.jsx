@@ -2,6 +2,11 @@ import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { Reveal } from '../components/Reveal'
 import { InquiryForm } from '../components/InquiryForm'
+import {
+  submitFranchiseInquiry,
+  cooldownRemaining,
+  startCooldown,
+} from '../lib/franchiseSubmit'
 import { JumpButton } from '../components/JumpButton'
 import { ArrowRight } from '../components/Icons'
 import './Franchise.css'
@@ -148,14 +153,26 @@ export default function Franchise() {
             <p className="fr__form-sub">Send your market and we&rsquo;ll take it from there.</p>
           </div>
           <div className="fr__card">
+            {/* The one form on the site that posts somewhere real. It goes to
+                a Lambda behind an API Gateway endpoint which validates it,
+                rate limits it and emails it on through SES; the handler and
+                its setup live in aws/franchise-form/. The honeypot name is
+                deliberately bland so no browser autofill recognises it. */}
             <InquiryForm
               fields={FIELDS}
               submitLabel="Request information"
-              notice={{
-                title: 'Not connected yet',
-                message:
-                  'This form does not reach our franchise team yet, so your request was not sent anywhere.',
-              }}
+              submit={submitFranchiseInquiry}
+              honeypot="contactReason2"
+              cooldownRemaining={cooldownRemaining}
+              onCooldownStart={startCooldown}
+              successTitle="Request sent."
+              successMessage="It is with our franchise team and someone will follow up by email."
+              note={
+                <p className="mform__note">
+                  We use your details to answer this enquiry. Nothing here is an offer
+                  to sell a franchise; see the disclaimer below.
+                </p>
+              }
             />
           </div>
         </div>
