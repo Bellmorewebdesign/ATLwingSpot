@@ -1,5 +1,6 @@
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
+import { TURNSTILE_SITE_KEY } from '../data/site'
 import { Reveal } from '../components/Reveal'
 import { InquiryForm } from '../components/InquiryForm'
 import {
@@ -163,6 +164,7 @@ export default function Franchise() {
               submitLabel="Request information"
               submit={submitFranchiseInquiry}
               honeypot="contactReason2"
+              captcha={{ siteKey: TURNSTILE_SITE_KEY, action: 'franchise' }}
               cooldownRemaining={cooldownRemaining}
               onCooldownStart={startCooldown}
               successTitle="Request sent."

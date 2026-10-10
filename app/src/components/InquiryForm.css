@@ -139,3 +139,7 @@
   font-size: var(--step--1);
   font-weight: 700;
 }
+
+/* The challenge sits with the fields rather than beside the button, so the
+   form still reads as one column of things to do. */
+.mform__captcha { margin-top: 0.2rem; }

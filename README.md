@@ -58,14 +58,15 @@ compiled output to the repository root (replacing only `index.html`, `404.html`,
 
 The franchising form is the one form on the site that actually sends something.
 It posts to an API Gateway endpoint in front of a Lambda, which validates the
-submission, rate limits it in DynamoDB and emails it on with SES. The handler,
+submission, verifies a Cloudflare Turnstile token, rate limits it in DynamoDB
+and emails it on with SES. The handler,
 its tests and an idempotent setup script live in
 [`aws/franchise-form/`](aws/franchise-form/README.md).
 
 The contact form is still front-end only and still says so.
 
-Nothing secret is in the browser bundle: the only thing the frontend knows is
-the public endpoint URL. The recipient address, the SES identity and the
+Nothing secret is in the browser bundle: the only things the frontend knows are
+the public endpoint URL and the public Turnstile site key. The recipient address, the SES identity and the
 rate-limit key are all Lambda environment variables.
 
 ### Data and asset scripts

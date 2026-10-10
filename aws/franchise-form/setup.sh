@@ -22,6 +22,10 @@ API_ID="${API_ID:-jva4k2azf7}"
 TABLE="${RATE_LIMIT_TABLE:-atl-franchise-form-ratelimit}"
 POLICY_NAME="atl-franchise-form-ratelimit"
 ALLOWED_ORIGIN="${ALLOWED_ORIGIN:-https://bellmorewebdesign.github.io}"
+TURNSTILE_HOSTNAMES="${TURNSTILE_HOSTNAMES:-bellmorewebdesign.github.io}"
+# The handler allows 5s for the call to Cloudflare, so the function itself
+# needs more than AWS's 3s default or the invocation dies mid-verification.
+MIN_LAMBDA_TIMEOUT="${MIN_LAMBDA_TIMEOUT:-15}"
 
 # Best-effort API-level throttling. Not the real limiter; see README.
 THROTTLE_RATE="${THROTTLE_RATE:-5}"
@@ -115,15 +119,21 @@ CURRENT_ENV="$(aws lambda get-function-configuration --function-name "$FUNCTION"
 # resets the rate-limit buckets; it is not a credential for anything.
 NEW_SECRET="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
 
-MERGED="$(python3 - "$CURRENT_ENV" "$TABLE" "$NEW_SECRET" <<'PY'
+MERGED="$(python3 - "$CURRENT_ENV" "$TABLE" "$NEW_SECRET" "$TURNSTILE_HOSTNAMES" <<'PY'
 import json, sys
 current = json.loads(sys.argv[1]) if sys.argv[1] not in ("", "None", "null") else {}
-table, generated = sys.argv[2], sys.argv[3]
+table, generated, hostnames = sys.argv[2], sys.argv[3], sys.argv[4]
 
 # Existing values win: this must never clobber SES_FROM, FRANCHISE_RECIPIENT,
 # or a RATE_LIMIT_SECRET that is already in place and already has live
 # buckets hanging off it.
 defaults = {
+    # TURNSTILE_SECRET is deliberately absent. It is already set, and inventing
+    # a placeholder for it would replace a working secret with a broken one on
+    # any environment where the read came back empty.
+    "TURNSTILE_HOSTNAMES": hostnames,
+    "TURNSTILE_ACTION": "franchise",
+    "TURNSTILE_TIMEOUT_SECONDS": "5",
     "RATE_LIMIT_TABLE": table,
     "RATE_LIMIT_SECRET": generated,
     "MIN_INTERVAL_SECONDS": "60",
@@ -136,7 +146,11 @@ defaults = {
 added = [k for k, v in defaults.items() if not current.get(k)]
 merged = dict(defaults)
 merged.update({k: v for k, v in current.items() if v not in (None, "")})
-print(json.dumps({"vars": merged, "added": added}))
+print(json.dumps({
+    "vars": merged,
+    "added": added,
+    "has_turnstile_secret": bool(current.get("TURNSTILE_SECRET")),
+}))
 PY
 )"
 ADDED="$(python3 -c 'import json,sys; print(" ".join(json.loads(sys.argv[1])["added"]) or "(none)")' "$MERGED")"
@@ -147,6 +161,30 @@ aws lambda update-function-configuration --function-name "$FUNCTION" --region "$
 aws lambda wait function-updated-v2 --function-name "$FUNCTION" --region "$REGION"
 ok "added (existing values preserved): ${ADDED}"
 ok "secret not printed; re-running will not overwrite one already set"
+
+HAS_TS="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["has_turnstile_secret"])' "$MERGED")"
+if [[ "$HAS_TS" == "True" ]]; then
+  ok "TURNSTILE_SECRET already present, left untouched"
+else
+  printf '    \033[31m!! TURNSTILE_SECRET is NOT set on this function.\033[0m\n'
+  ok "   The handler fails closed without it: the form will return 503 and"
+  ok "   send nothing. Set it from the Cloudflare dashboard, then re-run:"
+  ok "   aws lambda update-function-configuration --function-name ${FUNCTION} \\"
+  ok "     --region ${REGION} --environment ... (merge, do not replace)"
+fi
+
+# ----------------------------------------------------------- function timeout
+say "Lambda timeout"
+CUR_TIMEOUT="$(aws lambda get-function-configuration --function-name "$FUNCTION" \
+  --region "$REGION" --query Timeout --output text)"
+if [[ "$CUR_TIMEOUT" -ge "$MIN_LAMBDA_TIMEOUT" ]]; then
+  ok "already ${CUR_TIMEOUT}s, leaving it"
+else
+  aws lambda update-function-configuration --function-name "$FUNCTION" --region "$REGION" \
+    --timeout "$MIN_LAMBDA_TIMEOUT" >/dev/null
+  aws lambda wait function-updated-v2 --function-name "$FUNCTION" --region "$REGION"
+  ok "raised ${CUR_TIMEOUT}s -> ${MIN_LAMBDA_TIMEOUT}s, so the call to Cloudflare has room"
+fi
 
 # ------------------------------------------------------------- function code
 if [[ "$SKIP_CODE" -eq 0 ]]; then

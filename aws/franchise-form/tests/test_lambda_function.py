@@ -14,6 +14,8 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
+import urllib.error
+
 from botocore.exceptions import ClientError, EndpointConnectionError
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -35,7 +37,39 @@ ENV = {
     "PER_IP_DAILY_LIMIT": "10",
     "GLOBAL_DAILY_LIMIT": "50",
     "AWS_REGION": "us-east-1",
+    # Never the real one. The production secret lives only in the Lambda's
+    # environment and is not in this repository.
+    "TURNSTILE_SECRET": "test-turnstile-secret",
+    "TURNSTILE_HOSTNAMES": "bellmorewebdesign.github.io",
+    "TURNSTILE_ACTION": "franchise",
 }
+
+
+class FakeVerify:
+    """
+    Stands in for the HTTPS call to Cloudflare. Only the transport is faked:
+    the handler's own parsing, hostname check, action check and failure
+    mapping all run for real against whatever this returns.
+    """
+
+    def __init__(self, payload=None, raise_with=None, raw=None):
+        self.payload = payload if payload is not None else {
+            "success": True,
+            "hostname": "bellmorewebdesign.github.io",
+            "action": "franchise",
+            "challenge_ts": "2026-10-10T12:00:00Z",
+        }
+        self.raise_with = raise_with
+        self.raw = raw
+        self.calls = []
+
+    def __call__(self, url, fields, timeout):
+        self.calls.append({"url": url, "fields": fields, "timeout": timeout})
+        if self.raise_with is not None:
+            raise self.raise_with
+        if self.raw is not None:
+            return self.raw
+        return json.dumps(self.payload)
 
 
 @pytest.fixture
@@ -47,6 +81,7 @@ def mod(monkeypatch):
     importlib.reload(lambda_function)
     lambda_function._ddb = FakeDynamoDB()
     lambda_function._ses = FakeSES()
+    lambda_function._post_form = FakeVerify()
     return lambda_function
 
 
@@ -59,7 +94,10 @@ def event(body=None, ip="203.0.113.10", method="POST", raw=None):
     return {"requestContext": {"http": http}, "body": raw}
 
 
+TOKEN = "a-token-from-the-widget"
+
 GOOD = {
+    "turnstileToken": TOKEN,
     "firstName": "Dana",
     "lastName": "Okafor",
     "email": "dana@example.com",
@@ -370,6 +408,7 @@ def test_missing_rate_limit_secret_fails_closed(monkeypatch):
     importlib.reload(lambda_function)
     lambda_function._ddb = FakeDynamoDB()
     lambda_function._ses = FakeSES()
+    lambda_function._post_form = FakeVerify()
     resp = lambda_function.lambda_handler(event(GOOD), None)
     assert resp["statusCode"] == 503
     assert lambda_function._ses.sent == []
@@ -383,6 +422,7 @@ def test_missing_recipient_fails_closed(monkeypatch):
     importlib.reload(lambda_function)
     lambda_function._ddb = FakeDynamoDB()
     lambda_function._ses = FakeSES()
+    lambda_function._post_form = FakeVerify()
     assert lambda_function.lambda_handler(event(GOOD), None)["statusCode"] == 503
 
 
@@ -409,7 +449,8 @@ def test_personal_details_are_never_logged(mod, caplog):
     mod.lambda_handler(event(dict(GOOD, email="nope")), None)
     logged = "\n".join(r.getMessage() for r in caplog.records)
     for secret in ["Dana", "Okafor", "dana@example.com", "516-555-0142",
-                   "Interested in two units", "203.0.113.10"]:
+                   "Interested in two units", "203.0.113.10",
+                   TOKEN, "test-turnstile-secret"]:
         assert secret not in logged
 
 
@@ -417,3 +458,182 @@ def test_ip_hash_is_not_reversible_without_the_secret(mod):
     import hashlib
     plain = hashlib.sha256(b"203.0.113.10").hexdigest()
     assert mod._ip_hash("203.0.113.10") != plain
+
+
+# ------------------------------------------------------------------ turnstile
+
+def test_the_token_is_sent_to_cloudflare_with_the_secret(mod):
+    mod.lambda_handler(event(GOOD), None)
+    call = mod._post_form.calls[0]
+    assert call["url"] == "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+    assert call["fields"]["response"] == TOKEN
+    assert call["fields"]["secret"] == "test-turnstile-secret"
+    assert call["timeout"] == mod.TURNSTILE_TIMEOUT_SECONDS
+
+
+def test_the_verify_url_is_not_configurable(mod, monkeypatch):
+    """An env-settable URL would be a one-variable bypass of the whole check."""
+    monkeypatch.setenv("TURNSTILE_VERIFY_URL", "https://example.net/always-true")
+    importlib.reload(mod)
+    assert mod.TURNSTILE_VERIFY_URL == "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+
+
+@pytest.mark.parametrize("token", [None, "", "   ", 12345, [], {"a": 1}])
+def test_missing_or_non_string_token_is_refused(mod, token):
+    payload = dict(GOOD)
+    payload["turnstileToken"] = token
+    resp = mod.lambda_handler(event(payload), None)
+    assert resp["statusCode"] == 403
+    assert body_of(resp)["error"] == "captcha_failed"
+    assert mod._ses.sent == []
+    assert mod._ddb.calls == 0
+    assert mod._post_form.calls == []      # not worth a round trip
+
+
+def test_absent_token_field_is_refused(mod):
+    payload = {k: v for k, v in GOOD.items() if k != "turnstileToken"}
+    resp = mod.lambda_handler(event(payload), None)
+    assert resp["statusCode"] == 403
+    assert mod._ses.sent == []
+
+
+def test_absurdly_long_token_is_refused_without_a_round_trip(mod):
+    resp = mod.lambda_handler(event(dict(GOOD, turnstileToken="x" * 4096)), None)
+    assert resp["statusCode"] == 403
+    assert mod._post_form.calls == []
+    assert mod._ses.sent == []
+
+
+@pytest.mark.parametrize("codes", [
+    ["invalid-input-response"],      # not a real token
+    ["timeout-or-duplicate"],        # expired, or already redeemed
+    ["invalid-input-secret"],        # our secret is wrong
+    [],
+])
+def test_unsuccessful_verification_is_refused(mod, codes):
+    mod._post_form = FakeVerify({"success": False, "error-codes": codes})
+    resp = mod.lambda_handler(event(GOOD), None)
+    assert resp["statusCode"] == 403
+    assert body_of(resp)["error"] == "captcha_failed"
+    assert mod._ses.sent == []
+    assert mod._ddb.calls == 0
+
+
+def test_token_from_another_hostname_is_refused(mod):
+    mod._post_form = FakeVerify({
+        "success": True, "hostname": "evil.example.com", "action": "franchise",
+    })
+    resp = mod.lambda_handler(event(GOOD), None)
+    assert resp["statusCode"] == 403
+    assert mod._ses.sent == []
+
+
+def test_token_from_another_action_is_refused(mod):
+    """A token minted by a widget elsewhere on the site must not pass here."""
+    mod._post_form = FakeVerify({
+        "success": True, "hostname": "bellmorewebdesign.github.io", "action": "newsletter",
+    })
+    resp = mod.lambda_handler(event(GOOD), None)
+    assert resp["statusCode"] == 403
+    assert mod._ses.sent == []
+
+
+def test_hostname_match_ignores_case(mod):
+    mod._post_form = FakeVerify({
+        "success": True, "hostname": "BellmoreWebDesign.GitHub.IO", "action": "franchise",
+    })
+    assert mod.lambda_handler(event(GOOD), None)["statusCode"] == 200
+
+
+def test_a_second_hostname_can_be_allowed(mod, monkeypatch):
+    monkeypatch.setattr(mod, "TURNSTILE_HOSTNAMES",
+                        ("bellmorewebdesign.github.io", "atlwingspot.com"))
+    mod._post_form = FakeVerify({
+        "success": True, "hostname": "atlwingspot.com", "action": "franchise",
+    })
+    assert mod.lambda_handler(event(GOOD), None)["statusCode"] == 200
+
+
+def test_wildcard_hostname_is_not_accepted_as_configuration(monkeypatch):
+    for k, v in ENV.items():
+        monkeypatch.setenv(k, v)
+    monkeypatch.setenv("TURNSTILE_HOSTNAMES", "*")
+    import lambda_function
+    importlib.reload(lambda_function)
+    assert lambda_function.TURNSTILE_HOSTNAMES == ()
+    lambda_function._ddb, lambda_function._ses = FakeDynamoDB(), FakeSES()
+    lambda_function._post_form = FakeVerify()
+    resp = lambda_function.lambda_handler(event(GOOD), None)
+    assert resp["statusCode"] == 503            # fails closed, does not open up
+    assert lambda_function._ses.sent == []
+
+
+@pytest.mark.parametrize("failure", [
+    TimeoutError("timed out"),
+    urllib.error.URLError("no route to host"),
+    urllib.error.HTTPError("u", 500, "err", {}, None),
+    OSError("connection reset"),
+])
+def test_verification_unreachable_fails_closed(mod, failure):
+    mod._post_form = FakeVerify(raise_with=failure)
+    resp = mod.lambda_handler(event(GOOD), None)
+    assert resp["statusCode"] == 503
+    assert body_of(resp)["error"] == "unavailable"
+    assert mod._ses.sent == []
+    assert mod._ddb.calls == 0
+
+
+def test_garbled_verification_response_fails_closed(mod):
+    mod._post_form = FakeVerify(raw="<html>502 Bad Gateway</html>")
+    resp = mod.lambda_handler(event(GOOD), None)
+    assert resp["statusCode"] == 503
+    assert mod._ses.sent == []
+
+
+def test_missing_turnstile_secret_fails_closed(monkeypatch):
+    for k, v in ENV.items():
+        monkeypatch.setenv(k, v)
+    monkeypatch.setenv("TURNSTILE_SECRET", "")
+    import lambda_function
+    importlib.reload(lambda_function)
+    lambda_function._ddb, lambda_function._ses = FakeDynamoDB(), FakeSES()
+    lambda_function._post_form = FakeVerify()
+    resp = lambda_function.lambda_handler(event(GOOD), None)
+    assert resp["statusCode"] == 503
+    assert lambda_function._ses.sent == []
+    assert lambda_function._post_form.calls == []
+
+
+def test_verification_runs_before_quota_is_taken(mod):
+    """
+    A token that expired while someone filled the form should not cost them a
+    submission slot, and bot traffic should not drain the global daily cap.
+    """
+    mod._post_form = FakeVerify({"success": False, "error-codes": ["timeout-or-duplicate"]})
+    for _ in range(5):
+        assert mod.lambda_handler(event(GOOD), None)["statusCode"] == 403
+    assert mod._ddb.calls == 0
+    # and the real attempt that follows is not held back by any of them
+    mod._post_form = FakeVerify()
+    assert mod.lambda_handler(event(GOOD), None)["statusCode"] == 200
+
+
+def test_honeypot_short_circuits_before_cloudflare_is_called(mod):
+    payload = dict(GOOD)
+    payload[mod.HONEYPOT_FIELD] = "spam"
+    assert mod.lambda_handler(event(payload), None)["statusCode"] == 200
+    assert mod._post_form.calls == []
+    assert mod._ses.sent == []
+
+
+def test_invalid_fields_short_circuit_before_cloudflare_is_called(mod):
+    resp = mod.lambda_handler(event(dict(GOOD, email="nope")), None)
+    assert resp["statusCode"] == 400
+    assert mod._post_form.calls == []
+
+
+def test_rate_limit_still_applies_to_verified_submissions(mod):
+    assert mod.lambda_handler(event(GOOD), None)["statusCode"] == 200
+    second = mod.lambda_handler(event(GOOD), None)
+    assert second["statusCode"] == 429       # the limiter is still in charge
+    assert len(mod._ses.sent) == 1

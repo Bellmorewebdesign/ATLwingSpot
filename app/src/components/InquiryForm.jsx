@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Turnstile } from './Turnstile'
 import { useFormNotice } from './FormNotice'
 import { BRAND } from '../data/site'
 import { ArrowRight } from './Icons'
@@ -18,6 +19,12 @@ const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
  * values are only cleared at that point, so a failure of any kind leaves
  * everything typed exactly where it was.
  *
+ * `captcha` ({ siteKey, action }) adds a Turnstile challenge. Only the
+ * franchising form passes one, so the contact form neither renders the widget
+ * nor fetches Cloudflare's script. A submission is not attempted without a
+ * token, and the token is thrown away after every attempt because Cloudflare
+ * refuses one that has already been redeemed.
+ *
  * `honeypot` renders a decoy input under that name. It is positioned out of
  * sight rather than display:none, so something that fills every input it finds
  * in the markup will fill it; it is aria-hidden and tabIndex -1 so nobody
@@ -31,6 +38,7 @@ export function InquiryForm({
   columns = 2,
   submit,
   honeypot,
+  captcha,
   note,
   sendingLabel = 'Sending…',
   successTitle = 'Thanks, that came through.',
@@ -47,6 +55,9 @@ export function InquiryForm({
   const [formError, setFormError] = useState(null)
   const [cooldown, setCooldown] = useState(() => (cooldownRemaining ? cooldownRemaining() : 0))
   const liveRef = useRef(null)
+  const [captchaToken, setCaptchaToken] = useState('')
+  const [captchaStatus, setCaptchaStatus] = useState('loading')
+  const captchaRef = useRef(null)
 
   // One timer for the whole countdown, started whenever there is time left,
   // including on mount: the cooldown is persisted, so a reload mid-wait has to
@@ -125,19 +136,47 @@ export function InquiryForm({
       }
     }
 
+    if (captcha) {
+      if (captchaStatus === 'unavailable') {
+        setStatus('error')
+        setFormError(
+          'We cannot run the verification check, so this cannot be sent right now. ' +
+          'Reload the page, or message us on Instagram.'
+        )
+        return
+      }
+      if (!captchaToken) {
+        setStatus('error')
+        setFormError(
+          captchaStatus === 'loading'
+            ? 'Still checking your browser. Give it a second and try again.'
+            : 'Please complete the verification below, then send.'
+        )
+        return
+      }
+    }
+
     setStatus('sending')
     setFormError(null)
     try {
-      await submit(values, { honeypotName: honeypot, honeypotValue: hp })
+      await submit(values, {
+        honeypotName: honeypot,
+        honeypotValue: hp,
+        turnstileToken: captchaToken,
+      })
       setValues(blank())
       setHp('')
       setErrors({})
+      // Spent, whatever happened next. Cloudflare rejects a redeemed token as
+      // a duplicate, so holding onto it would make the next send fail.
+      captchaRef.current?.reset()
       setStatus('sent')
       if (onCooldownStart) onCooldownStart()
       if (cooldownRemaining) setCooldown(cooldownRemaining())
       liveRef.current?.focus()
     } catch (err) {
-      // Everything the person typed stays put.
+      // Everything the person typed stays put; only the token is discarded.
+      captchaRef.current?.reset()
       setStatus('error')
       if (err && err.fields) {
         setErrors(err.fields)
@@ -219,6 +258,18 @@ export function InquiryForm({
             autoComplete="off"
             value={hp}
             onChange={(e) => setHp(e.target.value)}
+          />
+        </div>
+      )}
+
+      {captcha && (
+        <div className="mform__field is-full mform__captcha">
+          <Turnstile
+            ref={captchaRef}
+            siteKey={captcha.siteKey}
+            action={captcha.action}
+            onToken={setCaptchaToken}
+            onStatus={setCaptchaStatus}
           />
         </div>
       )}

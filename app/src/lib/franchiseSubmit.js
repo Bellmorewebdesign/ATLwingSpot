@@ -82,7 +82,10 @@ function retryAfterFrom(res, payload) {
  * the payload, which keeps a real submission indistinguishable in shape from
  * one a bot filled in.
  */
-export async function submitFranchiseInquiry(values, { honeypotName, honeypotValue = '' } = {}) {
+export async function submitFranchiseInquiry(
+  values,
+  { honeypotName, honeypotValue = '', turnstileToken = '' } = {}
+) {
   const payload = {
     firstName: values.firstName ?? '',
     lastName: values.lastName ?? '',
@@ -92,6 +95,7 @@ export async function submitFranchiseInquiry(values, { honeypotName, honeypotVal
     message: values.message ?? '',
   }
   if (honeypotName) payload[honeypotName] = honeypotValue
+  payload.turnstileToken = turnstileToken
 
   let res
   try {
@@ -135,6 +139,15 @@ export async function submitFranchiseInquiry(values, { honeypotName, honeypotVal
     throw new SubmitError('That message is too long. Please shorten it and try again.', {
       code: 'too_large',
     })
+  }
+  if (res.status === 403) {
+    // The challenge did not verify. The widget has already been reset by the
+    // time this is shown, so trying again is worth a go.
+    throw new SubmitError(
+      (payloadBack && payloadBack.message) ||
+        'That verification did not go through. Please try again.',
+      { code: 'captcha' }
+    )
   }
   if (res.status === 503) {
     throw new SubmitError(

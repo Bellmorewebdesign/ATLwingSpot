@@ -1,8 +1,8 @@
 # Franchising form backend
 
 The franchising form on `/#/franchise` posts to an HTTP API in front of a
-Lambda, which validates the submission, takes rate-limit quota in DynamoDB and
-sends the enquiry on through SES.
+Lambda, which validates the submission, verifies a Cloudflare Turnstile token,
+takes rate-limit quota in DynamoDB and sends the enquiry on through SES.
 
 ```
 browser  ──POST JSON──▶  API Gateway HTTP API (jva4k2azf7)
@@ -11,18 +11,31 @@ browser  ──POST JSON──▶  API Gateway HTTP API (jva4k2azf7)
                               ▼
                          Lambda atl-franchise-form
                          lambda_function.lambda_handler
-                              │  acquire quota first
+                              │
+                              ├──▶ Cloudflare  /turnstile/v0/siteverify
+                              │                (before any quota is spent)
                               ├──▶ DynamoDB  atl-franchise-form-ratelimit
                               │                (conditional TransactWriteItems)
                               └──▶ SES  forms@bellmorewebdesign.com
                                         → FRANCHISE_RECIPIENT
 ```
 
+The order inside the handler is deliberate and each step is cheaper than the
+one after it:
+
+```
+method → size → JSON → honeypot → field validation
+   → Turnstile (network)  → rate-limit quota (durable)  → SES
+```
+
+Nothing reaches Cloudflare that has not already passed local validation, and
+nothing reaches the quota that has not already proved it is a person.
+
 | File | What it is |
 | --- | --- |
 | `lambda_function.py` | The whole handler. This is the file to deploy. |
 | `setup.sh` | Idempotent setup for everything around it. |
-| `tests/test_lambda_function.py` | 46 tests. No AWS, no network. |
+| `tests/test_lambda_function.py` | 75 tests. No AWS, no network. |
 | `tests/fakes.py` | DynamoDB and SES doubles. The DynamoDB one evaluates the real conditions under a lock, so the concurrency tests mean something. |
 
 ---
@@ -102,6 +115,10 @@ Existing values are preserved by `setup.sh`; it only fills in what is missing.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
+| `TURNSTILE_SECRET` | — | Required. Cloudflare's secret key. **Already set on the function; never in this repo.** |
+| `TURNSTILE_HOSTNAMES` | `bellmorewebdesign.github.io` | Comma separated. `*` is rejected. |
+| `TURNSTILE_ACTION` | `franchise` | Must match the widget's `action`. |
+| `TURNSTILE_TIMEOUT_SECONDS` | `5` | Network timeout for the verify call. |
 | `SES_FROM` | — | Required. Verified sender. |
 | `SES_FROM_NAME` | `ATL Wing Spot` | Display name on the From header. |
 | `FRANCHISE_RECIPIENT` | — | Required. Where enquiries go. Read **only** from here, never from the request. |
@@ -113,8 +130,66 @@ Existing values are preserved by `setup.sh`; it only fills in what is missing.
 | `GLOBAL_DAILY_LIMIT` | `50` | Across everyone, per UTC calendar day. |
 | `MAX_BODY_BYTES` | `16384` | Request bodies above this are refused unparsed. |
 
-Missing `RATE_LIMIT_SECRET`, `SES_FROM` or `FRANCHISE_RECIPIENT` makes the form
-return 503 rather than run without the control. That is deliberate.
+Missing `TURNSTILE_SECRET`, `RATE_LIMIT_SECRET`, `SES_FROM` or
+`FRANCHISE_RECIPIENT` makes the form return 503 rather than run without the
+control. That is deliberate: a form that looks protected and is not is worse
+than one that is briefly down.
+
+`setup.sh` never writes `TURNSTILE_SECRET`. It checks whether one is present
+and says so loudly if not, because inventing a placeholder would replace a
+working secret with a broken one.
+
+The function's timeout must exceed `TURNSTILE_TIMEOUT_SECONDS`. AWS defaults
+new functions to 3 seconds, which is less than the 5 the verify call is
+allowed, so `setup.sh` raises it to 15 if it is lower.
+
+---
+
+## Turnstile
+
+The widget is Managed, rendered explicitly so it survives React mounting and
+unmounting, with `action: "franchise"`. Its token rides in the JSON as
+`turnstileToken`.
+
+The handler requires three things of Cloudflare's answer, not one:
+
+- `success` is true,
+- `hostname` is in `TURNSTILE_HOSTNAMES`,
+- `action` equals `TURNSTILE_ACTION`.
+
+Checking the action matters as much as the success flag. Without it, a token
+minted by a widget on any other page — or any other site of yours sharing the
+site key — would be accepted here, which turns a challenge anywhere into a
+pass everywhere.
+
+**The verify URL is hard-coded.** It is the one piece of this that is not
+configurable, because an environment variable pointing at something that
+always answers `{"success": true}` would be a complete bypass in one setting.
+There is a test asserting it cannot be overridden. For the same reason there
+are no test keys, no debug flag and no "skip verification" switch anywhere in
+the handler: the only Turnstile keys in the repository are the public site
+key in `app/src/data/site.js` and a fake secret inside the test fixtures.
+
+**Tokens are single use.** Cloudflare refuses one that has already been
+redeemed, with `timeout-or-duplicate`. The form therefore resets the widget
+after *every* attempt, successful or not, so a retry always carries a fresh
+token.
+
+**Verification runs before the rate limiter**, which is a deliberate choice in
+both directions. A token can quietly expire while someone fills in a long
+form; charging them a submission slot for that would then lock them out behind
+the 60-second interval too. And because quota is only ever spent on traffic
+that has already verified, bot traffic cannot drain the global daily cap that
+real people need.
+
+**If Cloudflare cannot be reached, nothing is sent.** A timeout, a DNS
+failure, a 5xx or a garbled response all produce 503. Note that a Lambda
+placed inside a VPC without a NAT gateway has no route to the internet, and
+this would fail every time; this function is not in a VPC and should stay that
+way.
+
+Cloudflare's `error-codes` are logged because they are how you tell an expired
+token from a wrong secret. The token itself and the secret never are.
 
 ---
 
@@ -178,6 +253,7 @@ routinely runs hours late and that is fine.
 | --- | --- | --- |
 | 200 | Accepted and handed to SES | Also returned for a tripped honeypot, which sends nothing. |
 | 400 | Bad JSON, missing/invalid/oversized field | Carries a `fields` map the form renders inline. |
+| 403 | Turnstile missing, invalid, expired or reused | No email, no SES call, no quota spent. |
 | 405 | Not a POST | |
 | 413 | Body over `MAX_BODY_BYTES` | Refused before parsing. |
 | 429 | A rate limit was hit | Carries `Retry-After`. No email, no SES call. |
@@ -221,12 +297,24 @@ python3 -m venv .venv && .venv/bin/pip install boto3 pytest
 cd tests && ../.venv/bin/python -m pytest -q
 ```
 
-46 tests, no AWS and no network. They cover the happy path and the exact email
+75 tests, no AWS and no network. They cover the happy path and the exact email
 format, every validation rejection, the honeypot, each of the four limits,
 window resets across hour and day boundaries, missing and spoofed source IPs,
 concurrency at the per-IP and global caps (20 and 25 threads racing for 3 and 5
 places), DynamoDB failures of four kinds, SES failure, and that no personal
 detail is ever written to the log.
+
+For Turnstile specifically: a valid verification; `success: false` for each of
+Cloudflare's failure codes; a token from the wrong hostname; a token from the
+wrong action; a missing, blank, non-string or absurdly long token; four kinds
+of network failure; a non-JSON response; a missing secret; `*` as a hostname
+list; that the verify URL cannot be overridden by an environment variable;
+that verification happens before any quota is taken; that the honeypot and
+field validation short-circuit before Cloudflare is called at all; and that
+neither the token nor the secret appears in any log line.
+
+Only the HTTPS transport is faked. The response parsing, the hostname and
+action checks and the failure mapping all run for real.
 
 ---
 

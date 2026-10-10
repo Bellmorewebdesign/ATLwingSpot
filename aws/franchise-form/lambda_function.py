@@ -33,6 +33,9 @@ import logging
 import os
 import re
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import datetime, timezone
 
 import boto3
@@ -73,6 +76,22 @@ PER_IP_HOURLY_LIMIT = _int_env("PER_IP_HOURLY_LIMIT", 3)
 PER_IP_DAILY_LIMIT = _int_env("PER_IP_DAILY_LIMIT", 10)
 GLOBAL_DAILY_LIMIT = _int_env("GLOBAL_DAILY_LIMIT", 50)
 MAX_BODY_BYTES = _int_env("MAX_BODY_BYTES", 16384)
+
+# --- Cloudflare Turnstile ---------------------------------------------------
+# The URL is hard-coded on purpose. Making it configurable would turn one
+# environment variable into a complete bypass of the check: point it at
+# something that always answers {"success": true} and the challenge is gone.
+TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+TURNSTILE_SECRET = os.environ.get("TURNSTILE_SECRET", "")
+TURNSTILE_ACTION = os.environ.get("TURNSTILE_ACTION", "franchise").strip()
+TURNSTILE_TIMEOUT_SECONDS = _int_env("TURNSTILE_TIMEOUT_SECONDS", 5)
+# Comma separated so the production domain can be added alongside the Pages
+# host later. "*" is not accepted: an open hostname check is not a check.
+TURNSTILE_HOSTNAMES = tuple(
+    h.strip().lower()
+    for h in os.environ.get("TURNSTILE_HOSTNAMES", "bellmorewebdesign.github.io").split(",")
+    if h.strip() and h.strip() != "*"
+)
 
 SUBJECT = "New ATL Wing Spot Franchising Inquiry"
 
@@ -209,6 +228,89 @@ def _validate(data):
         errors["phone"] = "Enter a valid phone number"
 
     return cleaned, errors
+
+
+# --------------------------------------------------------------------------
+# Turnstile
+# --------------------------------------------------------------------------
+
+class TurnstileRejected(Exception):
+    """The token was missing, malformed, already spent, or for someone else."""
+
+
+class TurnstileUnavailable(Exception):
+    """We could not find out. Fail closed rather than guess."""
+
+
+def _post_form(url, fields, timeout):
+    """
+    Seam for the tests: they replace this, so everything above it — the
+    response parsing, the hostname and action checks, the failure mapping — is
+    exercised for real rather than mocked away.
+    """
+    data = urllib.parse.urlencode(fields).encode("utf-8")
+    request = urllib.request.Request(
+        url,
+        data=data,
+        headers={"content-type": "application/x-www-form-urlencoded"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        return response.read().decode("utf-8")
+
+
+def verify_turnstile(token):
+    """
+    Ask Cloudflare whether this token is good, and insist on three things:
+    it verified, it came from a host we serve, and it came from this form.
+
+    Checking the action matters as much as the success flag. Without it a token
+    minted by a widget on any other page of the site would be accepted here,
+    which turns a challenge anywhere into a pass everywhere.
+    """
+    if not isinstance(token, str) or not token.strip():
+        raise TurnstileRejected("missing")
+    # Cloudflare's tokens are bounded; anything longer is not one of theirs and
+    # is not worth a round trip.
+    if len(token) > 2048:
+        raise TurnstileRejected("malformed")
+
+    try:
+        raw = _post_form(
+            TURNSTILE_VERIFY_URL,
+            {"secret": TURNSTILE_SECRET, "response": token},
+            TURNSTILE_TIMEOUT_SECONDS,
+        )
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError) as exc:
+        # Cloudflare down, DNS gone, or a Lambda in a VPC with no route out.
+        # We do not know whether this person is real, so nothing is sent.
+        LOG.error("turnstile verification unreachable: %s", type(exc).__name__)
+        raise TurnstileUnavailable(type(exc).__name__)
+
+    try:
+        result = json.loads(raw)
+    except (ValueError, TypeError):
+        LOG.error("turnstile returned something that was not JSON")
+        raise TurnstileUnavailable("bad_response")
+    if not isinstance(result, dict):
+        raise TurnstileUnavailable("bad_response")
+
+    if not result.get("success"):
+        # Safe to log: these are Cloudflare's own codes, not the token. They
+        # are how you tell an expired token from a wrong secret.
+        codes = result.get("error-codes") or []
+        LOG.info(json.dumps({"event": "turnstile_failed", "codes": codes[:4]}))
+        raise TurnstileRejected("unsuccessful")
+
+    hostname = str(result.get("hostname", "")).lower()
+    if hostname not in TURNSTILE_HOSTNAMES:
+        LOG.info(json.dumps({"event": "turnstile_wrong_hostname"}))
+        raise TurnstileRejected("hostname")
+
+    action = str(result.get("action", ""))
+    if action != TURNSTILE_ACTION:
+        LOG.info(json.dumps({"event": "turnstile_wrong_action"}))
+        raise TurnstileRejected("action")
 
 
 # --------------------------------------------------------------------------
@@ -445,6 +547,14 @@ def lambda_handler(event, context):
     if not SES_FROM or not FRANCHISE_RECIPIENT:
         LOG.error("misconfigured: SES_FROM or FRANCHISE_RECIPIENT is empty")
         return _error(503, "unavailable", "The form is temporarily unavailable.")
+    if not TURNSTILE_SECRET:
+        # Running without the challenge would be worse than being down: the
+        # form would look protected and not be.
+        LOG.error("misconfigured: TURNSTILE_SECRET is empty")
+        return _error(503, "unavailable", "The form is temporarily unavailable.")
+    if not TURNSTILE_HOSTNAMES:
+        LOG.error("misconfigured: TURNSTILE_HOSTNAMES is empty or only '*'")
+        return _error(503, "unavailable", "The form is temporarily unavailable.")
     if not RATE_LIMIT_SECRET:
         # Without the key the identifiers would be plain hashes of addresses.
         # Failing closed is the right way round: a form that is briefly down
@@ -488,6 +598,32 @@ def lambda_handler(event, context):
 
     ip = _source_ip(event)
     ip_hash = _ip_hash(ip)
+
+    # Before the quota, deliberately. A token that has quietly expired while
+    # someone filled the form is common and is not their fault; charging them
+    # a submission slot for it would then lock them out behind the interval
+    # limit as well. Keeping it ahead also means the daily allowance is only
+    # ever spent on traffic that has already proved itself, so a bot cannot
+    # exhaust the global cap for everyone else.
+    try:
+        verify_turnstile(data.get("turnstileToken"))
+    except TurnstileRejected as rejected:
+        LOG.info(json.dumps({
+            "event": "turnstile_rejected",
+            "reason": str(rejected),
+            "ip": ip_hash[:12],
+        }))
+        return _error(
+            403,
+            "captcha_failed",
+            "That verification did not go through. Please try again.",
+        )
+    except TurnstileUnavailable:
+        return _error(
+            503,
+            "unavailable",
+            "The form is temporarily unavailable. Please try again shortly.",
+        )
 
     try:
         acquire_quota(ip_hash)

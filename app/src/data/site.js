@@ -23,6 +23,11 @@ export const CATERING_URL = 'https://www.doordash.com/search/store/atl%20wing%20
 export const FRANCHISE_ENDPOINT =
   'https://jva4k2azf7.execute-api.us-east-1.amazonaws.com/franchise'
 
+// Cloudflare Turnstile. This is the PUBLIC site key: it is meant to be in the
+// page, it identifies the widget and nothing else. The secret that verifies a
+// token lives only in the Lambda's TURNSTILE_SECRET and must never appear here.
+export const TURNSTILE_SITE_KEY = '0x4AAAAAAFTZFqFTROkQAzkF'
+
 export const SOCIAL = {
   instagram: 'https://www.instagram.com/atlwingspot/',
   tiktok: 'https://www.tiktok.com/@atlwingspot',
