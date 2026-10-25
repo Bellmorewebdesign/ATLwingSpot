@@ -9,6 +9,17 @@
 .finder__rail { position: sticky; top: calc(var(--nav-h) + 1.5rem); min-width: 0; }
 .finder__results { min-width: 0; }
 
+.finder__form { margin-bottom: 1.2rem; }
+/* same label as the ZIP lookup's, so the field reads as the same tool */
+.finder__label {
+  display: block;
+  font-weight: 800;
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  margin-bottom: 0.6rem;
+}
 .finder__search {
   display: flex;
   align-items: center;
@@ -16,15 +27,32 @@
   padding: 0.85rem 1.1rem;
   border: 2px solid var(--fg);
   border-radius: var(--r-pill);
-  margin-bottom: 1.2rem;
 }
 .finder__search input { flex: 1; min-width: 0; background: none; border: 0; outline: none; }
 .finder__search input::placeholder { color: var(--fg-mute); }
+/* the clear button below replaces the browser's own, which only some show */
+.finder__search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.finder__clear {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  margin-block: -0.4rem;
+  margin-right: -0.45rem;
+  border-radius: var(--r-pill);
+  color: var(--fg-mute);
+  transition: color var(--t-fast), background var(--t-fast);
+}
+.finder__clear:hover { color: var(--fg); background: var(--line); }
+.finder__hint { margin-top: 0.55rem; font-size: 0.8rem; color: var(--fg-mute); }
 @media (pointer: coarse) {
   /* As on the menu search: the padding belongs to the input, not the box
      around it, or most of what looks tappable is not. */
   .finder__search { padding-block: 0; }
   .finder__search input { padding-block: 0.9rem; }
+  /* a full 44px target for the thumb */
+  .finder__clear { width: 2.75rem; height: 2.75rem; margin-block: 0; margin-right: -0.7rem; }
 }
 
 .finder__regions { display: flex; flex-direction: column; margin-bottom: 1.4rem; }
@@ -43,14 +71,7 @@
   transition: opacity var(--t-fast), padding-left var(--t-fast) var(--ease);
 }
 .finder__region:hover { opacity: 1; padding-left: 0.35rem; }
-.finder__region b {
-  font-size: 0.74rem;
-  padding: 0.25em 0.6em;
-  border-radius: var(--r-pill);
-  background: var(--line);
-}
 .finder__region.on { opacity: 1; }
-.finder__region.on b { background: var(--cyan); color: var(--ink); }
 
 .finder__geo {
   display: inline-flex;
@@ -66,14 +87,22 @@
 .finder__geonote { margin-top: 0.6rem; font-size: 0.76rem; color: var(--fg-mute); max-width: 30ch; }
 
 /* ---- results ---- */
+.finder__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-bottom: 0.5rem;
+}
 .finder__count {
   font-weight: 800;
   font-size: 0.76rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--fg-mute);
-  margin-bottom: 0.5rem;
 }
+.finder__all { flex-shrink: 0; color: var(--fg); }
 .finder__empty { color: var(--fg-mute); padding-block: 2rem; }
 
 @media (max-width: 860px) {
@@ -97,6 +126,5 @@
     white-space: nowrap;
   }
   .finder__region.on { background: var(--cyan); border-color: var(--cyan); }
-  .finder__region.on b { background: rgba(18,16,18,0.15); }
   .finder__region:hover { padding-left: 0.95rem; }
 }

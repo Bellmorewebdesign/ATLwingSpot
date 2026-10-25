@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#22c1da" />
 
+    <!-- The design is light-only. Without this, a phone in dark mode can repaint
+         the page itself (Chrome's "darken websites", Samsung Internet, in-app
+         browsers): the cream turns brown, the menu icon goes black on dark and
+         brand colours shift. "only light" is the standard way to opt out.
+         tokens.css says the same thing in CSS. -->
+    <meta name="color-scheme" content="only light" />
+    <!-- Every phone number on the site is already a tap-to-call link. This stops
+         iOS Safari turning other digit runs (ZIPs, prices, years) into blue
+         links of its own. -->
+    <meta name="format-detection" content="telephone=no" />
+
     <!-- ATL's own "atl" lozenge on a cyan tile inside the orange keyline from
          their basket stamp. Built by app/scripts/make-favicon.py straight from
          assets/brand/atl-wing-spot-logo.png. Paths are relative so they resolve
@@ -46,8 +57,8 @@
         }
       }
     </script>
-    <script type="module" crossorigin src="./static/index-CsWOLuZT.js"></script>
-    <link rel="stylesheet" crossorigin href="./static/index-Qcno7-Ls.css">
+    <script type="module" crossorigin src="./static/index-YN74N0BX.js"></script>
+    <link rel="stylesheet" crossorigin href="./static/index-D2yfxQE2.css">
   </head>
   <body>
     <div id="root"></div>

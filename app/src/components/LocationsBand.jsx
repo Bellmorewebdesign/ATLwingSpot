@@ -7,10 +7,8 @@ import './LocationsBand.css'
 
 // Split-screen: statement on the left, a real scannable list on the right.
 export function LocationsBand() {
-  const regions = [...new Set(LOCATIONS.map((l) => l.region))]
-  const counts = regions.map((r) => ({
+  const regions = [...new Set(LOCATIONS.map((l) => l.region))].map((r) => ({
     region: r,
-    count: LOCATIONS.filter((l) => l.region === r).length,
     states: [...new Set(LOCATIONS.filter((l) => l.region === r).map((l) => l.state))].join(', '),
   }))
 
@@ -31,12 +29,11 @@ export function LocationsBand() {
 
         <Reveal className="lband__right" delay={60}>
           <ul className="lband__list">
-            {counts.map((c) => (
+            {regions.map((c) => (
               <li key={c.region}>
                 <Link to="/locations" className="lband__row">
                   <span className="lband__region">{c.region}</span>
                   <span className="lband__meta">{c.states}</span>
-                  <span className="lband__n">{c.count}</span>
                   <ArrowRight />
                 </Link>
               </li>

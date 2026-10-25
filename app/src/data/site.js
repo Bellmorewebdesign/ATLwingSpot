@@ -5,6 +5,7 @@
 export const ORDER_URL = 'https://order.snackpass.co/atlwingspot'
 
 // One label for every ordering control, so the path reads the same everywhere.
+// Visible copy never names Snackpass; the links still go to ORDER_URL.
 export const ORDER_LABEL = 'Order Now'
 
 // Online catering is not live yet, so nothing links to this. The catering page
