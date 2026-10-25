@@ -40,7 +40,7 @@ export function CrewCalc() {
         aria-hidden="true"
       />
 
-      <div className="crew__in wrap-tight">
+      <div className="crew__in wrap wrap-tight">
         <h2 className="dsp dsp-sm crew__title">Feeding a crew?</h2>
 
         <div className="crew__row">

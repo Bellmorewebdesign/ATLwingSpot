@@ -24,28 +24,35 @@ export default function Home() {
 
       {/* cream */}
       <Hero />
-      {/* warm cream — the step down out of the hero, on the group shot */}
+
+      {/* The client's order, top to bottom: two menu sections, find a location,
+          the wing calculator, franchising, then the menu spread. */}
+
+      {/* menu 1 — warm cream, the step down out of the hero, on the group shot */}
       <GroupBand />
       {/* cyan, our own packaging pattern */}
       <WordStripe words={BOX_WORDS} tone="cyan" size="md" />
-      {/* dark, horizontal */}
+      {/* menu 2 — dark, horizontal category track */}
       <CraveTrack />
-      {/* white, official studio photography, backgrounds blend in */}
+      {/* white, split */}
+      <LocationsBand />
+      {/* orange: the wing calculator */}
+      <CrewCalc />
+      {/* cyan slim */}
+      <FranchiseStrip />
+      {/* menu — white, official studio photography, backgrounds blend in */}
       <SpreadBand />
+
+      {/* Not in the client's list, so kept after it in their original order. */}
+
       {/* signature scroll moment: fall through the slogan into the sauce */}
       <SauceZoom />
       {/* reactive colour */}
       <FlavorStage />
-      {/* orange */}
-      <CrewCalc />
-      {/* white, split: the location step sits early in the ordering path */}
-      <LocationsBand />
       {/* dark, right-led */}
       <StoryScale />
       {/* full-bleed photography, right-aligned */}
       <CateringBand />
-      {/* cyan slim */}
-      <FranchiseStrip />
       {/* cream, overlapping */}
       <SocialBand />
       <WordStripe words={TICKER} tone="ink" size="sm" separator="·" speed={44} />

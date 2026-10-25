@@ -254,7 +254,7 @@ export default function Franchise() {
       </section>
 
       <section className="sec ch-cream" id="enquire">
-        <div className="wrap-tight fr__form">
+        <div className="wrap wrap-tight fr__form">
           <div>
             <h2 className="dsp dsp-sm">Tell us where.</h2>
             <p className="fr__form-sub">Send your market and we&rsquo;ll take it from there.</p>

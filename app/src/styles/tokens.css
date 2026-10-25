@@ -11,6 +11,12 @@
    ground: the food merges into the page instead of floating.
    ============================================================ */
 :root {
+  /* Light only, on purpose. A dark-mode phone otherwise recolours the page on
+     its own (see the color-scheme meta in index.html), and form fields and
+     scrollbars would switch to their dark system styling. `only` is the part
+     that opts out of forced darkening. */
+  color-scheme: only light;
+
   /* Brand core. Exact values from the branding package's palette sheet
      (logodesign_ATLWINGSPOT/color palette/color_palette__ATLWingSpot.pdf):
      orange PANTONE 158 C #f47c20, blue PANTONE 298 C #29c1db, white #ffffff.
