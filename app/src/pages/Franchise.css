@@ -1,4 +1,7 @@
 .fr__mast {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   padding-top: calc(var(--nav-h) + clamp(2.5rem, 6vw, 5rem));
   padding-bottom: clamp(2.5rem, 6vw, 5rem);
 }
@@ -8,11 +11,25 @@
   gap: clamp(1.5rem, 4vw, 3rem);
   align-items: center;
 }
+.fr__vid, .fr__shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+}
+.fr__vid { object-fit: cover; }
+/* keeps the headline readable over busy crowd footage */
+.fr__shade {
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(10, 12, 14, 0.88) 0%, rgba(10, 12, 14, 0.6) 60%, rgba(10, 12, 14, 0.45) 100%);
+}
 .fr__h1 { color: var(--cream); }
 .fr__lede { margin-top: 1.2rem; font-size: var(--step-1); color: var(--dark-mute); max-width: 44ch; }
 .fr__cta { margin-top: 1.8rem; }
 
 .fr__award {
+  background: rgba(10, 12, 14, 0.45);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -33,14 +50,6 @@
 
 .fr__h2 { color: var(--ink); margin-bottom: 1.4rem; }
 
-.fr__points {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  gap: clamp(1rem, 2.5vw, 2rem);
-}
-.pt { border-top: 3px solid var(--orange); padding-top: 0.9rem; }
-.pt__t { font-size: 1.08rem; font-weight: 800; color: var(--ink); margin-bottom: 0.35rem; }
-.pt__d { color: var(--ink-mute); font-size: var(--step--1); }
 
 .fr__figs {
   display: grid;
@@ -63,7 +72,68 @@
   text-transform: uppercase;
   color: var(--ink-mute);
 }
+.fig__sup {
+  color: var(--orange-deep);
+  text-decoration: none;
+  font-size: 0.55em;
+  margin-left: 0.1em;
+}
+.fig__sup sup { vertical-align: super; font-size: 1em; line-height: 0; }
+
+/* numbered disclosures, tied to the figures above by their numbers */
+.fr__notes {
+  list-style: none;
+  margin-top: 1.6rem;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border: 2px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  display: grid;
+  gap: 0.75rem;
+  max-width: 100ch;
+}
+.fr__notes li {
+  display: grid;
+  grid-template-columns: 1.4em minmax(0, 1fr);
+  gap: 0.4rem;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--ink);
+  scroll-margin-top: calc(var(--nav-h) + 1rem);
+}
+.fr__notes li:target { background: rgba(244, 124, 32, 0.12); border-radius: 6px; }
+.fr__note-n { font-weight: 800; color: var(--orange-deep); font-size: 0.9rem; line-height: 1.6; vertical-align: baseline; }
 .fr__disc { margin-top: 1.5rem; max-width: 92ch; }
+
+/* ---- why ATL wing spot cards ---- */
+.why {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: clamp(1rem, 2.2vw, 1.6rem);
+}
+.why__card {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border: 2px solid var(--cyan);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.why__card:hover { border-color: var(--orange); transform: translateY(-3px); }
+.why__img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  height: auto;
+  object-fit: cover;
+  border-bottom: 4px solid var(--orange);
+  background: var(--cream);
+}
+.why__body { padding: 1.1rem 1.15rem 1.3rem; }
+.why__t { font-size: 1.08rem; font-weight: 800; color: var(--ink); margin-bottom: 0.45rem; line-height: 1.25; }
+.why__d { color: var(--ink-mute); font-size: var(--step--1); line-height: 1.55; }
 
 .fr__form {
   display: grid;
