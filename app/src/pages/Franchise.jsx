@@ -12,42 +12,118 @@ import { JumpButton } from '../components/JumpButton'
 import { ArrowRight } from '../components/Icons'
 import './Franchise.css'
 
-// This site IS ATL Wing Spot, so the franchise page speaks as the franchisor:
-// first person throughout, no "ATL reports" or "the brand" third-person framing.
-// Still no projections, no ROI and no earnings claims.
-const POINTS = [
-  { t: 'Most orders come in online', d: 'More than 65% of our customers order digitally.' },
-  { t: 'Small footprint', d: 'About 1,000 sq ft on average. Our first shop was 800.' },
-  { t: 'Vendor pricing already negotiated', d: 'We set supply agreements across the system, so you buy on our terms from day one.' },
-  { t: 'Delivery rates already contracted', d: 'We negotiate third-party delivery terms, so you are not starting that conversation yourself.' },
-  { t: '25+ sauces and a secret menu', d: 'A board built for regulars who want something different each visit.' },
-  { t: 'Training and ongoing support', d: 'We train your team before you open and stay on the phone after you do.' },
+// This site IS ATL Wing Spot, so the franchise page speaks as the franchisor.
+//
+// Card images: each card first tries the client-supplied photo in
+// public/assets/franchise/ (see the README there for which file goes where).
+// Until that file is dropped in, it falls back to an existing site photo.
+const FR = (f) => asset(`assets/franchise/${f}`)
+const CARDS = [
+  {
+    t: 'Small Space. Big Flavor.',
+    d: 'Our average restaurant is approximately 850 sq ft, with a format centered on takeout and delivery. Small Footprint = More $$ in YOUR POCKET!',
+    img: FR('small-space-blueprint.jpg'),
+    fb: asset('assets/food/client-refresh/wing-basket-group.webp'),
+    alt: 'Takeout restaurant floor plan',
+  },
+  {
+    t: '11M Views. Under One Month.',
+    d: 'ATL Wing Spot generated 11M+ social media views in less than a month. Through bold food content, new menu drops, and a personality people recognize, we build attention online and keep ATL in the conversation.',
+    img: FR('marketing.jpg'),
+    fb: asset('assets/food/official/official-saucy-chicken-drip.webp'),
+    alt: 'ATL Wing Spot social media content',
+  },
+  {
+    t: 'ATL Wing Spot Academy',
+    d: 'Learn the kitchen, service standards, and daily operation through our comprehensive hands-on training program, ATL Academy, with our corporate team supporting you every step of the way.',
+    img: FR('academy-team.jpg'),
+    fb: asset('assets/food/sauce-wall.webp'),
+    alt: 'ATL Wing Spot team',
+  },
+  {
+    t: 'Proven Concept',
+    d: 'Join a national brand operating across the country, with over 40+ units open and in development with tons of locations on the way!',
+    img: FR('locations-map.jpg'),
+    fb: asset('assets/food/official/official-menu-spread.webp'),
+    alt: 'Map of ATL Wing Spot locations across the US',
+  },
+  {
+    t: 'We negotiate. You operate',
+    d: 'Our team negotiates supplier agreements across the system, giving your store access to approved products and negotiated pricing.',
+    img: FR('suppliers-sysco-pepsi.jpg'),
+    fb: asset('assets/food/official/official-wings-30pc.webp'),
+    alt: 'ATL Wing Spot with Sysco and Pepsi',
+  },
+  {
+    t: 'Fresh Flavors',
+    d: 'From specialty waffles to loaded fries and new sauce flavors, our R&D team is always cooking up something new. Launches come with recipes, build guides, and instructions your team can follow so you always stay in the loop.',
+    img: FR('waffles.jpg'),
+    fb: asset('assets/food/client-refresh/waffle-fruity-pebbles.webp'),
+    alt: 'Specialty waffles',
+  },
+  {
+    t: '3PD Handled. No more 33%',
+    d: 'Uber Eats and DoorDash terms negotiated at the brand level, with guidance on getting your location online and running promotions.',
+    img: FR('delivery-ubereats-doordash.jpg'),
+    fb: asset('assets/food/client-refresh/boneless-basket.webp'),
+    alt: 'Uber Eats and DoorDash delivery',
+  },
+  {
+    t: 'Endless Support',
+    d: "Get operating guides, training resources, and help with the questions that come up while running your store—from menu execution to service standards. Our job doesn't end when your doors open, that's when it starts.",
+    img: FR('grand-opening-team.jpg'),
+    fb: asset('assets/food/client-refresh/loaded-waffle-fries.webp'),
+    alt: 'ATL Wing Spot grand opening team',
+  },
 ]
 
 /**
- * These are the figures already published in ATL's franchise materials, now
- * stated in the first person because this is ATL's own site.
- *
- * NEEDS CONFIRMATION before this page goes live:
- *   $1.68M  the source material said only "sales figure", with no unit, period
- *           or scope. "Average unit volume" is the most likely reading of a
- *           franchisor figure at that magnitude, but it is an ESTIMATE of what
- *           the number means, not a verified label. A sales number like this is
- *           a Financial Performance Representation: in the US it can only be
- *           published if it appears in Item 19 of the current FDD, with the
- *           wording Item 19 requires. Confirm it is in Item 19 and confirm what
- *           it measures, or delete this row.
- *   The three investment figures and the sq ft average are ATL-published but
- *   undated. Confirm they match the current FDD.
- *   65% digital orders is ATL-published but undated. Confirm it still holds.
+ * Figures and footnotes as supplied by ATL from the 2026 FDD.
+ * VERBATIM: do not reword, round or split the notes. Each note's number ties
+ * it to its figure, and the figure card links down to its note.
  */
 const FIGURES = [
-  { v: '$242,000', l: 'Average investment', n: 'Our published figure' },
-  { v: '$216,300', l: 'Minimum initial investment, including franchise fee', n: 'Our published figure' },
-  { v: '$25,000', l: 'Franchise fee', n: 'Our published figure' },
-  { v: '~1,000 sq ft', l: 'Average store size', n: 'Our published average' },
-  { v: '$1.68M', l: 'Average unit volume', n: 'Not a projection or guarantee' },
+  {
+    n: 1, v: 'FROM $124,200', l: 'Initial investment',
+    note: 'Estimated initial investment starts at $124,200, including the initial franchise fee. The full estimated range is $124,200–$337,600, as disclosed in Item 7 of our 2026 Franchise Disclosure Document. Actual costs vary based on location, restaurant size, site condition, construction costs, and other factors.',
+  },
+  {
+    n: 2, v: '$2.24M', l: '2025 annual sales',
+    note: 'Based on gross sales of $2,243,103.41 generated by the single company-owned restaurant included in Item 19 of our 2026 Franchise Disclosure Document for January 1–December 31, 2025. One of one restaurant in the disclosed sample (100%) achieved this sales level. This is not a systemwide average. Your results may differ; there is no assurance you will achieve similar sales.',
+  },
+  {
+    n: 3, v: '52%', l: 'Prime costs', sub: 'Cost of goods sold + labor.',
+    note: 'Based on combined cost of goods sold and labor costs as a percentage of gross sales at our company-owned restaurant from January 1–December 31, 2025. Represents one restaurant (1 of 1 in this sample; 100%), not a systemwide average. Your costs and results may differ.',
+  },
+  {
+    n: 4, v: '~850 SQ FT', l: 'Average restaurant footprint',
+    note: 'Approximate average restaurant size based on ATL Wing Spot’s reported operating information. Actual restaurant sizes and layouts vary by location.',
+  },
+  {
+    n: 5, v: '40+', l: 'Units open & in development',
+    note: 'Combined total of operating locations and locations in development as of October 2026. Development locations are not yet open.',
+  },
 ]
+
+// Tries the supplied photo first, swaps to the fallback once if it is missing.
+function CardImg({ src, fb, alt }) {
+  return (
+    <img
+      className="why__img"
+      src={src}
+      alt={alt}
+      width="640"
+      height="400"
+      loading="lazy"
+      decoding="async"
+      onError={(e) => {
+        if (e.currentTarget.dataset.fb) return
+        e.currentTarget.dataset.fb = '1'
+        e.currentTarget.src = fb
+      }}
+    />
+  )
+}
 
 /**
  * Franchise disclaimer, shown under the enquiry form.
@@ -89,14 +165,30 @@ export default function Franchise() {
       />
 
       <header className="fr__mast ch-dark">
+        {/* Grand-opening montage. Drop the clip at
+            public/assets/franchise/grand-opening-montage.mp4; until then the
+            poster image shows instead. */}
+        <video
+          className="fr__vid"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster={asset('assets/food/hero-wings.jpg')}
+          aria-hidden="true"
+        >
+          <source src={FR('grand-opening-montage.mp4')} type="video/mp4" />
+        </video>
+        <div className="fr__shade" aria-hidden="true" />
         <div className="wrap fr__mast-in">
           <div>
-            <h1 className="dsp dsp-lg fr__h1">Open<br />an <span className="t-orange">ATL.</span></h1>
+            <h1 className="dsp dsp-lg fr__h1">Love the wings?<br /><span className="t-orange">Own the spot.</span></h1>
             <p className="fr__lede">
-              Wings, tenders and waffles out of a small kitchen, with a sauce board people drive
-              across the island for. We&rsquo;re opening in new markets now.
+              Own the spot everyone&rsquo;s talking about! We&rsquo;re looking for ambitious brand
+              partners ready to bring ATL Wing Spot to new communities.
             </p>
-            <JumpButton targetId="enquire" className="btn btn-orange btn-lg fr__cta">Request information <ArrowRight /></JumpButton>
+            <JumpButton targetId="enquire" className="btn btn-orange btn-lg fr__cta">Explore opportunities <ArrowRight /></JumpButton>
           </div>
           <div className="fr__award">
             <img
@@ -114,36 +206,50 @@ export default function Franchise() {
 
       <section className="sec ch-cream">
         <div className="wrap">
-          <h2 className="dsp dsp-sm fr__h2">What you get</h2>
-          <ul className="fr__points">
-            {POINTS.map((p, i) => (
-              <Reveal as="li" className="pt" key={p.t} delay={(i % 3) * 50}>
-                <h3 className="pt__t">{p.t}</h3>
-                <p className="pt__d">{p.d}</p>
-              </Reveal>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="sec ch-paper">
-        <div className="wrap">
-          <h2 className="dsp dsp-sm fr__h2">The numbers we publish</h2>
+          <h2 className="dsp dsp-sm fr__h2">Lets talk numbers</h2>
           <ul className="fr__figs">
             {FIGURES.map((f) => (
-              <li className="fig" key={f.l}>
-                <span className="dsp fig__v">{f.v}</span>
+              <li className="fig" key={f.n}>
+                <span className="dsp fig__v">
+                  {f.v}
+                  <a className="fig__sup" href={`#fn-${f.n}`} aria-label={`Footnote ${f.n}`}><sup>{f.n}</sup></a>
+                </span>
                 <span className="fig__l">{f.l}</span>
-                <span className="fig__n">{f.n}</span>
+                {f.sub && <span className="fig__n">{f.sub}</span>}
               </li>
             ))}
           </ul>
+          <ol className="fr__notes">
+            {FIGURES.map((f) => (
+              <li id={`fn-${f.n}`} key={f.n}>
+                <sup className="fr__note-n">{f.n}</sup>
+                <span><strong>{f.v} {f.l}.</strong> {f.note}</span>
+              </li>
+            ))}
+          </ol>
           <p className="fineprint fr__disc">
             These figures come from our current franchise materials and describe different things, so
             they are not directly comparable. Nothing here is a projection, guarantee or promise of
             earnings, sales or profitability. This page is informational only and is subject to our
             current Franchise Disclosure Document, which we will send you before anything is signed.
           </p>
+        </div>
+      </section>
+
+      <section className="sec ch-paper">
+        <div className="wrap">
+          <h2 className="dsp dsp-sm fr__h2">Why ATL Wing Spot</h2>
+          <ul className="why">
+            {CARDS.map((c, i) => (
+              <Reveal as="li" className="why__card" key={c.t} delay={(i % 4) * 50}>
+                <CardImg src={c.img} fb={c.fb} alt={c.alt} />
+                <div className="why__body">
+                  <h3 className="why__t">{c.t}</h3>
+                  <p className="why__d">{c.d}</p>
+                </div>
+              </Reveal>
+            ))}
+          </ul>
         </div>
       </section>
 
