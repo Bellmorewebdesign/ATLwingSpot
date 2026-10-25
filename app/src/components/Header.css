@@ -97,6 +97,11 @@
 }
 
 /* While the cyan menu panel is open the header sits on top of it, and the
-   logo's cyan half disappears into that cyan. Solid ink keeps the mark
-   readable, the same treatment the rest of the site uses on cyan. */
-.head.is-menu .logo img { filter: brightness(0); }
+   logo's cyan half would disappear into that cyan. The header takes the
+   cream ground it already uses once it sticks, so the logo keeps its real
+   colours. (It used to be filtered to solid black here, which is what read
+   as a broken logo on phones.) */
+.head.is-menu {
+  background: var(--cream);
+  box-shadow: 0 1px 0 rgba(18, 16, 18, 0.12);
+}

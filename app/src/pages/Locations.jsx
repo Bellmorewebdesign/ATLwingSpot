@@ -1,6 +1,5 @@
 import { Seo } from '../components/Seo'
 import { LocationFinder } from '../components/LocationFinder'
-import { ZipLookup } from '../components/ZipLookup'
 import './Locations.css'
 
 export default function Locations() {
@@ -14,9 +13,9 @@ export default function Locations() {
       <header className="mast wrap">
         <h1 className="dsp dsp-lg">Find your<br /><span className="t-cyan">ATL.</span></h1>
         <p className="mast__sub">Put in your ZIP for the closest shop, or browse all ten below.</p>
-        <div className="locs__zip"><ZipLookup heading="Closest shop to your ZIP" /></div>
       </header>
 
+      {/* One search box: the finder takes a ZIP (closest shops) or a town name. */}
       <div className="wrap locs__body">
         <LocationFinder />
       </div>

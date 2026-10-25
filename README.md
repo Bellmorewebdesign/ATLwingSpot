@@ -116,8 +116,8 @@ Built from ATL's own physical brand rather than a generic dark-restaurant palett
   need their deeper tones there.
 - **Word-stripe** (`WordStripe`) reproduces the repeating WINGS · TENDERS · MUNCHIES ·
   WAFFLES · SHAKES print on ATL's real cyan takeout box, used as the structural divider.
-  The words stay white: ATL orange on ATL cyan measures 1.26:1 and goes muddy even at
-  display size.
+  The words on the cyan stripe are ATL orange, the client's choice; the colour is one value
+  (`.ws--cyan` in `WordStripe.css`) so white or ink can be swapped in.
 - **Seal** (`.seal`) echoes the round "SAUCE IT UP!" stamp on their basket paper.
 - **Pill geometry** for buttons and tags, taken from the logo's `atl` lozenge, which is
   also the favicon.
