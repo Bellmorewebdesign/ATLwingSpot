@@ -75,7 +75,7 @@
 .fig__sup {
   color: var(--orange-deep);
   text-decoration: none;
-  font-size: 0.55em;
+  font-size: 0.8em;
   margin-left: 0.1em;
 }
 .fig__sup sup { vertical-align: super; font-size: 1em; line-height: 0; }
@@ -103,7 +103,6 @@
 }
 .fr__notes li:target { background: rgba(244, 124, 32, 0.12); border-radius: 6px; }
 .fr__note-n { font-weight: 800; color: var(--orange-deep); font-size: 0.9rem; line-height: 1.6; vertical-align: baseline; }
-.fr__disc { margin-top: 1.5rem; max-width: 92ch; }
 
 /* ---- why ATL wing spot cards ---- */
 .why {

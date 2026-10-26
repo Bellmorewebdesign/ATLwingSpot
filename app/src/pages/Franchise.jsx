@@ -20,6 +20,13 @@ import './Franchise.css'
 const FR = (f) => asset(`assets/franchise/${f}`)
 const CARDS = [
   {
+    t: 'Endless Support',
+    d: "Get operating guides, training resources, and help with the questions that come up while running your store—from menu execution to service standards. Our job doesn't end when your doors open, that's when it starts.",
+    img: FR('grand-opening-team.jpg'),
+    fb: asset('assets/food/client-refresh/loaded-waffle-fries.webp'),
+    alt: 'ATL Wing Spot grand opening team',
+  },
+  {
     t: 'Small Space. Big Flavor.',
     d: 'Our average restaurant is approximately 850 sq ft, with a format centered on takeout and delivery. Small Footprint = More $$ in YOUR POCKET!',
     img: FR('small-space-blueprint.jpg'),
@@ -68,13 +75,6 @@ const CARDS = [
     fb: asset('assets/food/client-refresh/boneless-basket.webp'),
     alt: 'Uber Eats and DoorDash delivery',
   },
-  {
-    t: 'Endless Support',
-    d: "Get operating guides, training resources, and help with the questions that come up while running your store—from menu execution to service standards. Our job doesn't end when your doors open, that's when it starts.",
-    img: FR('grand-opening-team.jpg'),
-    fb: asset('assets/food/client-refresh/loaded-waffle-fries.webp'),
-    alt: 'ATL Wing Spot grand opening team',
-  },
 ]
 
 /**
@@ -84,7 +84,7 @@ const CARDS = [
  */
 const FIGURES = [
   {
-    n: 1, v: 'FROM $124,200', l: 'Initial investment',
+    n: 1, v: 'STARTING AT $124,200', l: 'Initial investment',
     note: 'Estimated initial investment starts at $124,200, including the initial franchise fee. The full estimated range is $124,200–$337,600, as disclosed in Item 7 of our 2026 Franchise Disclosure Document. Actual costs vary based on location, restaurant size, site condition, construction costs, and other factors.',
   },
   {
@@ -135,8 +135,8 @@ function CardImg({ src, fb, alt }) {
  * change, it changes because ATL or their counsel says so.
  *
  * It sits directly under the form because that is the point at which someone is
- * being solicited. The financial figures above carry their own inline caveats
- * in FIGURES rather than being answered down here.
+ * being solicited. The financial figures carry their own numbered notes in
+ * FIGURES, listed together at the very bottom of the page.
  */
 const DISCLAIMER =
   'This is not a franchise offering. A franchise offering can be made by us only in a ' +
@@ -210,29 +210,15 @@ export default function Franchise() {
           <ul className="fr__figs">
             {FIGURES.map((f) => (
               <li className="fig" key={f.n}>
-                <span className="dsp fig__v">
-                  {f.v}
+                <span className="dsp fig__v">{f.v}</span>
+                <span className="fig__l">
+                  {f.l}
                   <a className="fig__sup" href={`#fn-${f.n}`} aria-label={`Footnote ${f.n}`}><sup>{f.n}</sup></a>
                 </span>
-                <span className="fig__l">{f.l}</span>
                 {f.sub && <span className="fig__n">{f.sub}</span>}
               </li>
             ))}
           </ul>
-          <ol className="fr__notes">
-            {FIGURES.map((f) => (
-              <li id={`fn-${f.n}`} key={f.n}>
-                <sup className="fr__note-n">{f.n}</sup>
-                <span><strong>{f.v} {f.l}.</strong> {f.note}</span>
-              </li>
-            ))}
-          </ol>
-          <p className="fineprint fr__disc">
-            These figures come from our current franchise materials and describe different things, so
-            they are not directly comparable. Nothing here is a projection, guarantee or promise of
-            earnings, sales or profitability. This page is informational only and is subject to our
-            current Franchise Disclosure Document, which we will send you before anything is signed.
-          </p>
         </div>
       </section>
 
@@ -288,6 +274,19 @@ export default function Franchise() {
         <div className="wrap wrap-tight fr__legal">
           <h2 className="fr__legal-h">Franchise disclaimer</h2>
           <p className="fineprint fr__legal-p">{DISCLAIMER}</p>
+        </div>
+
+        {/* The five numbered financial disclosures, kept together at the very
+            bottom of the page. Each figure's footnote number links down here. */}
+        <div className="wrap wrap-tight">
+          <ol className="fr__notes">
+            {FIGURES.map((f) => (
+              <li id={`fn-${f.n}`} key={f.n}>
+                <sup className="fr__note-n">{f.n}</sup>
+                <span><strong>{f.v} {f.l}.</strong> {f.note}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
     </div>
