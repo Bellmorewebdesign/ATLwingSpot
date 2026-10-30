@@ -43,6 +43,12 @@ export const BRAND = {
 // The repeating word-stripe is lifted from ATL's real cyan takeout box.
 export const BOX_WORDS = ['Wings', 'Tenders', 'Munchies', 'Waffles', 'Shakes']
 
+// Colour of that stripe on the home page and above the footer. The client
+// asked to tone down the blue-and-orange version, so it is orange with white
+// words for now. Set it to 'cyan' to bring back the original blue-and-orange,
+// or 'cyan-white' for blue with white words.
+export const BOX_STRIPE_TONE = 'orange-white'
+
 // Marquee content — brand truths only.
 export const TICKER = [
   '100% Halal',

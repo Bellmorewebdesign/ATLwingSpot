@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { TURNSTILE_SITE_KEY } from '../data/site'
@@ -9,6 +10,7 @@ import {
   startCooldown,
 } from '../lib/franchiseSubmit'
 import { JumpButton } from '../components/JumpButton'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 import { ArrowRight } from '../components/Icons'
 import './Franchise.css'
 
@@ -19,6 +21,13 @@ import './Franchise.css'
 // Until that file is dropped in, it falls back to an existing site photo.
 const FR = (f) => asset(`assets/franchise/${f}`)
 const CARDS = [
+  {
+    t: 'Endless Support',
+    d: "Get operating guides, training resources, and help with the questions that come up while running your store—from menu execution to service standards. Our job doesn't end when your doors open, that's when it starts.",
+    img: FR('grand-opening-team.jpg'),
+    fb: asset('assets/food/client-refresh/loaded-waffle-fries.webp'),
+    alt: 'ATL Wing Spot grand opening team',
+  },
   {
     t: 'Small Space. Big Flavor.',
     d: 'Our average restaurant is approximately 850 sq ft, with a format centered on takeout and delivery. Small Footprint = More $$ in YOUR POCKET!',
@@ -68,13 +77,6 @@ const CARDS = [
     fb: asset('assets/food/client-refresh/boneless-basket.webp'),
     alt: 'Uber Eats and DoorDash delivery',
   },
-  {
-    t: 'Endless Support',
-    d: "Get operating guides, training resources, and help with the questions that come up while running your store—from menu execution to service standards. Our job doesn't end when your doors open, that's when it starts.",
-    img: FR('grand-opening-team.jpg'),
-    fb: asset('assets/food/client-refresh/loaded-waffle-fries.webp'),
-    alt: 'ATL Wing Spot grand opening team',
-  },
 ]
 
 /**
@@ -84,7 +86,7 @@ const CARDS = [
  */
 const FIGURES = [
   {
-    n: 1, v: 'FROM $124,200', l: 'Initial investment',
+    n: 1, v: 'STARTING AT $124,200', l: 'Initial investment',
     note: 'Estimated initial investment starts at $124,200, including the initial franchise fee. The full estimated range is $124,200–$337,600, as disclosed in Item 7 of our 2026 Franchise Disclosure Document. Actual costs vary based on location, restaurant size, site condition, construction costs, and other factors.',
   },
   {
@@ -125,6 +127,76 @@ function CardImg({ src, fb, alt }) {
   )
 }
 
+// The hero clip is a VERTICAL (9:16) promo. Drop it in at
+// app/public/assets/franchise/franchise-hero-vertical.mp4 and rebuild; nothing
+// else needs to change. Until the file exists, or whenever it can't play, the
+// hero shows HERO_IMG exactly as before.
+const HERO_VIDEO = FR('franchise-hero-vertical.mp4')
+const HERO_IMG = asset('assets/food/hero-wings.jpg')
+
+/**
+ * Hero media: the still photo, plus the vertical video once it is actually
+ * playing.
+ *
+ * - Phones (portrait): the video fills the hero, cropped to cover.
+ * - Wider screens: the photo turns into a blurred, darkened backdrop and the
+ *   video stands at full hero height on the right, its edges fading into it.
+ *
+ * The video is never loaded for reduced-motion or data-saver visitors, is
+ * always muted (no controls, and any unmute is undone), and pauses while the
+ * hero is scrolled out of view. The page only switches to the video layout on
+ * the 'playing' event, so a missing file or a blocked autoplay simply leaves
+ * the photo in place.
+ */
+function HeroMedia({ onPlaying }) {
+  const reduced = useReducedMotion()
+  const saveData =
+    typeof navigator !== 'undefined' && navigator.connection?.saveData === true
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const v = ref.current
+    if (!v) onPlaying(false)
+    if (!v) return
+    v.muted = true
+    v.defaultMuted = true
+    v.play?.()?.catch(() => {})
+
+    if (typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) v.play?.()?.catch(() => {})
+      else v.pause()
+    })
+    io.observe(v)
+    return () => io.disconnect()
+  }, [reduced, saveData])
+
+  return (
+    <>
+      <img className="fr__poster" src={HERO_IMG} alt="" aria-hidden="true" decoding="async" />
+      {!reduced && !saveData && (
+        <video
+          ref={ref}
+          className="fr__vid"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          disablePictureInPicture
+          disableRemotePlayback
+          aria-hidden="true"
+          tabIndex={-1}
+          onPlaying={() => onPlaying(true)}
+          onVolumeChange={(e) => { e.currentTarget.muted = true }}
+        >
+          <source src={HERO_VIDEO} type="video/mp4" />
+        </video>
+      )}
+    </>
+  )
+}
+
 /**
  * Franchise disclaimer, shown under the enquiry form.
  *
@@ -135,8 +207,8 @@ function CardImg({ src, fb, alt }) {
  * change, it changes because ATL or their counsel says so.
  *
  * It sits directly under the form because that is the point at which someone is
- * being solicited. The financial figures above carry their own inline caveats
- * in FIGURES rather than being answered down here.
+ * being solicited. The financial figures carry their own numbered notes in
+ * FIGURES, listed together at the very bottom of the page.
  */
 const DISCLAIMER =
   'This is not a franchise offering. A franchise offering can be made by us only in a ' +
@@ -157,6 +229,7 @@ const FIELDS = [
 ]
 
 export default function Franchise() {
+  const [heroVideo, setHeroVideo] = useState(false)
   return (
     <div className="page fr">
       <Seo
@@ -164,22 +237,8 @@ export default function Franchise() {
         description="Open an ATL Wing Spot. Halal wings out of a compact kitchen with a digital-first customer base, proven on Long Island since 2023."
       />
 
-      <header className="fr__mast ch-dark">
-        {/* Grand-opening montage. Drop the clip at
-            public/assets/franchise/grand-opening-montage.mp4; until then the
-            poster image shows instead. */}
-        <video
-          className="fr__vid"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={asset('assets/food/hero-wings.jpg')}
-          aria-hidden="true"
-        >
-          <source src={FR('grand-opening-montage.mp4')} type="video/mp4" />
-        </video>
+      <header className={`fr__mast ch-dark${heroVideo ? ' fr__mast--video' : ''}`}>
+        <HeroMedia onPlaying={setHeroVideo} />
         <div className="fr__shade" aria-hidden="true" />
         <div className="wrap fr__mast-in">
           <div>
@@ -190,17 +249,6 @@ export default function Franchise() {
             </p>
             <JumpButton targetId="enquire" className="btn btn-orange btn-lg fr__cta">Explore opportunities <ArrowRight /></JumpButton>
           </div>
-          <div className="fr__award">
-            <img
-                src={asset('assets/brand/long-island-choice-award.png')}
-                alt="Long Island Choice Awards winner"
-                width="110"
-                height="105"
-                loading="lazy"
-                decoding="async"
-              />
-            <span>Voted best wings<br />on Long Island</span>
-          </div>
         </div>
       </header>
 
@@ -210,29 +258,15 @@ export default function Franchise() {
           <ul className="fr__figs">
             {FIGURES.map((f) => (
               <li className="fig" key={f.n}>
-                <span className="dsp fig__v">
-                  {f.v}
+                <span className="dsp fig__v">{f.v}</span>
+                <span className="fig__l">
+                  {f.l}
                   <a className="fig__sup" href={`#fn-${f.n}`} aria-label={`Footnote ${f.n}`}><sup>{f.n}</sup></a>
                 </span>
-                <span className="fig__l">{f.l}</span>
                 {f.sub && <span className="fig__n">{f.sub}</span>}
               </li>
             ))}
           </ul>
-          <ol className="fr__notes">
-            {FIGURES.map((f) => (
-              <li id={`fn-${f.n}`} key={f.n}>
-                <sup className="fr__note-n">{f.n}</sup>
-                <span><strong>{f.v} {f.l}.</strong> {f.note}</span>
-              </li>
-            ))}
-          </ol>
-          <p className="fineprint fr__disc">
-            These figures come from our current franchise materials and describe different things, so
-            they are not directly comparable. Nothing here is a projection, guarantee or promise of
-            earnings, sales or profitability. This page is informational only and is subject to our
-            current Franchise Disclosure Document, which we will send you before anything is signed.
-          </p>
         </div>
       </section>
 
@@ -288,6 +322,19 @@ export default function Franchise() {
         <div className="wrap wrap-tight fr__legal">
           <h2 className="fr__legal-h">Franchise disclaimer</h2>
           <p className="fineprint fr__legal-p">{DISCLAIMER}</p>
+        </div>
+
+        {/* The five numbered financial disclosures, kept together at the very
+            bottom of the page. Each figure's footnote number links down here. */}
+        <div className="wrap wrap-tight">
+          <ol className="fr__notes">
+            {FIGURES.map((f) => (
+              <li id={`fn-${f.n}`} key={f.n}>
+                <sup className="fr__note-n">{f.n}</sup>
+                <span><strong>{f.v} {f.l}.</strong> {f.note}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
     </div>

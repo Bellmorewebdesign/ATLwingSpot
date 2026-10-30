@@ -13,7 +13,7 @@ import { CateringBand } from '../components/CateringBand'
 import { FranchiseStrip } from '../components/FranchiseStrip'
 import { SocialBand } from '../components/SocialBand'
 import { FinalCTA } from '../components/FinalCTA'
-import { BOX_WORDS, TICKER } from '../data/site'
+import { BOX_WORDS, BOX_STRIPE_TONE, TICKER } from '../data/site'
 
 export default function Home() {
   return (
@@ -30,8 +30,8 @@ export default function Home() {
 
       {/* menu 1 — warm cream, the step down out of the hero, on the group shot */}
       <GroupBand />
-      {/* cyan, our own packaging pattern */}
-      <WordStripe words={BOX_WORDS} tone="cyan" size="md" />
+      {/* our own packaging pattern; colour set by BOX_STRIPE_TONE */}
+      <WordStripe words={BOX_WORDS} tone={BOX_STRIPE_TONE} size="md" />
       {/* menu 2 — dark, horizontal category track */}
       <CraveTrack />
       {/* white, split */}

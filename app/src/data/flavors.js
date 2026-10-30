@@ -37,3 +37,51 @@ export const FLAVORS = [
 ]
 
 export const FLAVOR_COUNT = '25+'
+
+// SAUCE METER — the client's "SAUCE IT UP FLAVORS!" heat chart, hottest first.
+// The order is the client's and is the source of truth for the meter.
+//
+// `group` picks the bar colour (SAUCE_HEAT_GROUPS, red through green).
+// `len` is the bar's relative length, 100 = longest, 0 = shortest; the meter
+// keeps even the shortest bar wide enough to hold its name.
+// `isNew` adds the small "NEW" tag.
+export const SAUCE_HEAT_GROUPS = {
+  fire:   { color: '#e5242b', text: '#ffffff' },
+  hot:    { color: '#f04e23', text: '#121012' },
+  warm:   { color: '#f47c20', text: '#121012' },
+  medium: { color: '#fbad18', text: '#121012' },
+  mild:   { color: '#c4d72e', text: '#121012' },
+  cool:   { color: '#4cb748', text: '#121012' },
+}
+
+export const SAUCE_METER = [
+  { name: '911 Sauce',                 group: 'fire',   len: 100 },
+  { name: 'Mango Habanero',            group: 'fire',   len: 96 },
+  { name: 'Hot Buffalo 2.0',           group: 'fire',   len: 93 },
+  { name: 'Jamaican Jerk',             group: 'fire',   len: 89 },
+  { name: 'Nashville Hot',             group: 'hot',    len: 86 },
+  { name: 'Lemon Pepper Hot',          group: 'hot',    len: 82 },
+  { name: 'Cajun Buffalo',             group: 'hot',    len: 79 },
+  { name: 'Hot Honey Garlic',          group: 'hot',    len: 75, isNew: true },
+  { name: 'Coconut Sweet Heat',        group: 'hot',    len: 71 },
+  { name: 'Hot Honey Lemon Pepper',    group: 'warm',   len: 68 },
+  { name: 'Honey Sriracha',            group: 'warm',   len: 64 },
+  { name: 'Buffalo',                   group: 'warm',   len: 61 },
+  { name: 'Hot Honey',                 group: 'warm',   len: 57 },
+  { name: 'Chipotle BBQ',              group: 'warm',   len: 54 },
+  { name: 'Honey Garlic Lemon Pepper', group: 'medium', len: 50 },
+  { name: 'Sweet Chilli',              group: 'medium', len: 46 },
+  { name: 'Hawaiian Sweet N Sour',     group: 'medium', len: 43 },
+  { name: 'Gold BBQ',                  group: 'medium', len: 39 },
+  { name: 'Cajun (Rub)',               group: 'medium', len: 36 },
+  { name: 'Pineapple BBQ',             group: 'mild',   len: 32 },
+  { name: 'Sweet Teriyaki',            group: 'mild',   len: 29 },
+  { name: 'Old Bay (Rub)',             group: 'mild',   len: 25 },
+  { name: 'Buttery Garlic Parmesan',   group: 'mild',   len: 21 },
+  { name: 'Hickory Smoked BBQ',        group: 'mild',   len: 18 },
+  { name: 'Chipotle Honey (Rub)',      group: 'cool',   len: 14 },
+  { name: 'Honeycomb Garlic',          group: 'cool',   len: 11 },
+  { name: 'Honey BBQ',                 group: 'cool',   len: 7 },
+  { name: 'Lemon Pepper (Rub)',        group: 'cool',   len: 4 },
+  { name: 'Lemon Pepper (Wet)',        group: 'cool',   len: 0 },
+]
