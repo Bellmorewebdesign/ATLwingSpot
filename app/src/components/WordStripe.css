@@ -11,6 +11,11 @@
 .ws--cyan   { background: var(--cyan);   --ws-fg: var(--orange); }
 .ws--orange { background: var(--orange); --ws-fg: var(--ink); }
 .ws--ink    { background: var(--ink);    --ws-fg: var(--cream); }
+/* The simpler two-colour versions the client asked for (BOX_STRIPE_TONE in
+   src/data/site.js picks one). White on brand orange measures 2.9:1, which
+   reads fine at this display size. */
+.ws--orange-white { background: var(--orange); --ws-fg: var(--paper); }
+.ws--cyan-white   { background: var(--cyan);   --ws-fg: var(--paper); }
 .ws--cream  { background: var(--cream);  --ws-fg: var(--ink); }
 
 .ws__viewport {

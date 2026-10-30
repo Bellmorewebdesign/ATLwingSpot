@@ -7,7 +7,7 @@ until it is added the hero shows a still photo instead.
 
 | Save as                          | Supplied file                                      | Used for |
 |----------------------------------|----------------------------------------------------|----------|
-| grand-opening-montage.mp4        | Grand-opening clips from @atlwingspot (see below)  | Hero background video |
+| franchise-hero-vertical.mp4      | Vertical promo video (see below)                   | Hero background video |
 | small-space-blueprint.jpg        | Modern takeout restaurant blueprint-2.png          | Card 1 |
 | marketing.jpg                    | marketing.jpg                                      | Card 2 |
 | academy-team.jpg                 | 1777967051084.jpg (team photo)                     | Card 3 |
@@ -19,5 +19,25 @@ until it is added the hero shows a still photo instead.
 
 To replace an image: save it as a 1280x800 JPG (quality ~80) with the same name.
 
-Hero video: a 15–30s montage of grand-opening crowds, long lines and hype,
-H.264 MP4, 1280x720 or 1920x1080, no audio track, ideally under 8 MB.
+## Hero video (vertical, 9:16)
+
+Save the file as exactly:
+
+    app/public/assets/franchise/franchise-hero-vertical.mp4
+
+then run `npm run build` in `app/` and commit. No code change is needed; the
+path is the `HERO_VIDEO` constant in `app/src/pages/Franchise.jsx`.
+
+Until the file exists (or if a browser can't autoplay it) the hero shows the
+existing wings photo, exactly as before. Phones show the clip full-screen;
+wider screens show it on the right over a blurred, darkened backdrop.
+
+Recommended export: H.264 MP4, 1080x1920 (or 720x1280), 15–30 seconds,
+NO audio track (it is always muted anyway), ideally under 8 MB. If you have
+ffmpeg, this converts and shrinks a phone clip in one go:
+
+    ffmpeg -i input.mov -an -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920" \
+      -c:v libx264 -preset slow -crf 26 -pix_fmt yuv420p -movflags +faststart \
+      franchise-hero-vertical.mp4
+
+Visitors who prefer reduced motion, or have data saver on, never download it.

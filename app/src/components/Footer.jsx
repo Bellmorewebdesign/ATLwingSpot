@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FOOTER_LINKS } from '../data/navigation'
-import { SOCIAL, BOX_WORDS } from '../data/site'
+import { SOCIAL, BOX_WORDS, BOX_STRIPE_TONE } from '../data/site'
 import { asset } from '../lib/asset'
 import { WordStripe } from './WordStripe'
 import { Instagram, TikTok } from './Icons'
@@ -10,7 +10,7 @@ export function Footer() {
   const year = new Date().getFullYear()
   return (
     <footer className="foot ch-dark">
-      <WordStripe words={BOX_WORDS} tone="cyan" size="sm" speed={40} />
+      <WordStripe words={BOX_WORDS} tone={BOX_STRIPE_TONE} size="sm" speed={40} />
 
       <div className="wrap foot__in">
         <div className="foot__top">

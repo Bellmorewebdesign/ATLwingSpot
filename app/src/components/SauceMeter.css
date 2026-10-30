@@ -1,0 +1,101 @@
+/* "SAUCE IT UP FLAVORS!" heat meter: turquoise board, one bar per sauce,
+   red at the top fading to green, every bar with a hard black offset shadow. */
+.smeter {
+  --smeter-bg: #29c1db;
+  --shadow: #000;
+  background: var(--smeter-bg);
+  padding-block: clamp(3rem, 7vw, 6rem);
+}
+.smeter__in { max-width: 820px; }
+
+.smeter__title {
+  text-align: center;
+  color: var(--paper);
+  font-size: clamp(2.4rem, 8vw, 4.6rem);
+  line-height: 0.92;
+  letter-spacing: 0.005em;
+  text-shadow: 0.06em 0.06em 0 var(--shadow);
+  margin-bottom: clamp(1.6rem, 4vw, 2.6rem);
+}
+.smeter__title-2 { display: block; }
+
+.smeter__chart {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(0.6rem, 2vw, 1.2rem);
+}
+
+/* the thermometer rail down the left: red (hot) to green (mild) */
+.smeter__scale {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+}
+.smeter__rail {
+  flex: 1;
+  width: 14px;
+  border: 2px solid var(--shadow);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--shadow);
+  background: linear-gradient(180deg, #e5242b 0%, #f04e23 22%, #f47c20 40%, #fbad18 58%, #c4d72e 78%, #4cb748 100%);
+}
+.smeter__end {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.smeter__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.4rem, 1vw, 0.55rem);
+  /* room for the offset shadows so they never poke past the edge */
+  padding-right: 6px;
+}
+
+/* --len is 0–100; even a 0 bar keeps --bar-min of the width so its name fits */
+.smeter__bar {
+  --bar-min: 40%;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  width: calc(var(--bar-min) + (100% - var(--bar-min)) * var(--len) / 100);
+  max-width: 100%;
+  padding: 0.38em 0.75em 0.32em;
+  background: var(--bar);
+  color: var(--bar-fg);
+  border: 2px solid var(--shadow);
+  border-radius: 4px;
+  box-shadow: 4px 4px 0 var(--shadow);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: clamp(1rem, 2.3vw, 1.3rem);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+.smeter__name { min-width: 0; overflow-wrap: anywhere; }
+
+.smeter__new {
+  flex: none;
+  padding: 0.2em 0.45em 0.15em;
+  background: var(--paper);
+  color: #e5242b;
+  border: 2px solid var(--shadow);
+  border-radius: 3px;
+  box-shadow: 2px 2px 0 var(--shadow);
+  font-size: 0.62em;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  transform: rotate(-4deg);
+}
+
+/* phones: shorter range so the mildest bars still hold their names on one line */
+@media (max-width: 560px) {
+  .smeter__bar { --bar-min: 66%; box-shadow: 3px 3px 0 var(--shadow); }
+  .smeter__rail { width: 10px; }
+  .smeter__end { font-size: 0.7rem; }
+}

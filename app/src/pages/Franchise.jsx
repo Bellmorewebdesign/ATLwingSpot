@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { TURNSTILE_SITE_KEY } from '../data/site'
@@ -9,6 +10,7 @@ import {
   startCooldown,
 } from '../lib/franchiseSubmit'
 import { JumpButton } from '../components/JumpButton'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 import { ArrowRight } from '../components/Icons'
 import './Franchise.css'
 
@@ -125,6 +127,76 @@ function CardImg({ src, fb, alt }) {
   )
 }
 
+// The hero clip is a VERTICAL (9:16) promo. Drop it in at
+// app/public/assets/franchise/franchise-hero-vertical.mp4 and rebuild; nothing
+// else needs to change. Until the file exists, or whenever it can't play, the
+// hero shows HERO_IMG exactly as before.
+const HERO_VIDEO = FR('franchise-hero-vertical.mp4')
+const HERO_IMG = asset('assets/food/hero-wings.jpg')
+
+/**
+ * Hero media: the still photo, plus the vertical video once it is actually
+ * playing.
+ *
+ * - Phones (portrait): the video fills the hero, cropped to cover.
+ * - Wider screens: the photo turns into a blurred, darkened backdrop and the
+ *   video stands at full hero height on the right, its edges fading into it.
+ *
+ * The video is never loaded for reduced-motion or data-saver visitors, is
+ * always muted (no controls, and any unmute is undone), and pauses while the
+ * hero is scrolled out of view. The page only switches to the video layout on
+ * the 'playing' event, so a missing file or a blocked autoplay simply leaves
+ * the photo in place.
+ */
+function HeroMedia({ onPlaying }) {
+  const reduced = useReducedMotion()
+  const saveData =
+    typeof navigator !== 'undefined' && navigator.connection?.saveData === true
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const v = ref.current
+    if (!v) onPlaying(false)
+    if (!v) return
+    v.muted = true
+    v.defaultMuted = true
+    v.play?.()?.catch(() => {})
+
+    if (typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) v.play?.()?.catch(() => {})
+      else v.pause()
+    })
+    io.observe(v)
+    return () => io.disconnect()
+  }, [reduced, saveData])
+
+  return (
+    <>
+      <img className="fr__poster" src={HERO_IMG} alt="" aria-hidden="true" decoding="async" />
+      {!reduced && !saveData && (
+        <video
+          ref={ref}
+          className="fr__vid"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          disablePictureInPicture
+          disableRemotePlayback
+          aria-hidden="true"
+          tabIndex={-1}
+          onPlaying={() => onPlaying(true)}
+          onVolumeChange={(e) => { e.currentTarget.muted = true }}
+        >
+          <source src={HERO_VIDEO} type="video/mp4" />
+        </video>
+      )}
+    </>
+  )
+}
+
 /**
  * Franchise disclaimer, shown under the enquiry form.
  *
@@ -157,6 +229,7 @@ const FIELDS = [
 ]
 
 export default function Franchise() {
+  const [heroVideo, setHeroVideo] = useState(false)
   return (
     <div className="page fr">
       <Seo
@@ -164,22 +237,8 @@ export default function Franchise() {
         description="Open an ATL Wing Spot. Halal wings out of a compact kitchen with a digital-first customer base, proven on Long Island since 2023."
       />
 
-      <header className="fr__mast ch-dark">
-        {/* Grand-opening montage. Drop the clip at
-            public/assets/franchise/grand-opening-montage.mp4; until then the
-            poster image shows instead. */}
-        <video
-          className="fr__vid"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={asset('assets/food/hero-wings.jpg')}
-          aria-hidden="true"
-        >
-          <source src={FR('grand-opening-montage.mp4')} type="video/mp4" />
-        </video>
+      <header className={`fr__mast ch-dark${heroVideo ? ' fr__mast--video' : ''}`}>
+        <HeroMedia onPlaying={setHeroVideo} />
         <div className="fr__shade" aria-hidden="true" />
         <div className="wrap fr__mast-in">
           <div>
@@ -189,17 +248,6 @@ export default function Franchise() {
               partners ready to bring ATL Wing Spot to new communities.
             </p>
             <JumpButton targetId="enquire" className="btn btn-orange btn-lg fr__cta">Explore opportunities <ArrowRight /></JumpButton>
-          </div>
-          <div className="fr__award">
-            <img
-                src={asset('assets/brand/long-island-choice-award.png')}
-                alt="Long Island Choice Awards winner"
-                width="110"
-                height="105"
-                loading="lazy"
-                decoding="async"
-              />
-            <span>Voted best wings<br />on Long Island</span>
           </div>
         </div>
       </header>
