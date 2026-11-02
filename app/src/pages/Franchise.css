@@ -2,6 +2,10 @@
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  display: flex;
+  align-items: flex-end;
+  /* tall like a story, so the vertical clip has room to show */
+  min-height: min(86svh, 780px);
   padding-top: calc(var(--nav-h) + clamp(2.5rem, 6vw, 5rem));
   padding-bottom: clamp(2.5rem, 6vw, 5rem);
 }
@@ -11,61 +15,82 @@
   align-items: center;
 }
 
-/* ---- hero media: still photo, plus the vertical (9:16) video once playing ---- */
-.fr__poster, .fr__vid, .fr__shade {
+/* ---- hero media: the vertical (9:16) grand-opening clip ---- */
+.fr__media { position: absolute; inset: 0; z-index: -2; }
+.fr__clip, .fr__glow {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: -2;
-}
-.fr__poster { object-fit: cover; }
-/* hidden until it is actually playing, so a missing file never shows a blank frame */
-.fr__vid {
   object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.6s ease;
 }
-.fr__mast--video .fr__vid { opacity: 1; }
-/* keeps the headline readable over busy crowd footage */
+.fr__glow { display: none; }
+
+/* phones and tablets: the clip fills the hero; the shade darkens the top for
+   the nav and the bottom, where the headline sits */
 .fr__shade {
+  position: absolute;
+  inset: 0;
   z-index: -1;
-  background: linear-gradient(90deg, rgba(10, 12, 14, 0.88) 0%, rgba(10, 12, 14, 0.6) 60%, rgba(10, 12, 14, 0.45) 100%);
+  background: linear-gradient(180deg,
+    rgba(10, 12, 14, 0.6) 0%,
+    rgba(10, 12, 14, 0.15) 28%,
+    rgba(10, 12, 14, 0.35) 48%,
+    rgba(10, 12, 14, 0.92) 100%);
 }
 
-/* Wider screens: a 9:16 clip can't fill a wide hero without losing most of
-   the frame, so the photo becomes a blurred, darkened backdrop and the clip
-   stands at full hero height on the right, fading into it at the edges. */
-@media (min-width: 821px) {
-  .fr__mast--video .fr__poster {
-    filter: blur(28px) brightness(0.45) saturate(1.15);
-    transform: scale(1.12); /* hides the soft edge the blur leaves */
+/* Desktop: a 9:16 clip can't fill a wide hero without losing most of the
+   frame, so it stands as a rounded story card on the right, over a blurred,
+   darkened copy of itself that fills the width. */
+@media (min-width: 961px) {
+  /* one screen tall: the page already sits below the fixed nav */
+  .fr__mast {
+    --card-gap: clamp(1.25rem, 2.5vw, 2rem);
+    align-items: center;
+    min-height: calc(min(100svh, 940px) - var(--nav-h));
+    padding-block: clamp(2.5rem, 5vw, 4rem);
   }
-  .fr__mast--video .fr__vid {
-    left: auto;
-    right: max(0px, calc((100% - var(--container)) / 2));
+  /* sized so the headline sits on two lines beside the card */
+  .fr__mast .fr__h1 { font-size: clamp(3.4rem, 5.4vw, 6.6rem); }
+  .fr__glow {
+    display: block;
+    inset: -8%;
+    width: 116%;
+    height: 116%;
+    filter: blur(40px) brightness(0.55) saturate(1.3);
+  }
+  .fr__clip {
+    z-index: 1; /* above the shade, so the card stays bright */
+    inset: auto;
+    top: var(--card-gap);
+    right: max(var(--gutter), calc((100% - var(--container)) / 2 + var(--gutter)));
+    height: calc(100% - 2 * var(--card-gap));
     width: auto;
+    max-width: 36%; /* on very tall heroes, crop the card's sides rather than crowd the text */
     aspect-ratio: 9 / 16;
-    max-width: 40%; /* on very tall heroes, crop the clip's sides rather than crowd the text */
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%, #000 88%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0%, #000 22%, #000 88%, transparent 100%);
+    border-radius: 22px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12);
   }
-  /* the text never runs under the clip */
-  .fr__mast--video .fr__mast-in > div { max-width: 58%; }
-  .fr__mast--video .fr__shade {
-    background: linear-gradient(90deg, rgba(10, 12, 14, 0.82) 0%, rgba(10, 12, 14, 0.5) 55%, rgba(10, 12, 14, 0.12) 100%);
+  .fr__shade {
+    background: linear-gradient(90deg,
+      rgba(10, 12, 14, 0.78) 0%,
+      rgba(10, 12, 14, 0.5) 50%,
+      rgba(10, 12, 14, 0.15) 75%,
+      rgba(10, 12, 14, 0) 100%);
   }
+  /* the text never runs under the card */
+  .fr__mast-in > div { max-width: 58%; }
 }
 
-/* Phones: the clip fills the hero; a bottom-weighted shade keeps the text clear */
-@media (max-width: 820px) {
-  .fr__mast--video .fr__shade {
-    background: linear-gradient(180deg, rgba(10, 12, 14, 0.55) 0%, rgba(10, 12, 14, 0.6) 45%, rgba(10, 12, 14, 0.88) 100%);
-  }
+.fr__h1 { color: var(--cream); text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35); }
+/* brighter than the usual dark-section mute, since it sits on moving footage */
+.fr__lede {
+  margin-top: 1.2rem;
+  font-size: var(--step-1);
+  color: rgba(246, 239, 225, 0.9);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
+  max-width: 44ch;
 }
-
-.fr__h1 { color: var(--cream); }
-.fr__lede { margin-top: 1.2rem; font-size: var(--step-1); color: var(--dark-mute); max-width: 44ch; }
 .fr__cta { margin-top: 1.8rem; }
 
 .fr__h2 { color: var(--ink); margin-bottom: 1.4rem; }

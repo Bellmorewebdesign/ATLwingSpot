@@ -127,73 +127,98 @@ function CardImg({ src, fb, alt }) {
   )
 }
 
-// The hero clip is a VERTICAL (9:16) promo. Drop it in at
-// app/public/assets/franchise/franchise-hero-vertical.mp4 and rebuild; nothing
-// else needs to change. Until the file exists, or whenever it can't play, the
-// hero shows HERO_IMG exactly as before.
+// The hero clip is a VERTICAL (9:16) promo. To swap it, replace
+// app/public/assets/franchise/franchise-hero-vertical.mp4 (and the poster,
+// its first frame, beside it) and rebuild.
 const HERO_VIDEO = FR('franchise-hero-vertical.mp4')
-const HERO_IMG = asset('assets/food/hero-wings.jpg')
+const HERO_POSTER = FR('franchise-hero-poster.jpg')
+const WIDE = '(min-width: 961px)'
+
+function useMedia(query) {
+  const [hit, setHit] = useState(
+    () => typeof window !== 'undefined' && !!window.matchMedia?.(query).matches
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(query)
+    const onChange = () => setHit(mq.matches)
+    mq.addEventListener?.('change', onChange)
+    return () => mq.removeEventListener?.('change', onChange)
+  }, [query])
+  return hit
+}
 
 /**
- * Hero media: the still photo, plus the vertical video once it is actually
- * playing.
+ * Hero media.
  *
- * - Phones (portrait): the video fills the hero, cropped to cover.
- * - Wider screens: the photo turns into a blurred, darkened backdrop and the
- *   video stands at full hero height on the right, its edges fading into it.
+ * - Phones and tablets: the clip fills the hero, cropped to cover.
+ * - Desktop: the clip stands as a rounded story card on the right, over a
+ *   blurred, darkened copy of itself that fills the rest of the width. The
+ *   copy is only rendered on desktop, and it is the same file, so the
+ *   browser fetches it once.
  *
- * The video is never loaded for reduced-motion or data-saver visitors, is
- * always muted (no controls, and any unmute is undone), and pauses while the
- * hero is scrolled out of view. The page only switches to the video layout on
- * the 'playing' event, so a missing file or a blocked autoplay simply leaves
- * the photo in place.
+ * Always muted, no controls, and any unmute is undone. Reduced-motion and
+ * data-saver visitors get the poster frame instead and never load the video.
+ * Both clips pause while the hero is scrolled out of view.
  */
-function HeroMedia({ onPlaying }) {
+function HeroMedia() {
   const reduced = useReducedMotion()
+  const wide = useMedia(WIDE)
   const saveData =
     typeof navigator !== 'undefined' && navigator.connection?.saveData === true
-  const ref = useRef(null)
+  const still = reduced || saveData
+  const clip = useRef(null)
+  const glow = useRef(null)
 
   useEffect(() => {
-    const v = ref.current
-    if (!v) onPlaying(false)
-    if (!v) return
-    v.muted = true
-    v.defaultMuted = true
-    v.play?.()?.catch(() => {})
+    const vids = [clip.current, glow.current].filter(Boolean)
+    if (!vids.length) return
+    const play = () => vids.forEach((v) => v.play?.()?.catch(() => {}))
+    vids.forEach((v) => { v.muted = true; v.defaultMuted = true })
+    play()
 
     if (typeof IntersectionObserver === 'undefined') return
     const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) v.play?.()?.catch(() => {})
-      else v.pause()
+      if (e.isIntersecting) play()
+      else vids.forEach((v) => v.pause())
     })
-    io.observe(v)
+    io.observe(vids[0])
     return () => io.disconnect()
-  }, [reduced, saveData])
+  }, [still, wide])
+
+  // keeps the blurred copy roughly in step with the card
+  const sync = () => {
+    if (glow.current && clip.current) glow.current.currentTime = clip.current.currentTime
+  }
+
+  const video = (ref, className, extra = {}) => (
+    <video
+      ref={ref}
+      className={className}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      poster={HERO_POSTER}
+      disablePictureInPicture
+      disableRemotePlayback
+      tabIndex={-1}
+      onVolumeChange={(e) => { e.currentTarget.muted = true }}
+      {...extra}
+    >
+      <source src={HERO_VIDEO} type="video/mp4" />
+    </video>
+  )
 
   return (
-    <>
-      <img className="fr__poster" src={HERO_IMG} alt="" aria-hidden="true" decoding="async" />
-      {!reduced && !saveData && (
-        <video
-          ref={ref}
-          className="fr__vid"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          disablePictureInPicture
-          disableRemotePlayback
-          aria-hidden="true"
-          tabIndex={-1}
-          onPlaying={() => onPlaying(true)}
-          onVolumeChange={(e) => { e.currentTarget.muted = true }}
-        >
-          <source src={HERO_VIDEO} type="video/mp4" />
-        </video>
-      )}
-    </>
+    <div className="fr__media" aria-hidden="true">
+      {wide && (still
+        ? <img className="fr__glow" src={HERO_POSTER} alt="" decoding="async" />
+        : video(glow, 'fr__glow'))}
+      {still
+        ? <img className="fr__clip" src={HERO_POSTER} alt="" decoding="async" />
+        : video(clip, 'fr__clip', { onPlaying: sync })}
+    </div>
   )
 }
 
@@ -229,7 +254,6 @@ const FIELDS = [
 ]
 
 export default function Franchise() {
-  const [heroVideo, setHeroVideo] = useState(false)
   return (
     <div className="page fr">
       <Seo
@@ -237,8 +261,8 @@ export default function Franchise() {
         description="Open an ATL Wing Spot. Halal wings out of a compact kitchen with a digital-first customer base, proven on Long Island since 2023."
       />
 
-      <header className={`fr__mast ch-dark${heroVideo ? ' fr__mast--video' : ''}`}>
-        <HeroMedia onPlaying={setHeroVideo} />
+      <header className="fr__mast ch-dark">
+        <HeroMedia />
         <div className="fr__shade" aria-hidden="true" />
         <div className="wrap fr__mast-in">
           <div>
