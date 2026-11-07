@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <>
       <Seo
-        description="Fresh, never frozen wings fried to order in 25+ sauces. 100% halal. Voted best wings on Long Island. Order pickup or delivery across NY, NJ and CA."
+        description="Fresh, never frozen wings fried to order in 25+ sauces. 100% halal. Voted best wings on Long Island. Order pickup or delivery across NY, NJ, PA, TX and CA."
       />
 
       {/* cream */}

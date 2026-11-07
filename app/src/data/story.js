@@ -33,10 +33,10 @@ export const STORY_BEATS = [
   },
   {
     id: 'markets',
-    figure: 'NY·NJ·CA',
-    unit: 'and growing',
+    figure: '5',
+    unit: 'states and growing',
     when: 'Now',
-    line: 'From one counter to shops in three states.',
+    line: 'From one counter to shops in five states.',
   },
 ]
 
@@ -63,7 +63,7 @@ export const STORY_CHAPTERS = [
   {
     id: 'now',
     when: 'Now',
-    title: 'New York, New Jersey, California',
+    title: 'Five states and counting',
     body: 'The wings and the sauces have not changed. There are just more counters now, including franchised shops well beyond Long Island.',
   },
 ]

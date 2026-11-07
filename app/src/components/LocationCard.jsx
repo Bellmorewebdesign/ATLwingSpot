@@ -1,5 +1,5 @@
-import { ORDER_URL, ORDER_LABEL } from '../data/site'
-import { mapsUrl, formatPhone } from '../data/locations'
+import { ORDER_LABEL } from '../data/site'
+import { mapsUrl, formatPhone, orderUrl } from '../data/locations'
 import { ArrowUpRight } from './Icons'
 import './LocationCard.css'
 
@@ -18,10 +18,11 @@ export function LocationCard({ loc }) {
             {phone}
           </a>
         )}
+        {loc.hours && <p className="loc__hours">{loc.hours}</p>}
         {loc.since && <span className="loc__since">{loc.since}</span>}
       </div>
       <div className="loc__acts">
-        <a className="btn btn-orange btn-sm" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+        <a className="btn btn-orange btn-sm" href={orderUrl(loc)} target="_blank" rel="noopener noreferrer">
           {ORDER_LABEL}
         </a>
         <a className="loc__dir" href={mapsUrl(loc)} target="_blank" rel="noopener noreferrer">

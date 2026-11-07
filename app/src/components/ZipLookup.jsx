@@ -1,7 +1,7 @@
 import { forwardRef, useId, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { findByZip, formatPhone, approxMiles, mapsUrl } from '../data/locations'
-import { ORDER_URL, ORDER_LABEL } from '../data/site'
+import { findByZip, formatPhone, approxMiles, mapsUrl, orderUrl } from '../data/locations'
+import { ORDER_LABEL } from '../data/site'
 import { Search, MapPin, ArrowUpRight } from './Icons'
 import './ZipLookup.css'
 
@@ -106,6 +106,7 @@ export const ZipLookup = forwardRef(function ZipLookup(
                         <div className="zipl__info">
                           <h3 className="zipl__name">{s.name}</h3>
                           <p className="zipl__addr">{s.street}, {s.city}, {s.state} {s.zip}</p>
+                          {s.hours && <p className="zipl__addr">{s.hours}</p>}
                           {phone && (
                             <a className="zipl__phone" href={`tel:${String(s.phone).replace(/\D/g, '')}`}>
                               {phone}
@@ -115,7 +116,7 @@ export const ZipLookup = forwardRef(function ZipLookup(
                         <div className="zipl__acts">
                           <a
                             className="btn btn-orange btn-sm"
-                            href={ORDER_URL}
+                            href={orderUrl(s)}
                             target="_blank"
                             rel="noopener noreferrer"
                           >

@@ -1,29 +1,72 @@
-// Current / seeded locations. Hours are intentionally NOT hardcoded —
-// they're location-specific and change. Directions links are generated
-// from the address at render time.
+// Every ATL Wing Spot shop. Source of truth: our Snackpass ordering page
+// (https://order.snackpass.co/atlwingspot). Names and addresses match the
+// store list there as of November 2026.
 //
-// Phone numbers as supplied by the client. Most came off atlwingspot.com;
-// Copiague came from Restaurantji and Babylon Village from Apple Maps, so those
-// two are the ones to re-check if a call ever bounces.
+// Fields
+//   state     two-letter code. The locations page groups shops by state, in
+//             STATES order below, so a new state needs a row there too.
+//   area      extra words the search box matches (borough, neighborhood,
+//             "Long Island"). Never shown, only searched.
+//   phone     null hides the phone line on the card and in the ZIP lookup.
+//   hours     null hides the hours line. A short string when set, e.g.
+//             'Daily 11am–11pm'. Copy it from the shop's Snackpass page, never
+//             from an "Open now / Closed" badge, which only describes the
+//             moment the page was looked at.
+//   orderUrl  the shop's own Snackpass ordering link. null falls back to the
+//             brand ordering page (ORDER_URL), which lets the guest pick.
 //
-// The ZIP lookup and the location cards render the phone line only when a
-// number is present, so a shop without one degrades to address + directions
-// rather than breaking.
+// NEEDS CONFIRMATION against each shop's Snackpass page (Snackpass could not be
+// read automatically when this list was last updated):
+//   - every phone number. The ten older shops keep the numbers the client
+//     supplied (most came off atlwingspot.com; Copiague came from Restaurantji
+//     and Babylon from Apple Maps). Jersey City, Linden, Pittsburgh and Frisco
+//     have none yet.
+//   - every shop's hours and its own ordering link: none are filled in yet.
+//   - the Manhattan shop's display name (Snackpass may call it "New York").
+//
+// Do not put a "]" inside any value: app/scripts/build-zip-areas.mjs reads
+// this list as text. After adding, moving or closing a shop, re-run that script
+// so the ZIP lookup knows about it (see the README).
 
 import { SHOP_IDS, ZIP_NEAR, ZIP_AREAS } from './zip-areas'
+import { ORDER_URL } from './site'
 
 export const LOCATIONS = [
-  { id: 'east-meadow', name: 'East Meadow', street: '1860 Front St', city: 'East Meadow', state: 'NY', zip: '11554', region: 'Long Island', phone: '(516) 833-9464' },
-  { id: 'lynbrook', name: 'Lynbrook', street: '97 Broadway', city: 'Lynbrook', state: 'NY', zip: '11563', region: 'Long Island', phone: '(516) 218-2245' },
-  { id: 'garden-city-park', name: 'Garden City Park', street: '2441 Jericho Tpke', city: 'Garden City Park', state: 'NY', zip: '11040', region: 'Long Island', phone: '(516) 916-4199' },
-  { id: 'copiague', name: 'Copiague', street: '854 Montauk Hwy', city: 'Copiague', state: 'NY', zip: '11726', region: 'Long Island', phone: '(631) 531-5538' },
-  { id: 'north-babylon', name: 'North Babylon', street: '1290 Deer Park Ave', city: 'North Babylon', state: 'NY', zip: '11703', region: 'Long Island', phone: '(631) 940-8916' },
-  { id: 'babylon-village', name: 'Babylon Village', street: '14 Railroad Ave', city: 'Babylon', state: 'NY', zip: '11702', region: 'Long Island', phone: '(631) 314-4161' },
-  { id: 'richmond-hill', name: 'Richmond Hill', street: '87-17 Lefferts Blvd', city: 'Richmond Hill', state: 'NY', zip: '11418', region: 'Queens', phone: '(718) 674-6034' },
-  { id: 'east-harlem', name: 'East Harlem', street: '2128 2nd Ave', city: 'New York', state: 'NY', zip: '10029', region: 'Manhattan', phone: '(646) 454-9162' },
-  { id: 'south-orange', name: 'South Orange', street: '319 South Orange Ave', city: 'South Orange', state: 'NJ', zip: '07079', region: 'New Jersey', phone: '(973) 275-1234' },
-  { id: 'redlands', name: 'Redlands', street: '1755 E Lugonia Ave, Suite 210', city: 'Redlands', state: 'CA', zip: '92374', region: 'California', phone: '(909) 321-4746' },
+  { id: 'east-meadow', name: 'East Meadow', street: '1860 Front St', city: 'East Meadow', state: 'NY', zip: '11554', area: 'Long Island, Nassau', phone: '(516) 833-9464', hours: null, orderUrl: null },
+  { id: 'lynbrook', name: 'Lynbrook', street: '97 Broadway', city: 'Lynbrook', state: 'NY', zip: '11563', area: 'Long Island, Nassau', phone: '(516) 218-2245', hours: null, orderUrl: null },
+  { id: 'copiague', name: 'Copiague', street: '854 Montauk Hwy', city: 'Copiague', state: 'NY', zip: '11726', area: 'Long Island, Suffolk', phone: '(631) 531-5538', hours: null, orderUrl: null },
+  { id: 'garden-city-park', name: 'Garden City Park', street: '2441 Jericho Tpke', city: 'Garden City Park', state: 'NY', zip: '11040', area: 'Long Island, Nassau', phone: '(516) 916-4199', hours: null, orderUrl: null },
+  { id: 'babylon', name: 'Babylon', street: '14B Railroad Ave', city: 'Babylon', state: 'NY', zip: '11702', area: 'Long Island, Suffolk, Babylon Village', phone: '(631) 314-4161', hours: null, orderUrl: null },
+  { id: 'north-babylon', name: 'North Babylon', street: '1290 Deer Park Ave', city: 'North Babylon', state: 'NY', zip: '11703', area: 'Long Island, Suffolk', phone: '(631) 940-8916', hours: null, orderUrl: null },
+  { id: 'jamaica', name: 'Jamaica', street: '87-17 Lefferts Blvd', city: 'Jamaica', state: 'NY', zip: '11418', area: 'Queens, Richmond Hill', phone: '(718) 674-6034', hours: null, orderUrl: null },
+  { id: 'manhattan', name: 'Manhattan', street: '2128 2nd Ave, Front A', city: 'New York', state: 'NY', zip: '10029', area: 'Manhattan, East Harlem, NYC', phone: '(646) 454-9162', hours: null, orderUrl: null },
+  { id: 'jersey-city', name: 'Jersey City', street: '588 West Side Ave', city: 'Jersey City', state: 'NJ', zip: '07304', area: 'Hudson County', phone: null, hours: null, orderUrl: null },
+  { id: 'linden', name: 'Linden', street: '1600 E St Georges Ave', city: 'Linden', state: 'NJ', zip: '07036', area: 'Union County', phone: null, hours: null, orderUrl: null },
+  { id: 'south-orange', name: 'South Orange', street: '319 S Orange Ave', city: 'South Orange Village', state: 'NJ', zip: '07079', area: 'Essex County, South Orange Avenue', phone: '(973) 275-1234', hours: null, orderUrl: null },
+  { id: 'pittsburgh', name: 'Pittsburgh', street: '412 Semple St', city: 'Pittsburgh', state: 'PA', zip: '15213', area: 'Oakland, Allegheny County', phone: null, hours: null, orderUrl: null },
+  { id: 'frisco', name: 'Frisco', street: '6363 Dallas Pkwy', city: 'Frisco', state: 'TX', zip: '75034', area: 'Dallas, DFW, Collin County', phone: null, hours: null, orderUrl: null },
+  { id: 'redlands', name: 'Redlands', street: '1755 E Lugonia Ave, Suite 210', city: 'Redlands', state: 'CA', zip: '92374', area: 'Inland Empire, San Bernardino County', phone: '(909) 321-4746', hours: null, orderUrl: null },
 ]
+
+// The state categories on the locations page and the home page band, in the
+// order they are shown. A state with no shops is skipped.
+export const STATES = [
+  { id: 'NY', label: 'New York' },
+  { id: 'NJ', label: 'New Jersey' },
+  { id: 'PA', label: 'Pennsylvania' },
+  { id: 'TX', label: 'Texas' },
+  { id: 'CA', label: 'California' },
+]
+
+export const stateName = (code) => STATES.find((s) => s.id === code)?.label || code
+
+// STATES that actually have a shop, each with its shops.
+export const STATE_GROUPS = STATES
+  .map((s) => ({ ...s, shops: LOCATIONS.filter((l) => l.state === s.id) }))
+  .filter((s) => s.shops.length)
+
+// A shop's own ordering link, or the brand ordering page when it has none.
+export const orderUrl = (loc) => loc?.orderUrl || ORDER_URL
 
 /**
  * ZIP lookup.
@@ -53,7 +96,7 @@ const parse = (table, floor) =>
   new Map(
     table.trim().split('\n').map((row) => {
       const [key, miles, picks] = row.split(' ')
-      return [key, { miles: Math.max(floor, Number(miles)), ids: [...picks].map((i) => SHOP_IDS[Number(i)]) }]
+      return [key, { miles: Math.max(floor, Number(miles)), ids: [...picks].map((i) => SHOP_IDS[parseInt(i, 36)]) }]
     })
   )
 
@@ -107,21 +150,6 @@ export function formatPhone(phone) {
   const d = String(phone).replace(/\D/g, '').replace(/^1/, '')
   return d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : String(phone)
 }
-
-export const STATE_FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'NY', label: 'New York' },
-  { id: 'NJ', label: 'New Jersey' },
-  { id: 'CA', label: 'California' },
-]
-
-// Homepage teaser regions (dramatic, not a full address dump).
-export const FEATURED_REGIONS = [
-  { id: 'long-island', name: 'Long Island', state: 'NY', count: 6, note: 'Where it started' },
-  { id: 'queens', name: 'Queens', state: 'NY', count: 1, note: 'Richmond Hill' },
-  { id: 'new-jersey', name: 'New Jersey', state: 'NJ', count: 1, note: 'South Orange' },
-  { id: 'california', name: 'California', state: 'CA', count: 1, note: 'Redlands' },
-]
 
 // Build a Google Maps directions/search URL from an address.
 export function mapsUrl(loc) {
