@@ -14,26 +14,25 @@
 //             moment the page was looked at.
 //   orderUrl  the shop's own Snackpass ordering link. null falls back to the
 //             brand ordering page (ORDER_URL), which lets the guest pick.
+//   tempClosed  true shows a "Temporarily closed" label and hides the shop's
+//             Order Now button (directions stay). Delete it when the shop
+//             reopens.
 //
 // Phones and hours come from public listings (Google, Uber Eats, Restaurantji,
 // Zabihah and similar), gathered November 2026, not from Snackpass itself.
 // Where the listings disagreed, the call made is noted below.
 //
+// Confirmed by the client from Google listings, November 2026: East Meadow,
+// Babylon and Pittsburgh hours, Linden phone, Jersey City temporarily closed.
+//
 // NEEDS CONFIRMATION with each shop:
-//   - Babylon and Pittsburgh: hours left blank. Babylon's listings say 2am or
-//     4am close; Pittsburgh's say 10pm with later weekend hours.
-//   - Linden: phone left blank. The only number found, (609) 689-5201, is a
-//     South Jersey area code, not Linden's.
-//   - Jersey City: Google lists it as temporarily closed. Hours left blank.
-//   - East Meadow: one Google listing shows Sunday as 9am to 9pm. Shown as
-//     daily 11am to 1am, which every other listing agrees on.
 //   - Copiague: listings say 10pm, 11pm or midnight close. Shown as midnight
 //     (Restaurantji and Uber Eats agree).
 //   - Garden City Park: Uber Eats stops orders 30 minutes before the store
 //     hours shown here (Google).
 //   - Frisco: the suite number (107) comes from Google, not Snackpass.
-//   - Pittsburgh, Frisco, Jersey City and Linden phones and hours have only
-//     one source each.
+//   - Jersey City: no hours yet. Add them, and remove tempClosed, when it
+//     reopens.
 //   - every shop's own ordering link: none are filled in yet.
 //   - the Manhattan shop's display name (Snackpass may call it "New York").
 //
@@ -49,14 +48,14 @@ export const LOCATIONS = [
   { id: 'lynbrook', name: 'Lynbrook', street: '97 Broadway', city: 'Lynbrook', state: 'NY', zip: '11563', area: 'Long Island, Nassau', phone: '(516) 218-2245', hours: 'Sun–Thu 10:30am–midnight · Fri–Sat 10:30am–1am', orderUrl: null },
   { id: 'copiague', name: 'Copiague', street: '854 Montauk Hwy', city: 'Copiague', state: 'NY', zip: '11726', area: 'Long Island, Suffolk', phone: '(631) 531-5538', hours: 'Daily 11am–midnight', orderUrl: null },
   { id: 'garden-city-park', name: 'Garden City Park', street: '2441 Jericho Tpke', city: 'Garden City Park', state: 'NY', zip: '11040', area: 'Long Island, Nassau', phone: '(516) 916-4199', hours: 'Sun–Thu 10:30am–midnight · Fri–Sat 10:30am–1am', orderUrl: null },
-  { id: 'babylon', name: 'Babylon', street: '14B Railroad Ave', city: 'Babylon', state: 'NY', zip: '11702', area: 'Long Island, Suffolk, Babylon Village', phone: '(631) 314-4161', hours: null, orderUrl: null },
+  { id: 'babylon', name: 'Babylon', street: '14B Railroad Ave', city: 'Babylon', state: 'NY', zip: '11702', area: 'Long Island, Suffolk, Babylon Village', phone: '(631) 314-4161', hours: 'Daily 10am–4am', orderUrl: null },
   { id: 'north-babylon', name: 'North Babylon', street: '1290 Deer Park Ave', city: 'North Babylon', state: 'NY', zip: '11703', area: 'Long Island, Suffolk', phone: '(631) 940-8916', hours: 'Daily 11am–midnight', orderUrl: null },
   { id: 'jamaica', name: 'Jamaica', street: '87-17 Lefferts Blvd', city: 'Jamaica', state: 'NY', zip: '11418', area: 'Queens, Richmond Hill', phone: '(718) 674-6034', hours: 'Sun–Thu 11am–midnight · Fri–Sat 11am–2am', orderUrl: null },
   { id: 'manhattan', name: 'Manhattan', street: '2128 2nd Ave, Front A', city: 'New York', state: 'NY', zip: '10029', area: 'Manhattan, East Harlem, NYC', phone: '(646) 454-9162', hours: 'Daily 11am–4am', orderUrl: null },
-  { id: 'jersey-city', name: 'Jersey City', street: '588 West Side Ave', city: 'Jersey City', state: 'NJ', zip: '07304', area: 'Hudson County', phone: '(201) 356-9139', hours: null, orderUrl: null },
-  { id: 'linden', name: 'Linden', street: '1600 E St Georges Ave', city: 'Linden', state: 'NJ', zip: '07036', area: 'Union County', phone: null, hours: 'Daily 11am–midnight', orderUrl: null },
+  { id: 'jersey-city', name: 'Jersey City', street: '588 West Side Ave', city: 'Jersey City', state: 'NJ', zip: '07304', area: 'Hudson County', phone: '(201) 356-9139', hours: null, orderUrl: null, tempClosed: true },
+  { id: 'linden', name: 'Linden', street: '1600 E St Georges Ave', city: 'Linden', state: 'NJ', zip: '07036', area: 'Union County', phone: '(609) 689-5201', hours: 'Daily 11am–midnight', orderUrl: null },
   { id: 'south-orange', name: 'South Orange', street: '319 S Orange Ave', city: 'South Orange Village', state: 'NJ', zip: '07079', area: 'Essex County, South Orange Avenue', phone: '(973) 275-1234', hours: 'Daily 11am–1am', orderUrl: null },
-  { id: 'pittsburgh', name: 'Pittsburgh', street: '412 Semple St', city: 'Pittsburgh', state: 'PA', zip: '15213', area: 'Oakland, Allegheny County', phone: '(412) 282-8268', hours: null, orderUrl: null },
+  { id: 'pittsburgh', name: 'Pittsburgh', street: '412 Semple St', city: 'Pittsburgh', state: 'PA', zip: '15213', area: 'Oakland, Allegheny County', phone: '(412) 282-8268', hours: 'Daily 11am–10pm', orderUrl: null },
   { id: 'frisco', name: 'Frisco', street: '6363 Dallas Pkwy, Suite 107', city: 'Frisco', state: 'TX', zip: '75034', area: 'Dallas, DFW, Collin County', phone: '(214) 308-9704', hours: 'Sun–Thu 10:30am–10:30pm · Fri–Sat 10:30am–midnight', orderUrl: null },
   { id: 'redlands', name: 'Redlands', street: '1755 E Lugonia Ave, Suite 210', city: 'Redlands', state: 'CA', zip: '92374', area: 'Inland Empire, San Bernardino County', phone: '(909) 321-4746', hours: 'Sun–Thu 11am–midnight · Fri–Sat 11am–1am', orderUrl: null },
 ]

@@ -166,3 +166,17 @@
   .zipl__field input { padding-block: 0.85rem; }
   .zipl--lg .zipl__field input { padding-block: 0.95rem; }
 }
+
+/* a shop that is temporarily closed (tempClosed in data/locations.js) */
+.zipl__closed {
+  display: inline-block;
+  margin-top: 0.3rem;
+  padding: 0.28em 0.7em;
+  border-radius: var(--r-pill);
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}

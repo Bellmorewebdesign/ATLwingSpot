@@ -80,3 +80,17 @@
   font-size: var(--step--1);
   margin-top: 0.2rem;
 }
+
+/* a shop that is temporarily closed (tempClosed in data/locations.js) */
+.loc__closed {
+  display: inline-block;
+  margin-top: 0.45rem;
+  padding: 0.28em 0.7em;
+  border-radius: var(--r-pill);
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
