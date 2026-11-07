@@ -13,12 +13,12 @@ export function LocationCard({ loc }) {
         <address className="loc__addr">
           {loc.street}, {loc.city}, {loc.state} {loc.zip}
         </address>
+        {loc.hours && <p className="loc__hours">{loc.hours}</p>}
         {phone && (
           <a className="loc__phone" href={`tel:${String(loc.phone).replace(/\D/g, '')}`}>
             {phone}
           </a>
         )}
-        {loc.hours && <p className="loc__hours">{loc.hours}</p>}
         {loc.since && <span className="loc__since">{loc.since}</span>}
       </div>
       <div className="loc__acts">
