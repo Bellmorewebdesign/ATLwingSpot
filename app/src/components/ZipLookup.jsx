@@ -105,7 +105,9 @@ export const ZipLookup = forwardRef(function ZipLookup(
                       <li className="zipl__shop" key={s.id}>
                         <div className="zipl__info">
                           <h3 className="zipl__name">{s.name}</h3>
+                          {s.tempClosed && <p className="zipl__closed">Temporarily closed</p>}
                           <p className="zipl__addr">{s.street}, {s.city}, {s.state} {s.zip}</p>
+                          {s.hours && <p className="zipl__addr">{s.hours}</p>}
                           {phone && (
                             <a className="zipl__phone" href={`tel:${String(s.phone).replace(/\D/g, '')}`}>
                               {phone}
@@ -113,14 +115,16 @@ export const ZipLookup = forwardRef(function ZipLookup(
                           )}
                         </div>
                         <div className="zipl__acts">
-                          <a
-                            className="btn btn-orange btn-sm"
-                            href={ORDER_URL}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {ORDER_LABEL}
-                          </a>
+                          {!s.tempClosed && (
+                            <a
+                              className="btn btn-orange btn-sm"
+                              href={ORDER_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {ORDER_LABEL}
+                            </a>
+                          )}
                           <a
                             className="zipl__dir"
                             href={mapsUrl(s)}

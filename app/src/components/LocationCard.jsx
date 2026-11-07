@@ -10,9 +10,11 @@ export function LocationCard({ loc }) {
     <li className="loc">
       <div className="loc__main">
         <h3 className="dsp loc__name">{loc.name}</h3>
+        {loc.tempClosed && <span className="loc__closed">Temporarily closed</span>}
         <address className="loc__addr">
           {loc.street}, {loc.city}, {loc.state} {loc.zip}
         </address>
+        {loc.hours && <p className="loc__hours">{loc.hours}</p>}
         {phone && (
           <a className="loc__phone" href={`tel:${String(loc.phone).replace(/\D/g, '')}`}>
             {phone}
@@ -21,9 +23,11 @@ export function LocationCard({ loc }) {
         {loc.since && <span className="loc__since">{loc.since}</span>}
       </div>
       <div className="loc__acts">
-        <a className="btn btn-orange btn-sm" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
-          {ORDER_LABEL}
-        </a>
+        {!loc.tempClosed && (
+          <a className="btn btn-orange btn-sm" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+            {ORDER_LABEL}
+          </a>
+        )}
         <a className="loc__dir" href={mapsUrl(loc)} target="_blank" rel="noopener noreferrer">
           Directions <ArrowUpRight size={13} />
         </a>

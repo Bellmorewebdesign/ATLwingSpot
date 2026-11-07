@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { LOCATIONS } from '../data/locations'
+import { LOCATIONS, STATE_GROUPS } from '../data/locations'
 import { Reveal } from './Reveal'
 import { ZipLookup } from './ZipLookup'
 import { ArrowRight } from './Icons'
@@ -7,10 +7,11 @@ import './LocationsBand.css'
 
 // Split-screen: statement on the left, a real scannable list on the right.
 export function LocationsBand() {
-  const regions = [...new Set(LOCATIONS.map((l) => l.region))].map((r) => ({
-    region: r,
-    states: [...new Set(LOCATIONS.filter((l) => l.region === r).map((l) => l.state))].join(', '),
-  }))
+  // "New York, New Jersey and California", built from whatever states have shops
+  const names = STATE_GROUPS.map((s) => s.label)
+  const stateList = names.length > 1
+    ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+    : names[0]
 
   return (
     <section className="lband ch-paper" id="locations">
@@ -20,7 +21,7 @@ export function LocationsBand() {
           <Reveal className="lband__zip" delay={60}><ZipLookup heading="Closest shop to you" /></Reveal>
           <Reveal delay={90}>
             <p className="lband__sub">
-              {LOCATIONS.length} shops open across New York, New Jersey and California. Pick one and
+              {LOCATIONS.length} shops open across {stateList}. Pick one and
               we&rsquo;ll start frying.
             </p>
             <Link to="/locations" className="btn btn-ink lband__cta">All locations <ArrowRight /></Link>
@@ -29,11 +30,11 @@ export function LocationsBand() {
 
         <Reveal className="lband__right" delay={60}>
           <ul className="lband__list">
-            {regions.map((c) => (
-              <li key={c.region}>
+            {STATE_GROUPS.map((s) => (
+              <li key={s.id}>
                 <Link to="/locations" className="lband__row">
-                  <span className="lband__region">{c.region}</span>
-                  <span className="lband__meta">{c.states}</span>
+                  <span className="lband__region">{s.label}</span>
+                  <span className="lband__meta">{s.shops.length} {s.shops.length === 1 ? 'shop' : 'shops'}</span>
                   <ArrowRight />
                 </Link>
               </li>

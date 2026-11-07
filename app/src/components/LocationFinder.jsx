@@ -1,15 +1,14 @@
 import { useId, useMemo, useRef, useState } from 'react'
-import { LOCATIONS, findByZip, approxMiles } from '../data/locations'
+import { LOCATIONS, STATE_GROUPS, stateName, findByZip, approxMiles } from '../data/locations'
 import { ORDER_URL } from '../data/site'
 import { LocationCard } from './LocationCard'
 import { Search, Close, MapPin, ArrowUpRight } from './Icons'
 import './LocationFinder.css'
 
-// Regions are derived from the data so adding a store needs no code change.
-function buildRegions() {
-  return [{ id: 'all', label: 'All shops' },
-    ...[...new Set(LOCATIONS.map((l) => l.region))].map((label) => ({ id: label, label }))]
-}
+// One category per state that has a shop, in the order data/locations.js sets.
+// A shop in a new state shows up once that state is in STATES there.
+const REGIONS = [{ id: 'all', label: 'All shops' },
+  ...STATE_GROUPS.map((s) => ({ id: s.id, label: s.label }))]
 
 // A whole ZIP, or ZIP+4 ("11710-1234"), goes to the nearest-shop lookup.
 const ZIP = /^(\d{5})(?:-?\d{4})?$/
@@ -24,10 +23,11 @@ const ZIP = /^(\d{5})(?:-?\d{4})?$/
  * field reads what it is given:
  *
  *   a five-digit ZIP  -> the closest shops to it, nearest first (findByZip)
- *   any other text    -> shops whose name, town, street or region match
+ *   any other text    -> shops whose name, town, street, state or area
+ *                        ("Long Island", "Queens") match
  *   a partial ZIP     -> nothing filtered yet, and a nudge to finish it
  *
- * A search always looks across every shop, and picking a region clears the
+ * A search always looks across every shop, and picking a state clears the
  * search, the same way the menu page's search and categories work. So the two
  * can never narrow each other down to nothing.
  */
@@ -36,7 +36,7 @@ export function LocationFinder() {
   const inputRef = useRef(null)
   const [q, setQ] = useState('')
   const [region, setRegion] = useState('all')
-  const regions = useMemo(buildRegions, [])
+  const regions = REGIONS
 
   const term = q.trim()
   const searching = term.length > 0
@@ -50,13 +50,13 @@ export function LocationFinder() {
     return {
       kind: 'text',
       shops: LOCATIONS.filter((l) =>
-        [l.name, l.city, l.state, l.zip, l.street, l.region].join(' ').toLowerCase().includes(t)
+        [l.name, l.city, l.state, stateName(l.state), l.zip, l.street, l.area].join(' ').toLowerCase().includes(t)
       ),
     }
   }, [term])
 
   const results = !search || search.kind === 'partial'
-    ? LOCATIONS.filter((l) => region === 'all' || l.region === region)
+    ? LOCATIONS.filter((l) => region === 'all' || l.state === region)
     : search.shops
 
   const onType = (e) => {
@@ -75,7 +75,7 @@ export function LocationFinder() {
   const plural = (n) => `${n} ${n === 1 ? 'shop' : 'shops'}`
   let summary
   if (!search || search.kind === 'partial') {
-    summary = <>{plural(results.length)}{region !== 'all' && <> in {region}</>}</>
+    summary = <>{plural(results.length)}{region !== 'all' && <> in {stateName(region)}</>}</>
   } else if (search.kind === 'text') {
     summary = `${plural(results.length)} matching “${term}”`
   } else if (search.status === 'exact') {
