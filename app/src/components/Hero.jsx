@@ -31,8 +31,8 @@ export function Hero() {
           <a className="btn btn-orange btn-lg hero__order" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
             {ORDER_LABEL} <ArrowRight />
           </a>
-          <Link className="btn btn-line hero__find" to="/locations">Find a location</Link>
-          <Link className="tlink hero__menu" to="/menu">See the menu <ArrowRight /></Link>
+          <Link className="btn btn-line hero__find" to="/locations/">Find a location</Link>
+          <Link className="tlink hero__menu" to="/menu/">See the menu <ArrowRight /></Link>
         </div>
       </div>
     </section>

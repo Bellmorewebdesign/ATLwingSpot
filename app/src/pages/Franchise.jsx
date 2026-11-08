@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
+import { PAGES } from '../data/routes'
 import { TURNSTILE_SITE_KEY } from '../data/site'
 import { Reveal } from '../components/Reveal'
 import { InquiryForm } from '../components/InquiryForm'
@@ -256,10 +257,7 @@ const FIELDS = [
 export default function Franchise() {
   return (
     <div className="page fr">
-      <Seo
-        title="Franchise"
-        description="Open an ATL Wing Spot. Halal wings out of a compact kitchen with a digital-first customer base, proven on Long Island since 2023."
-      />
+      <Seo page={PAGES.franchise} />
 
       <header className="fr__mast ch-dark">
         <HeroMedia />

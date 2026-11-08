@@ -87,7 +87,7 @@ export function CraveTrack() {
               <h3 className="dsp crave__name">{p.name.split('\n').map((l, i) => <span key={i}>{l}</span>)}</h3>
               <p className="crave__line">{p.line}</p>
               <div className="crave__links">
-                <Link className="btn btn-ink btn-sm" to={`/menu?cat=${p.cat}`}>See it</Link>
+                <Link className="btn btn-ink btn-sm" to={`/menu/?cat=${p.cat}`}>See it</Link>
                 <a className="btn btn-line btn-sm" href={ORDER_URL} target="_blank" rel="noopener noreferrer">{ORDER_LABEL}</a>
               </div>
             </div>

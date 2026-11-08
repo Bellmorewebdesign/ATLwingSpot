@@ -33,7 +33,7 @@ export function SpreadBand() {
           <h2 className="dsp dsp-md spread__title">
             Wings. Tenders.<br />Waffles. <span className="t-orange">Shakes.</span>
           </h2>
-          <Link to="/menu" className="btn btn-ink spread__cta">See the menu <ArrowRight /></Link>
+          <Link to="/menu/" className="btn btn-ink spread__cta">See the menu <ArrowRight /></Link>
         </Reveal>
 
         <Reveal className="spread__shot" delay={80}>

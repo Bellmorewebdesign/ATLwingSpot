@@ -18,34 +18,40 @@
 
     <!-- ATL's own "atl" lozenge on a cyan tile inside the orange keyline from
          their basket stamp. Built by app/scripts/make-favicon.py straight from
-         assets/brand/atl-wing-spot-logo.png. Paths are relative so they resolve
-         under the GitHub Pages project subpath. -->
-    <link rel="icon" type="image/png" sizes="32x32" href="./assets/brand/atl-favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="./assets/brand/atl-favicon.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="./assets/brand/atl-apple-touch-icon.png" />
+         assets/brand/atl-wing-spot-logo.png. Paths are root-relative ("/assets/...")
+         so they resolve from nested pages like /menu/ too. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/atl-favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/brand/atl-favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/brand/atl-apple-touch-icon.png" />
 
-    <title>ATL Wing Spot | Stay Saucy. Fresh, Never Frozen. 100% Halal.</title>
-    <meta name="description" content="Fresh, never frozen wings in 25+ flavors at ATL Wing Spot. 100% Halal. Voted Best Wings on Long Island. Pickup and delivery across NY, NJ, PA, TX and CA. Order now." />
-
+    <!-- The title, description, canonical and og/twitter title, description
+         and url below are the home page's. The build rewrites them for every
+         page from app/src/data/routes.js (scripts/prerender-pages.mjs), so
+         each page's own HTML carries its own before any JavaScript runs. -->
+    <title>Page not found | ATL Wing Spot</title>
+    <meta name="description" content="That page doesn’t exist. Head back to the wings." />
+    <meta name="robots" content="noindex" />
     <meta property="og:type" content="restaurant" />
-    <meta property="og:title" content="ATL Wing Spot | Stay Saucy." />
-    <meta property="og:description" content="Fresh, never frozen wings in 25+ flavors. 100% Halal. Voted Best Wings on Long Island. Order pickup or delivery." />
-    <meta property="og:image" content="./assets/food/hero-wings.jpg" />
+    <meta property="og:title" content="Page not found | ATL Wing Spot" />
+    <meta property="og:description" content="That page doesn’t exist. Head back to the wings." />
+    <meta property="og:image" content="https://atlwingspot.com/assets/food/hero-wings.jpg" />
     <meta property="og:site_name" content="ATL Wing Spot" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ATL Wing Spot | Stay Saucy." />
-    <meta name="twitter:description" content="Fresh, never frozen wings in 25+ flavors. 100% Halal. Voted Best Wings on Long Island." />
-    <meta name="twitter:image" content="./assets/food/hero-wings.jpg" />
+    <meta name="twitter:title" content="Page not found | ATL Wing Spot" />
+    <meta name="twitter:description" content="That page doesn’t exist. Head back to the wings." />
+    <meta name="twitter:image" content="https://atlwingspot.com/assets/food/hero-wings.jpg" />
 
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "Restaurant",
         "name": "ATL Wing Spot",
+        "url": "https://atlwingspot.com/",
+        "logo": "https://atlwingspot.com/assets/brand/atl-wing-spot-logo.png",
         "servesCuisine": ["Wings", "American", "Halal"],
-        "image": "./assets/food/hero-wings.jpg",
-        "hasMenu": "./#/menu",
+        "image": "https://atlwingspot.com/assets/food/hero-wings.jpg",
+        "hasMenu": "https://atlwingspot.com/menu/",
         "acceptsReservations": false,
         "sameAs": [
           "https://www.instagram.com/atlwingspot/",
@@ -57,8 +63,8 @@
         }
       }
     </script>
-    <script type="module" crossorigin src="./static/index-D3x-ryV7.js"></script>
-    <link rel="stylesheet" crossorigin href="./static/index-Ccx4WBae.css">
+    <script type="module" crossorigin src="/static/index-SkxnZ9FC.js"></script>
+    <link rel="stylesheet" crossorigin href="/static/index-6_ouR-os.css">
   </head>
   <body>
     <div id="root"></div>

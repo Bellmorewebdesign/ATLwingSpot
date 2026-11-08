@@ -1,11 +1,11 @@
 /**
- * An in-page jump that survives HashRouter.
+ * An in-page jump to a section, focusing the field it is really about.
  *
- * A plain <a href="#request"> cannot work here. The router keeps the route in
- * the hash, so the browser would overwrite "#/catering" with "#request" and the
- * app would try to render a route called "request" instead of scrolling. A
- * button says what this really is — a scroll, not a navigation — and nothing
- * touches the URL.
+ * This was written when the site used "#/" URLs, where a plain
+ * <a href="#request"> would have replaced the route. Routes are real paths now,
+ * so ordinary anchors work too; this stays a button because it does more than
+ * an anchor can (it moves focus and keeps the field clear of the keyboard), and
+ * a scroll that touches nothing in the URL is what it really is.
  *
  * focusRef moves the caret to the field the jump is really about, which is both
  * the accessible thing to do on an in-page jump and the reason someone pressed

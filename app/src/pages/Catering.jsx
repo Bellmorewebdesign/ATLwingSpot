@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { CATERING_PACKAGES } from '../data/catering'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
+import { PAGES } from '../data/routes'
 import { Reveal } from '../components/Reveal'
 import { ArrowRight } from '../components/Icons'
 import './Catering.css'
@@ -11,10 +12,7 @@ const GROUPS = ['Wings', 'Boneless', 'Tenders', 'Starter', 'Side']
 export default function Catering() {
   return (
     <div className="page cat">
-      <Seo
-        title="Catering"
-        description="ATL Wing Spot catering. Trays of wings, tenders, mozzarella sticks and waffle fries for game day, the office or a party. Tell us the headcount."
-      />
+      <Seo page={PAGES.catering} />
 
       {/* Orange takeover masthead with the food at full scale */}
       <header className="cat__mast ch-orange">
@@ -34,7 +32,7 @@ export default function Catering() {
             Fifty wings or five hundred, plus trays of tenders, mozzarella sticks and waffle fries.
             Give us the headcount and which sauces, and your local shop takes it from there.
           </p>
-          <Link className="btn btn-ink btn-lg cat__cta" to="/catering/book">
+          <Link className="btn btn-ink btn-lg cat__cta" to="/catering/book/">
             Set up catering <ArrowRight />
           </Link>
         </div>
@@ -89,7 +87,7 @@ export default function Catering() {
               to your event and give them a call.
             </p>
           </div>
-          <Link className="btn btn-orange btn-lg cat__order-cta" to="/catering/book">
+          <Link className="btn btn-orange btn-lg cat__order-cta" to="/catering/book/">
             Set up catering <ArrowRight />
           </Link>
         </div>

@@ -7,6 +7,7 @@ import { StickyMobileBar } from './components/StickyMobileBar'
 import { Seo } from './components/Seo'
 import { ORDER_URL, ORDER_LABEL } from './data/site'
 import { ArrowRight } from './components/Icons'
+import { PAGES } from './data/routes'
 
 import Home from './pages/Home'
 import Menu from './pages/Menu'
@@ -21,7 +22,7 @@ import Contact from './pages/Contact'
 function NotFound() {
   return (
     <div className="page nf">
-      <Seo title="Not found" description="That page doesn’t exist. Head back to the wings." />
+      <Seo title="Page not found" description="That page doesn’t exist. Head back to the wings." />
       <div className="wrap-tight">
         <p className="kicker nf__kick">404</p>
         <h1 className="dsp dsp-md nf__t">Nothing<br />here.</h1>
@@ -29,7 +30,7 @@ function NotFound() {
           That link is broken. The wings are fine.
         </p>
         <div className="nf__actions">
-          <Link to="/" className="btn btn-ink btn-lg">Back home</Link>
+          <Link to={PAGES.home.path} className="btn btn-ink btn-lg">Back home</Link>
           <a className="btn btn-orange btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
             {ORDER_LABEL} <ArrowRight />
           </a>
@@ -55,15 +56,15 @@ export default function App() {
       <Header />
       <main id="main" tabIndex={-1} key={pathname}>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/menu" element={<Menu />} />
-          <Route path="/flavors" element={<Flavors />} />
-          <Route path="/locations" element={<Locations />} />
-          <Route path="/catering" element={<Catering />} />
-          <Route path="/catering/book" element={<BookCatering />} />
-          <Route path="/story" element={<Story />} />
-          <Route path="/franchise" element={<Franchise />} />
-          <Route path="/contact" element={<Contact />} />
+          <Route path={PAGES.home.path} element={<Home />} />
+          <Route path={PAGES.menu.path} element={<Menu />} />
+          <Route path={PAGES.flavors.path} element={<Flavors />} />
+          <Route path={PAGES.locations.path} element={<Locations />} />
+          <Route path={PAGES.catering.path} element={<Catering />} />
+          <Route path={PAGES.bookCatering.path} element={<BookCatering />} />
+          <Route path={PAGES.story.path} element={<Story />} />
+          <Route path={PAGES.franchise.path} element={<Franchise />} />
+          <Route path={PAGES.contact.path} element={<Contact />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

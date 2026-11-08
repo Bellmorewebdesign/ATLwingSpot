@@ -83,7 +83,7 @@ export const ZipLookup = forwardRef(function ZipLookup(
             {result.status === 'none' && (
               <p className="zipl__msg">
                 We do not know that ZIP.{' '}
-                <Link className="tlink" to="/locations">See every location</Link>
+                <Link className="tlink" to="/locations/">See every location</Link>
               </p>
             )}
             {(result.status === 'exact' || result.status === 'near' || result.status === 'far') && (
@@ -140,7 +140,7 @@ export const ZipLookup = forwardRef(function ZipLookup(
                 </ul>
                 {result.status === 'far' && (
                   <p className="zipl__msg zipl__more">
-                    <Link className="tlink" to="/locations">See every location</Link>
+                    <Link className="tlink" to="/locations/">See every location</Link>
                   </p>
                 )}
               </>

@@ -41,8 +41,8 @@ export function Footer() {
             <a className="foot__link" href={SOCIAL.tiktok} target="_blank" rel="noopener noreferrer">
               <TikTok size={16} /> TikTok
             </a>
-            <Link className="foot__link" to="/locations">All locations</Link>
-            <Link className="foot__link" to="/contact">Contact</Link>
+            <Link className="foot__link" to="/locations/">All locations</Link>
+            <Link className="foot__link" to="/contact/">Contact</Link>
           </div>
 
           <p className="dsp foot__mark">Stay<br /><span className="t-orange">Saucy.</span></p>

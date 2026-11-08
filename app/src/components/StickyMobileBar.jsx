@@ -7,7 +7,7 @@ import './StickyMobileBar.css'
 export function StickyMobileBar() {
   return (
     <div className="mbar" role="navigation" aria-label="Quick actions">
-      <Link to="/locations" className="mbar__b mbar__b--ghost">
+      <Link to="/locations/" className="mbar__b mbar__b--ghost">
         <MapPin size={17} /> Locations
       </Link>
       <a

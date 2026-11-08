@@ -33,8 +33,8 @@ export function GroupBand() {
             every basket gets tossed in the sauce you picked.
           </p>
           <div className="gband__acts">
-            <Link className="btn btn-ink" to="/menu">See the menu <ArrowRight /></Link>
-            <Link className="tlink" to="/flavors">Pick a flavor <ArrowRight /></Link>
+            <Link className="btn btn-ink" to="/menu/">See the menu <ArrowRight /></Link>
+            <Link className="tlink" to="/flavors/">Pick a flavor <ArrowRight /></Link>
           </div>
         </Reveal>
       </div>

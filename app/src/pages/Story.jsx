@@ -3,6 +3,7 @@ import { STORY_CHAPTERS, PROOF } from '../data/story'
 import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
+import { PAGES } from '../data/routes'
 import { Reveal } from '../components/Reveal'
 import { ArrowRight } from '../components/Icons'
 import './Story.css'
@@ -10,10 +11,7 @@ import './Story.css'
 export default function Story() {
   return (
     <div className="page story-p">
-      <Seo
-        title="Our Story"
-        description="ATL Wing Spot opened in May 2023 in a shop of about 800 square feet. A month later a TikTok crossed a million views. Here is what happened next."
-      />
+      <Seo page={PAGES.story} />
 
       {/* Dark, centred opening */}
       <header className="story-p__mast ch-dark">
@@ -71,7 +69,7 @@ export default function Story() {
             <a className="btn btn-orange btn-lg" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
               {ORDER_LABEL} <ArrowRight />
             </a>
-            <Link className="btn btn-line btn-lg" to="/locations">Find a shop</Link>
+            <Link className="btn btn-line btn-lg" to="/locations/">Find a shop</Link>
           </div>
         </div>
       </section>

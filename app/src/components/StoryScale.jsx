@@ -32,7 +32,7 @@ export function StoryScale() {
         </ol>
 
         <Reveal className="story__out">
-          <Link to="/story" className="tlink t-cyan">Read the whole story <ArrowRight /></Link>
+          <Link to="/about-us/" className="tlink t-cyan">Read the whole story <ArrowRight /></Link>
         </Reveal>
       </div>
     </section>

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { SOCIAL, BRAND } from '../data/site'
 import { LOCATIONS } from '../data/locations'
 import { Seo } from '../components/Seo'
+import { PAGES } from '../data/routes'
 import { InquiryForm } from '../components/InquiryForm'
 import { Instagram, TikTok, ArrowUpRight } from '../components/Icons'
 import './Contact.css'
@@ -25,10 +26,7 @@ const FIELDS = [
 export default function Contact() {
   return (
     <div className="page contact ch-cream">
-      <Seo
-        title="Contact"
-        description="Get in touch with ATL Wing Spot about an order, catering, franchising or one of our shops."
-      />
+      <Seo page={PAGES.contact} />
 
       <div className="wrap contact__grid">
         <div className="contact__side">
@@ -47,7 +45,7 @@ export default function Contact() {
           </div>
           <p className="contact__handle">{BRAND.handle}</p>
           <p className="contact__alt">
-            Looking for a shop? <Link to="/locations" className="tlink">All locations</Link>
+            Looking for a shop? <Link to="/locations/" className="tlink">All locations</Link>
           </p>
         </div>
 
