@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#22c1da" />
+
+    <!-- The design is light-only. Without this, a phone in dark mode can repaint
+         the page itself (Chrome's "darken websites", Samsung Internet, in-app
+         browsers): the cream turns brown, the menu icon goes black on dark and
+         brand colours shift. "only light" is the standard way to opt out.
+         tokens.css says the same thing in CSS. -->
+    <meta name="color-scheme" content="only light" />
+    <!-- Every phone number on the site is already a tap-to-call link. This stops
+         iOS Safari turning other digit runs (ZIPs, prices, years) into blue
+         links of its own. -->
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- ATL's own "atl" lozenge on a cyan tile inside the orange keyline from
+         their basket stamp. Built by app/scripts/make-favicon.py straight from
+         assets/brand/atl-wing-spot-logo.png. Paths are root-relative ("/assets/...")
+         so they resolve from nested pages like /menu/ too. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/atl-favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/assets/brand/atl-favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/brand/atl-apple-touch-icon.png" />
+
+    <!-- The title, description, canonical and og/twitter title, description
+         and url below are the home page's. The build rewrites them for every
+         page from app/src/data/routes.js (scripts/prerender-pages.mjs), so
+         each page's own HTML carries its own before any JavaScript runs. -->
+    <title>Menu | ATL Wing Spot</title>
+    <meta name="description" content="The full ATL Wing Spot menu: bone-in wings, boneless, saucy tenders, chicken n' waffles, quesadillas, loaded fries, shakes and more." />
+    <link rel="canonical" href="https://atlwingspot.com/menu/" />
+    <meta property="og:type" content="restaurant" />
+    <meta property="og:url" content="https://atlwingspot.com/menu/" />
+    <meta property="og:title" content="Menu | ATL Wing Spot" />
+    <meta property="og:description" content="The full ATL Wing Spot menu: bone-in wings, boneless, saucy tenders, chicken n' waffles, quesadillas, loaded fries, shakes and more." />
+    <meta property="og:image" content="https://atlwingspot.com/assets/food/hero-wings.jpg" />
+    <meta property="og:site_name" content="ATL Wing Spot" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Menu | ATL Wing Spot" />
+    <meta name="twitter:description" content="The full ATL Wing Spot menu: bone-in wings, boneless, saucy tenders, chicken n' waffles, quesadillas, loaded fries, shakes and more." />
+    <meta name="twitter:image" content="https://atlwingspot.com/assets/food/hero-wings.jpg" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Restaurant",
+        "name": "ATL Wing Spot",
+        "url": "https://atlwingspot.com/",
+        "logo": "https://atlwingspot.com/assets/brand/atl-wing-spot-logo.png",
+        "servesCuisine": ["Wings", "American", "Halal"],
+        "image": "https://atlwingspot.com/assets/food/hero-wings.jpg",
+        "hasMenu": "https://atlwingspot.com/menu/",
+        "acceptsReservations": false,
+        "sameAs": [
+          "https://www.instagram.com/atlwingspot/",
+          "https://www.tiktok.com/@atlwingspot"
+        ],
+        "potentialAction": {
+          "@type": "OrderAction",
+          "target": "https://order.snackpass.co/atlwingspot"
+        }
+      }
+    </script>
+    <script type="module" crossorigin src="/static/index-SkxnZ9FC.js"></script>
+    <link rel="stylesheet" crossorigin href="/static/index-6_ouR-os.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

@@ -4,6 +4,7 @@ import { MENU_CATEGORIES, MENU_ITEMS } from '../data/menu'
 import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
+import { PAGES } from '../data/routes'
 import { ArrowRight, Search } from '../components/Icons'
 import './Menu.css'
 
@@ -117,10 +118,7 @@ export default function Menu() {
 
   return (
     <div className="page menu ch-cream">
-      <Seo
-        title="Menu"
-        description="The full ATL Wing Spot menu: bone-in wings, boneless, saucy tenders, chicken n' waffles, quesadillas, loaded fries, shakes and more."
-      />
+      <Seo page={PAGES.menu} />
 
       <header className="mast wrap menu__mast">
         <h1 className="dsp dsp-lg">Menu</h1>

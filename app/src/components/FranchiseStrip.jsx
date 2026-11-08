@@ -19,7 +19,7 @@ export function FranchiseStrip() {
         aria-hidden="true"
       />
         <p className="dsp fstrip__txt">Want to open an ATL?</p>
-        <Link className="btn btn-ink" to="/franchise">Franchising <ArrowRight /></Link>
+        <Link className="btn btn-ink" to="/franchise/">Franchising <ArrowRight /></Link>
       </div>
     </section>
   )

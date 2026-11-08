@@ -1,4 +1,5 @@
 import { Seo } from '../components/Seo'
+import { PAGES } from '../data/routes'
 import { Hero } from '../components/Hero'
 import { GroupBand } from '../components/GroupBand'
 import { WordStripe } from '../components/WordStripe'
@@ -18,9 +19,7 @@ import { BOX_WORDS, BOX_STRIPE_TONE, TICKER } from '../data/site'
 export default function Home() {
   return (
     <>
-      <Seo
-        description="Fresh, never frozen wings fried to order in 25+ sauces. 100% halal. Voted best wings on Long Island. Order pickup or delivery across NY, NJ, PA, TX and CA."
-      />
+      <Seo page={PAGES.home} />
 
       {/* cream */}
       <Hero />

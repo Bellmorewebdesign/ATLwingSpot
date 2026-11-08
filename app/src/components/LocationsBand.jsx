@@ -24,7 +24,7 @@ export function LocationsBand() {
               {LOCATIONS.length} shops open across {stateList}. Pick one and
               we&rsquo;ll start frying.
             </p>
-            <Link to="/locations" className="btn btn-ink lband__cta">All locations <ArrowRight /></Link>
+            <Link to="/locations/" className="btn btn-ink lband__cta">All locations <ArrowRight /></Link>
           </Reveal>
         </div>
 
@@ -32,7 +32,7 @@ export function LocationsBand() {
           <ul className="lband__list">
             {STATE_GROUPS.map((s) => (
               <li key={s.id}>
-                <Link to="/locations" className="lband__row">
+                <Link to="/locations/" className="lband__row">
                   <span className="lband__region">{s.label}</span>
                   <span className="lband__meta">{s.shops.length} {s.shops.length === 1 ? 'shop' : 'shops'}</span>
                   <ArrowRight />

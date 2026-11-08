@@ -1,4 +1,5 @@
 import { Seo } from '../components/Seo'
+import { PAGES } from '../data/routes'
 import { LocationFinder } from '../components/LocationFinder'
 import { LOCATIONS } from '../data/locations'
 import './Locations.css'
@@ -6,10 +7,7 @@ import './Locations.css'
 export default function Locations() {
   return (
     <div className="page locs ch-cream">
-      <Seo
-        title="Locations"
-        description="Find your ATL Wing Spot. Shops across New York, New Jersey, Pennsylvania, Texas and California. Order pickup or delivery."
-      />
+      <Seo page={PAGES.locations} />
 
       <header className="mast wrap">
         <h1 className="dsp dsp-lg">Find your<br /><span className="t-cyan">ATL.</span></h1>

@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Seo } from '../components/Seo'
+import { PAGES } from '../data/routes'
 import { ZipLookup } from '../components/ZipLookup'
 import { ArrowRight, ArrowLeft } from '../components/Icons'
 import './BookCatering.css'
@@ -27,10 +28,7 @@ export default function BookCatering() {
 
   return (
     <div className="page book">
-      <Seo
-        title="Book catering"
-        description="Find the ATL Wing Spot nearest your event and call them to book catering. Enter a ZIP code for the closest shops and their phone numbers."
-      />
+      <Seo page={PAGES.bookCatering} />
 
       {/* Heading and lookup are one block on purpose. Split across two
           sections the masthead ate the whole first screen and pushed the field,
@@ -38,7 +36,7 @@ export default function BookCatering() {
       <header className="book__mast ch-cream">
         <div className="wrap book__mast-in">
           <div className="book__intro">
-            <Link className="tlink book__back" to="/catering">
+            <Link className="tlink book__back" to="/catering/">
               <ArrowLeft size={14} /> Catering trays
             </Link>
             <h1 className="dsp dsp-md book__h1">Book<br />catering.</h1>
@@ -76,7 +74,7 @@ export default function BookCatering() {
             The tray list is on the catering page, grouped by wings, boneless, tenders,
             starters and sides.
           </p>
-          <Link className="btn btn-ink btn-lg" to="/catering">See the trays <ArrowRight /></Link>
+          <Link className="btn btn-ink btn-lg" to="/catering/">See the trays <ArrowRight /></Link>
         </div>
       </section>
     </div>

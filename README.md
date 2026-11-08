@@ -21,8 +21,12 @@ Instagram. Nothing on the site claims a message was delivered.
 
 ```
 /                     ← what GitHub Pages serves (compiled, committed)
-  index.html          ← built entry
-  404.html            ← SPA fallback (copy of index.html)
+  index.html          ← built entry (the home page)
+  menu/ flavors/ …    ← one folder per page, each with its own index.html (built)
+  404.html            ← the app's not-found page, served with status 404 (built)
+  sitemap.xml         ← every page's canonical URL (built)
+  robots.txt          ← points crawlers at the sitemap (built)
+  CNAME               ← custom domain: atlwingspot.com
   .nojekyll           ← disables Jekyll on Pages
   assets/             ← brand + food images (passthrough)
   static/             ← hashed JS / CSS / fonts
@@ -50,9 +54,18 @@ npm run dev      # local dev server (http://localhost:5173)
 npm run build    # compiles app/dist, then publishes the site to the repo root
 ```
 
-`npm run build` runs `vite build` and then `scripts/publish-to-root.mjs`, which copies the
-compiled output to the repository root (replacing only `index.html`, `404.html`,
-`.nojekyll`, `/assets`, `/static`). Commit the updated root files to deploy.
+`npm run build` runs three steps:
+
+1. `vite build` compiles the app to `app/dist`.
+2. `scripts/prerender-pages.mjs` writes a real `index.html` for every page in
+   `app/src/data/routes.js` (`menu/index.html`, `about-us/index.html`, …), each with that
+   page's own title, description and canonical URL, plus `404.html`, `sitemap.xml` and
+   `robots.txt`.
+3. `scripts/publish-to-root.mjs` copies the result to the repository root, replacing only
+   what the build owns: `index.html`, `404.html`, `.nojekyll`, `sitemap.xml`, `robots.txt`,
+   `/assets`, `/static` and the page folders.
+
+Commit the updated root files to deploy.
 
 ## The franchising form
 
@@ -97,9 +110,39 @@ finishes, which is worth reading rather than skipping.
    - **Folder:** `/ (root)`
 3. That's it, no Actions workflow needed.
 
-Routing uses **HashRouter** (`/#/menu`, `/#/flavors`, …) and asset paths are relative, so
-refreshes never 404 and everything works under the project subpath (`/<repo>/`) or a
-custom domain root.
+### URLs
+
+Pages live at clean paths that match the old WordPress site wherever that page still
+exists, so search results, map listings and old shared links keep working:
+
+| Page | URL |
+| --- | --- |
+| Home | `/` |
+| Menu | `/menu/` |
+| Flavors | `/flavors/` |
+| Locations | `/locations/` |
+| Catering | `/catering/` |
+| Book catering (new) | `/catering/book/` |
+| Our Story (old "About Us") | `/about-us/` |
+| Franchise | `/franchise/` |
+| Contact (new) | `/contact/` |
+
+All of them are defined once, in `app/src/data/routes.js`. The router, navigation, page
+titles and canonicals, the per-page HTML files, `sitemap.xml` and the publish step read
+from it, so **to add or rename a page, change it there**.
+
+GitHub Pages is a plain file server, so each path needs its own file to answer with HTTP
+200 on a direct visit or refresh. That is what the per-page `index.html` files are for.
+A path without its trailing slash (`/menu`) is redirected to `/menu/` by GitHub Pages.
+Anything else gets `404.html` with a real 404 status.
+
+Links from when the site used `#/` URLs (`/#/menu`, `/#/story`) are moved to the clean
+path (`/menu/`, `/about-us/`) as the page loads, with the address bar updated. Ordinary
+in-page anchors (`/franchise/#fn-1`) are left alone.
+
+Asset paths are root-relative (`/static/…`, `/assets/…`, Vite `base: '/'`), which is what
+lets nested pages load them. The site therefore has to be served from the root of its
+domain, as it is on atlwingspot.com; it no longer works under a `/<repo>/` subpath.
 
 ---
 
