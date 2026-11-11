@@ -16,10 +16,30 @@ const { pathname, search, hash } = window.location
 const target = canonicalRedirect(pathname, search, hash)
 if (target) window.history.replaceState(null, '', target)
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+const app = (
   <React.StrictMode>
     <BrowserRouter>
       <App />
     </BrowserRouter>
   </React.StrictMode>
 )
+
+/*
+ * Every page file already contains that page's HTML (the build prerenders it,
+ * see scripts/prerender-pages.mjs), so normally React just attaches to what is
+ * there ("hydrate").
+ *
+ * Two cases where the HTML in the file is not the page being shown, and React
+ * renders from scratch instead:
+ *   - the URL was just moved (an old "#/menu" link landed on the home page's
+ *     file but should show the menu);
+ *   - the URL has a query (?cat=wings), which the prerendered file knows
+ *     nothing about.
+ * The same goes for a file with nothing in #root (the dev server).
+ */
+const root = document.getElementById('root')
+if (root.hasChildNodes() && !target && !window.location.search) {
+  ReactDOM.hydrateRoot(root, app)
+} else {
+  ReactDOM.createRoot(root).render(app)
+}

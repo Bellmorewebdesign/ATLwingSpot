@@ -12,6 +12,7 @@ import {
 } from '../lib/franchiseSubmit'
 import { JumpButton } from '../components/JumpButton'
 import { useReducedMotion } from '../hooks/useReducedMotion'
+import { useMediaQuery } from '../hooks/useMediaQuery'
 import { ArrowRight } from '../components/Icons'
 import './Franchise.css'
 
@@ -135,19 +136,6 @@ const HERO_VIDEO = FR('franchise-hero-vertical.mp4')
 const HERO_POSTER = FR('franchise-hero-poster.jpg')
 const WIDE = '(min-width: 961px)'
 
-function useMedia(query) {
-  const [hit, setHit] = useState(
-    () => typeof window !== 'undefined' && !!window.matchMedia?.(query).matches
-  )
-  useEffect(() => {
-    const mq = window.matchMedia(query)
-    const onChange = () => setHit(mq.matches)
-    mq.addEventListener?.('change', onChange)
-    return () => mq.removeEventListener?.('change', onChange)
-  }, [query])
-  return hit
-}
-
 /**
  * Hero media.
  *
@@ -163,9 +151,10 @@ function useMedia(query) {
  */
 function HeroMedia() {
   const reduced = useReducedMotion()
-  const wide = useMedia(WIDE)
-  const saveData =
-    typeof navigator !== 'undefined' && navigator.connection?.saveData === true
+  const wide = useMediaQuery(WIDE)
+  // Read after mount, not during render: the prerendered HTML cannot know it.
+  const [saveData, setSaveData] = useState(false)
+  useEffect(() => { setSaveData(navigator.connection?.saveData === true) }, [])
   const still = reduced || saveData
   const clip = useRef(null)
   const glow = useRef(null)

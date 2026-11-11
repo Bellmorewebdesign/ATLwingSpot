@@ -18,7 +18,7 @@ const TONE = {
   4: { fg: '#f6efe1', mute: 'rgba(246,239,225,0.94)', disc: 'rgba(0,0,0,0.14)' },
 }
 
-export function FlavorStage({ heading = 'Pick your flavor.' }) {
+export function FlavorStage({ heading = 'Pick your flavor.', as: Heading = 'h2' }) {
   const [heat, setHeat] = useState(1)
   const [style, setStyle] = useState('wet')
 
@@ -49,7 +49,7 @@ export function FlavorStage({ heading = 'Pick your flavor.' }) {
 
       <div className="stage__in wrap">
         <header className="stage__head">
-          <h2 className="dsp dsp-md stage__title">{heading}</h2>
+          <Heading className="dsp dsp-md stage__title">{heading}</Heading>
           <p className="stage__sub">{FLAVOR_COUNT} sauces and rubs. Good luck choosing one.</p>
         </header>
 

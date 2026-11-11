@@ -67,23 +67,48 @@ const CAT_BY_PACK = Object.fromEntries(CATEGORIES.map((c) => [c.from, c.id]))
  *             portion's title can head the whole family.
  *   desc    : the pack's wording, copy-edited. For a group it must say which
  *             portions are available, because the card no longer does.
- *   noPhoto : the pack maps this listing to a photograph of something else.
- *             The card renders an empty state instead. Showing a picture of a
- *             different dish is worse than showing none, and substituting a
- *             lookalike would be inventing product identity.
+ *   noPhoto : there is no correct photograph of this dish (the pack maps it
+ *             to a picture of something else, or it is a newer dish with no
+ *             shot yet). The card renders an empty state instead. Showing a
+ *             picture of a different dish is worse than showing none, and
+ *             substituting a lookalike would be inventing product identity.
  */
+/**
+ * November 2026 corrections from ATL (Wally, by email, 8 Nov 2026), checked
+ * against the menus on ATL's Snackpass ordering pages. The pack is a scrape of
+ * the old site from August 2026 and has drifted from what the shops sell.
+ *
+ * RETIRED: pack listings no longer shown. ATL listed both for removal; neither
+ * appears on the Snackpass menus. To bring one back, delete its line here and
+ * restore its card below.
+ *
+ * ADDED: dishes on Snackpass that the pack never had. They get an index above
+ * the pack's range so cards can refer to them like any other listing. There is
+ * no photograph of them in the repo yet, so their cards say so (noPhoto).
+ *
+ * Portion counts corrected on the cards themselves: Mozzarella Sticks are 5
+ * (the pack says 6) and Funnel Cake Fries are 15 (the pack says 12).
+ */
+const RETIRED = {
+  7: 'Loaded Chicken Quesadilla',
+  50: 'Nashville Hot Loaded Waffle Fries',
+}
+const ADDED = [
+  { index: 101, category: 'fries-n-munchies', title: 'Chipotle Loaded Waffle Fries' },
+  { index: 102, category: 'fries-n-munchies', title: 'Hot Honey Loaded Waffle Fries' },
+]
+
 const CARDS = [
   // ---- starters ----
   { from: [1], desc: 'Bite-sized golden treats with a crispy exterior and a creamy, cheesy mac and cheese center.' },
   { from: [2], name: 'Cajun Fried Corn',
     desc: 'Our fan-favorite Cajun fried corn. Juicy ears of corn on the cob fried till golden and tossed in our famous Cajun rub. Served with ranch.' },
   { from: [3], desc: 'Crispy coconut shrimp, served with Thai chili sauce.' },
-  { from: [4], desc: 'Six mozzarella sticks, served with marinara sauce.' },
+  { from: [4], name: 'Mozzarella Sticks (5)', desc: 'Five mozzarella sticks, served with marinara sauce.' },
 
   // ---- quesadillas ----
   { from: [5], desc: 'Crispy boneless chicken topped with our housemade chipotle sauce, cheddar cheese and ranch.' },
   { from: [6], desc: 'Melted cheddar cheese in a pressed tortilla. Served with sour cream.' },
-  { from: [7], desc: 'Grilled chicken, cheddar cheese, green peppers and onions. Served with sour cream.' },
   { from: [8], desc: 'Crispy buffalo chicken and cheddar cheese topped with ranch. Served with ranch on the side.' },
 
   // ---- wings: two cards, not eight ----
@@ -130,7 +155,8 @@ const CARDS = [
   { from: [47], desc: 'Golden fries topped with melted cheddar cheese.' },
   { from: [48], desc: 'Crispy, golden-battered onion rings, perfectly seasoned for a delightful crunch.' },
   { from: [49], desc: 'Waffle fries loaded up with crispy chicken, buffalo sauce and ranch.' },
-  { from: [50], desc: 'Waffle fries loaded up with crispy chicken, Nashville hot sauce and ranch.' },
+  { from: [101], noPhoto: true, desc: 'Waffle fries loaded up with crispy chicken, chipotle sauce and ranch.' },
+  { from: [102], noPhoto: true, desc: 'Waffle fries loaded up with crispy chicken, hot honey and ranch.' },
   { from: [51], desc: 'Sweet potato fries. Order a small or a large.' },
   { from: [52], desc: 'Waffle fries loaded up with crispy chicken, pineapple BBQ sauce and ranch.' },
 
@@ -138,7 +164,7 @@ const CARDS = [
   { from: [53],
     desc: 'Shake it up with one of our fan-favorite milkshakes. Choose from flavors like Reese’s, Fruity Pebbles, Oreo Blast and Cinnamon Toast Crunch, or keep it classic with Hershey’s Chocolate, Vanilla or Strawberry Shortcake.' },
   { from: [57], desc: 'Golden, crispy battered Oreos dusted with powdered sugar, offering a delightful blend of crunch and sweetness.' },
-  { from: [58], desc: 'Twelve crispy funnel cake fries, lightly dusted with powdered sugar for a sweet, crunchy treat.' },
+  { from: [58], name: 'Funnel Cake Fries (15)', desc: 'Fifteen crispy funnel cake fries, lightly dusted with powdered sugar for a sweet, crunchy treat.' },
 
   // ---- beverages: fountain, can and bottle are one soda card ----
   { from: [59, 62, 63], name: 'Soda',
@@ -185,9 +211,6 @@ const PHOTO_OVERRIDES = {
   // the old scrape and rendered an explicit "no photo" state; the package has
   // all three, so the empty state is gone from the menu.
   37: 'images-web/client-waffle-og.webp',                      // Waffle (the OG, no chicken)
-  // Any loaded-fries shot reads for this one: the build is identical across the
-  // loaded range and only the sauce changes.
-  50: 'images-web/client-nashville-loaded-waffle-fries.webp',  // Nashville Hot Loaded Waffle Fries
   61: 'images-web/client-bottled-water.webp',                  // Bottled Water
 
   // The dipping-sauce set, shot as one matched series on white.
@@ -202,13 +225,22 @@ const slug = (s) =>
   s.toLowerCase().replace(/[’'".,()]/g, '').replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
 const pack = JSON.parse(readFileSync(PACK, 'utf8'))
-const byIndex = new Map(pack.items.map((i) => [i.index, i]))
+for (const a of ADDED) {
+  if (pack.items.some((i) => i.index === a.index)) throw new Error(`ADDED index ${a.index} collides with the pack`)
+}
+const listings = [...pack.items.filter((i) => !(i.index in RETIRED)), ...ADDED]
+for (const idx of Object.keys(RETIRED).map(Number)) {
+  if (!pack.items.some((i) => i.index === idx)) throw new Error(`RETIRED names a listing the pack does not have: ${idx}`)
+}
+const byIndex = new Map(listings.map((i) => [i.index, i]))
 
 // ---- every official listing must be represented exactly once ----------------
 const covered = CARDS.flatMap((c) => c.from)
 const dupes = covered.filter((n, k) => covered.indexOf(n) !== k)
 if (dupes.length) throw new Error(`listing(s) claimed by more than one card: ${[...new Set(dupes)].join(', ')}`)
-const missed = pack.items.map((i) => i.index).filter((n) => !covered.includes(n))
+const missed = listings.map((i) => i.index).filter((n) => !covered.includes(n))
+const unknown = covered.filter((n) => !byIndex.has(n))
+if (unknown.length) throw new Error(`card(s) refer to a retired or unknown listing: ${unknown.join(', ')}`)
 if (missed.length) throw new Error(`listing(s) not represented by any card: ${missed.join(', ')}`)
 for (const c of CARDS) {
   const cats = new Set(c.from.map((n) => byIndex.get(n).category))
@@ -278,7 +310,7 @@ const body = CATEGORIES.map((c) => {
       `    desc:\n      ${q(r.desc)},\n` +
       (r.image
         ? `    image: ${q(r.image)}, w: ${r.w}, h: ${r.h},\n`
-        : `    image: null,   // the pack maps this listing to a photo of a different dish\n`) +
+        : `    image: null,   // no correct photo of this dish yet\n`) +
       `  },`
   )
   return `  // ---------------- ${c.label.toUpperCase()} (${set.length}) ----------------\n${lines.join('\n')}`
@@ -294,15 +326,19 @@ const out = `// ATL Wing Spot menu — generated from the official asset pack.
 // ${pack.item_count} entries, one per portion size, which is why bone-in wings alone appear
 // there as six near-identical rows sharing two photographs. Here those portion
 // sizes are folded into a single card whose copy names the sizes on offer, so
-// the menu reads as ${rows.length} dishes rather than ${pack.item_count} repetitions. Every one of the
-// ${pack.item_count} official listings is still represented; the build fails if one is not.
+// the menu reads as ${rows.length} dishes rather than ${pack.item_count} repetitions.
+//
+// ATL's November 2026 corrections are applied on top of the pack by the script:
+// ${Object.keys(RETIRED).length} listings retired (${Object.values(RETIRED).join(', ')}) and
+// ${ADDED.length} added (${ADDED.map((a) => a.title).join(', ')}). Every remaining listing is
+// represented; the build fails if one is not.
 //
 // ${grouped.length} cards stand for more than one listing. Categories, names, the item-to-image
 // mapping and the substance of every description come from the pack.
 //
-// ${unphotographed.length} cards carry image: null. The pack maps each of them to a photograph of a
-// DIFFERENT dish, and it has no correct shot for them. They render an explicit
-// "no photo" state; a lookalike would misrepresent the product.
+// ${unphotographed.length} cards carry image: null: there is no correct photograph of those dishes
+// yet. They render an explicit "no photo" state; a lookalike would misrepresent
+// the product.
 //
 // Descriptions are copy-edited only: typos fixed, shouting normalised, terminal
 // punctuation added. Where the source disagreed with itself about how many
@@ -327,7 +363,7 @@ ${body}
 
 writeFileSync(OUT_DATA, out)
 
-console.log(`official listings : ${pack.item_count} (all represented)`)
+console.log(`official listings : ${pack.item_count} in the pack, ${Object.keys(RETIRED).length} retired, ${ADDED.length} added (all ${listings.length} represented)`)
 console.log(`cards             : ${rows.length}  (${grouped.length} of them cover a size range)`)
 for (const g of grouped) console.log(`    ${g.name.padEnd(22)} <- ${g.covers} listings`)
 console.log(`categories        : ${CATEGORIES.length}`)

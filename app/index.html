@@ -28,43 +28,31 @@
          and url below are the home page's. The build rewrites them for every
          page from app/src/data/routes.js (scripts/prerender-pages.mjs), so
          each page's own HTML carries its own before any JavaScript runs. -->
-    <title>ATL Wing Spot | Stay Saucy. Fresh, Never Frozen. 100% Halal.</title>
+    <title>ATL Wing Spot | Fresh, Never Frozen Halal Wings. Stay Saucy.</title>
     <meta name="description" content="Fresh, never frozen wings fried to order in 25+ sauces. 100% halal. Voted best wings on Long Island. Order pickup or delivery across NY, NJ, PA, TX and CA." />
     <link rel="canonical" href="https://atlwingspot.com/" />
+    <!-- Lets Google show the large photo beside a result instead of a thumbnail. -->
+    <meta name="robots" content="index, follow, max-image-preview:large" />
 
     <meta property="og:type" content="restaurant" />
     <meta property="og:url" content="https://atlwingspot.com/" />
-    <meta property="og:title" content="ATL Wing Spot | Stay Saucy. Fresh, Never Frozen. 100% Halal." />
+    <meta property="og:title" content="ATL Wing Spot | Fresh, Never Frozen Halal Wings. Stay Saucy." />
     <meta property="og:description" content="Fresh, never frozen wings fried to order in 25+ sauces. 100% halal. Voted best wings on Long Island. Order pickup or delivery across NY, NJ, PA, TX and CA." />
     <meta property="og:image" content="https://atlwingspot.com/assets/food/hero-wings.jpg" />
+    <meta property="og:image:width" content="1894" />
+    <meta property="og:image:height" content="1078" />
+    <meta property="og:image:alt" content="A basket of ATL Wing Spot wings" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content="ATL Wing Spot" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ATL Wing Spot | Stay Saucy. Fresh, Never Frozen. 100% Halal." />
+    <meta name="twitter:title" content="ATL Wing Spot | Fresh, Never Frozen Halal Wings. Stay Saucy." />
     <meta name="twitter:description" content="Fresh, never frozen wings fried to order in 25+ sauces. 100% halal. Voted best wings on Long Island. Order pickup or delivery across NY, NJ, PA, TX and CA." />
     <meta name="twitter:image" content="https://atlwingspot.com/assets/food/hero-wings.jpg" />
+    <meta name="twitter:image:alt" content="A basket of ATL Wing Spot wings" />
 
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Restaurant",
-        "name": "ATL Wing Spot",
-        "url": "https://atlwingspot.com/",
-        "logo": "https://atlwingspot.com/assets/brand/atl-wing-spot-logo.png",
-        "servesCuisine": ["Wings", "American", "Halal"],
-        "image": "https://atlwingspot.com/assets/food/hero-wings.jpg",
-        "hasMenu": "https://atlwingspot.com/menu/",
-        "acceptsReservations": false,
-        "sameAs": [
-          "https://www.instagram.com/atlwingspot/",
-          "https://www.tiktok.com/@atlwingspot"
-        ],
-        "potentialAction": {
-          "@type": "OrderAction",
-          "target": "https://order.snackpass.co/atlwingspot"
-        }
-      }
-    </script>
+    <!-- Structured data (JSON-LD) is written by the pages themselves, from
+         the same data they show: see app/src/data/structuredData.js. -->
   </head>
   <body>
     <div id="root"></div>

@@ -6,8 +6,8 @@
   "description": "ATL Wing Spot \u2014 brand redesign concept",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/prerender-pages.mjs && node scripts/publish-to-root.mjs",
-    "build:app": "vite build && node scripts/prerender-pages.mjs",
+    "build": "npm run build:app && node scripts/publish-to-root.mjs",
+    "build:app": "vite build && vite build --ssr src/entry-server.jsx --outDir dist-ssr && node scripts/prerender-pages.mjs",
     "publish": "node scripts/publish-to-root.mjs",
     "preview": "vite preview",
     "menu:data": "node scripts/build-menu-data.mjs"

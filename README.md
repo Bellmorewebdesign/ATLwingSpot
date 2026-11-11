@@ -54,14 +54,16 @@ npm run dev      # local dev server (http://localhost:5173)
 npm run build    # compiles app/dist, then publishes the site to the repo root
 ```
 
-`npm run build` runs three steps:
+`npm run build` runs four steps:
 
 1. `vite build` compiles the app to `app/dist`.
-2. `scripts/prerender-pages.mjs` writes a real `index.html` for every page in
-   `app/src/data/routes.js` (`menu/index.html`, `about-us/index.html`, …), each with that
-   page's own title, description and canonical URL, plus `404.html`, `sitemap.xml` and
-   `robots.txt`.
-3. `scripts/publish-to-root.mjs` copies the result to the repository root, replacing only
+2. `vite build --ssr` compiles the same app for Node, to `app/dist-ssr` (not committed).
+3. `scripts/prerender-pages.mjs` writes a real `index.html` for every page in
+   `app/src/data/routes.js` (`menu/index.html`, `about-us/index.html`, …). Each file has
+   that page's own title, description and canonical URL **and its finished content**: the
+   script runs the app once per page and puts the resulting HTML inside the file. It also
+   writes `404.html`, `sitemap.xml` and `robots.txt`.
+4. `scripts/publish-to-root.mjs` copies the result to the repository root, replacing only
    what the build owns: `index.html`, `404.html`, `.nojekyll`, `sitemap.xml`, `robots.txt`,
    `/assets`, `/static` and the page folders.
 
@@ -86,7 +88,7 @@ rate-limit key are all Lambda environment variables.
 
 | Command | What it does |
 | --- | --- |
-| `npm run menu:data` | Regenerates `app/src/data/menu.js` and `app/public/assets/menu/` from `menu-items.json`. |
+| `npm run menu:data` | Regenerates `app/src/data/menu.js` and `app/public/assets/menu/` from `menu-items.json` plus the corrections in the script (`CARDS`, `RETIRED`, `ADDED`). |
 | `python3 app/scripts/process-client-photos.py` | Prepares the September client photo pack for the web: keyed cut-outs into `app/public/assets/food/client-refresh/`, 5:4 menu frames into `images-web/`. Needs `pillow` and `numpy`. |
 | `python3 app/scripts/make-favicon.py` | Rebuilds the favicon set in `app/public/assets/brand/` from the official logo. Needs `pillow` and `numpy`. |
 | `node app/scripts/build-zip-areas.mjs <all_us_zipcodes.csv>` | Rebuilds `app/src/data/zip-areas.js`, the table the ZIP lookup ranks against. Run it after adding, moving or closing a shop. The CSV is a couple of megabytes and is not committed; the script's header says where to download it. |
@@ -190,7 +192,49 @@ else is lazy, with intrinsic `width`/`height` on every `<img>`.
 Motion is CSS + IntersectionObserver + rAF only, and every piece has a
 `prefers-reduced-motion` path. No animation library.
 
+## Search engines (SEO)
+
+What is in place, and where it lives:
+
+- **Old URLs kept.** Pages sit at the old WordPress site's paths (see URLs above), so
+  existing search results and links keep working.
+- **Content is in the HTML.** Every page file contains its full text, links and images,
+  not an empty shell that needs JavaScript. Crawlers and link previews read it directly;
+  the browser shows it immediately and React then attaches to it (`src/main.jsx`). A
+  component must render the same thing at build time as on first load in the browser: read
+  `window`, media queries or storage inside an effect or with `hooks/useMediaQuery.js`,
+  never during render.
+- **Titles and descriptions** for every page are in `app/src/data/routes.js`. Keep titles
+  near 60 characters and descriptions near 155, and only claim what the page shows.
+- **Structured data** (schema.org JSON-LD) is generated in
+  `app/src/data/structuredData.js` from the same data the pages display: the brand on the
+  home page, one `Restaurant` per open shop on the locations page (address, phone, hours),
+  the full `Menu` on the menu page and a breadcrumb trail on every inner page. There are no
+  prices, ratings or reviews in it because the site does not publish any. Shop hours are
+  converted by `app/src/data/hours.js`, which fails the build on a format it does not
+  recognise rather than publish wrong hours.
+- **`sitemap.xml` and `robots.txt`** are rebuilt on every build. One canonical URL per
+  page; the not-found page is `noindex`.
+- **Fonts** for the first screen are preloaded; images are lazy-loaded with fixed
+  dimensions and alt text.
+
+After a deploy that changes URLs or adds pages, resubmit `https://atlwingspot.com/sitemap.xml`
+in Google Search Console and Bing Webmaster Tools. Each shop's Google Business Profile
+should link to `https://atlwingspot.com/locations/` (or the home page) and show the same
+name, address, phone and hours as `app/src/data/locations.js`: matching details across the
+site and the listings is what local search ranks on.
+
 ## Notes on content
+
+**Menu changes.** The menu is generated: edit the `CARDS`, `RETIRED` and `ADDED` tables in
+`app/scripts/build-menu-data.mjs`, then run `npm run menu:data` and `npm run build`. A dish
+with no photograph yet takes `noPhoto: true` and shows a "no photo" tile rather than a
+picture of something else.
+
+**Shops.** Open shops are in `LOCATIONS` and announced ones in `COMING_SOON`, both in
+`app/src/data/locations.js`. Coming-soon shops show city and state only and are not in the
+ZIP lookup; when one opens, move it into `LOCATIONS` and rebuild the ZIP table.
+
 
 Copy and figures use ATL's own materials and public press (QSR Magazine, Long Island local
 press) only. Sauce names are real ATL flavours, shown as a featured selection of the board.

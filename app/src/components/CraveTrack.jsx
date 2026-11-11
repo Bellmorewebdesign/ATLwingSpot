@@ -24,7 +24,7 @@ const PANELS = [
   { cat: 'waffles',    name: "Chicken\nN' Waffles", line: 'Fruity Pebbles, Oreo or Cinnamon Toast Crunch on the waffle. Yes, really.', img: 'assets/food/client-refresh/fruity-pebbles-chicken-waffles.webp', w: 920, h: 700 },
   { cat: 'wraps',      name: 'Wraps',               line: 'Buffalo ranch, chipotle or honey mustard, wrapped to go.',              img: 'assets/food/client-refresh/buffalo-ranch-wrap.webp', w: 920, h: 609 },
   { cat: 'sandwiches', name: 'Sandwiches',          line: 'Crispy chicken on a toasted bun, chipotle or classic.',                 img: 'assets/food/official/official-buffalo-ranch-sandwich.webp', w: 1800, h: 1440 },
-  { cat: 'quesadillas', name: 'Quesadillas',        line: 'Four on the menu, from plain cheddar to loaded chicken.',               img: 'assets/food/official/official-quesadilla-stack.webp', w: 1800, h: 1440 },
+  { cat: 'quesadillas', name: 'Quesadillas',        line: 'Cheddar, chipotle chicken or crispy buffalo chicken.',             img: 'assets/food/official/official-quesadilla-stack.webp', w: 1800, h: 1440 },
 ]
 
 export function CraveTrack() {

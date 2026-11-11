@@ -6,15 +6,19 @@
 // 68 entries, one per portion size, which is why bone-in wings alone appear
 // there as six near-identical rows sharing two photographs. Here those portion
 // sizes are folded into a single card whose copy names the sizes on offer, so
-// the menu reads as 45 dishes rather than 68 repetitions. Every one of the
-// 68 official listings is still represented; the build fails if one is not.
+// the menu reads as 45 dishes rather than 68 repetitions.
+//
+// ATL's November 2026 corrections are applied on top of the pack by the script:
+// 2 listings retired (Loaded Chicken Quesadilla, Nashville Hot Loaded Waffle Fries) and
+// 2 added (Chipotle Loaded Waffle Fries, Hot Honey Loaded Waffle Fries). Every remaining listing is
+// represented; the build fails if one is not.
 //
 // 10 cards stand for more than one listing. Categories, names, the item-to-image
 // mapping and the substance of every description come from the pack.
 //
-// 0 cards carry image: null. The pack maps each of them to a photograph of a
-// DIFFERENT dish, and it has no correct shot for them. They render an explicit
-// "no photo" state; a lookalike would misrepresent the product.
+// 2 cards carry image: null: there is no correct photograph of those dishes
+// yet. They render an explicit "no photo" state; a lookalike would misrepresent
+// the product.
 //
 // Descriptions are copy-edited only: typos fixed, shouting normalised, terminal
 // punctuation added. Where the source disagreed with itself about how many
@@ -67,10 +71,10 @@ export const MENU_ITEMS = [
     image: 'assets/menu/7fa67d84-4eb6-44ee-b868-fd74d7cbf451-retina-large.webp', w: 1920, h: 1080,
   },
   {
-    id: 'mozzarella-sticks-6', cat: 'starters',
-    name: 'Mozzarella Sticks (6)',
+    id: 'mozzarella-sticks-5', cat: 'starters',
+    name: 'Mozzarella Sticks (5)',
     desc:
-      'Six mozzarella sticks, served with marinara sauce.',
+      'Five mozzarella sticks, served with marinara sauce.',
     image: 'assets/menu/mozzarella-sticks.jpg', w: 1920, h: 1079,
   },
 
@@ -180,7 +184,7 @@ export const MENU_ITEMS = [
     image: 'assets/menu/cinnamon-toast-crunch-waffle.png', w: 1920, h: 1534,
   },
 
-  // ---------------- QUESADILLAS (4) ----------------
+  // ---------------- QUESADILLAS (3) ----------------
   {
     id: 'chipotle-chicken-quesadilla', cat: 'quesadillas',
     name: 'Chipotle Chicken Quesadilla',
@@ -194,13 +198,6 @@ export const MENU_ITEMS = [
     desc:
       'Melted cheddar cheese in a pressed tortilla. Served with sour cream.',
     image: 'assets/menu/cheddar-cheese-quesadilla.png', w: 1920, h: 1420,
-  },
-  {
-    id: 'loaded-chicken-quesadilla', cat: 'quesadillas',
-    name: 'Loaded Chicken Quesadilla',
-    desc:
-      'Grilled chicken, cheddar cheese, green peppers and onions. Served with sour cream.',
-    image: 'assets/menu/loaded-chicken-quesadilla-e1746184121941.png', w: 1920, h: 1475,
   },
   {
     id: 'crispy-buffalo-chicken-quesadilla', cat: 'quesadillas',
@@ -249,7 +246,7 @@ export const MENU_ITEMS = [
     image: 'assets/menu/chicken-deluxe.png', w: 1920, h: 1441,
   },
 
-  // ---------------- FRIES N MUNCHIES (7) ----------------
+  // ---------------- FRIES N MUNCHIES (8) ----------------
   {
     id: 'waffle-fries', cat: 'fries',
     name: 'Waffle Fries',
@@ -279,11 +276,18 @@ export const MENU_ITEMS = [
     image: 'assets/menu/client-buffalo-ranch-loaded-waffle-fries.webp', w: 1000, h: 800,
   },
   {
-    id: 'nashville-hot-loaded-waffle-fries', cat: 'fries',
-    name: 'Nashville Hot Loaded Waffle Fries',
+    id: 'chipotle-loaded-waffle-fries', cat: 'fries',
+    name: 'Chipotle Loaded Waffle Fries',
     desc:
-      'Waffle fries loaded up with crispy chicken, Nashville hot sauce and ranch.',
-    image: 'assets/menu/client-nashville-loaded-waffle-fries.webp', w: 1000, h: 800,
+      'Waffle fries loaded up with crispy chicken, chipotle sauce and ranch.',
+    image: null,   // no correct photo of this dish yet
+  },
+  {
+    id: 'hot-honey-loaded-waffle-fries', cat: 'fries',
+    name: 'Hot Honey Loaded Waffle Fries',
+    desc:
+      'Waffle fries loaded up with crispy chicken, hot honey and ranch.',
+    image: null,   // no correct photo of this dish yet
   },
   {
     id: 'sweet-potato-fries', cat: 'fries',
@@ -316,10 +320,10 @@ export const MENU_ITEMS = [
     image: 'assets/menu/fried-oreos.webp', w: 1024, h: 576,
   },
   {
-    id: 'funnel-cake-fries-12', cat: 'desserts',
-    name: 'Funnel Cake Fries (12)',
+    id: 'funnel-cake-fries-15', cat: 'desserts',
+    name: 'Funnel Cake Fries (15)',
     desc:
-      'Twelve crispy funnel cake fries, lightly dusted with powdered sugar for a sweet, crunchy treat.',
+      'Fifteen crispy funnel cake fries, lightly dusted with powdered sugar for a sweet, crunchy treat.',
     image: 'assets/menu/funnel-cake-fries.webp', w: 1024, h: 575,
   },
 

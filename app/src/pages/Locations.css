@@ -1,2 +1,35 @@
 .locs { min-height: 100vh; }
 .locs__body { padding-bottom: clamp(4rem, 8vw, 7rem); }
+
+/* ---- announced shops, below the finder ---- */
+.soon { margin-top: clamp(3rem, 7vw, 5.5rem); }
+.soon__h { font-size: clamp(1.9rem, 4.6vw, 3rem); line-height: 0.95; color: var(--fg); }
+.soon__sub { margin-top: 0.5rem; color: var(--fg-mute); font-size: var(--step--1); }
+.soon__list {
+  margin-top: 1.4rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  column-gap: clamp(1.5rem, 4vw, 3rem);
+  border-top: 2px solid var(--line);
+}
+.soon__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.9rem;
+  border-bottom: 2px solid var(--line);
+}
+.soon__city {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+  line-height: 1;
+}
+.soon__state {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+}

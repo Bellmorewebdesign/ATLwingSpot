@@ -5,10 +5,12 @@ import { ORDER_URL, ORDER_LABEL } from '../data/site'
 import { asset } from '../lib/asset'
 import { Seo } from '../components/Seo'
 import { PAGES } from '../data/routes'
+import { menuData } from '../data/structuredData'
 import { ArrowRight, Search } from '../components/Icons'
 import './Menu.css'
 
 const CATS = MENU_CATEGORIES.filter((c) => c.id !== 'all')
+const MENU_DATA = menuData()
 
 /**
  * Every listing in the official pack ships with its own photograph, so the menu
@@ -118,7 +120,7 @@ export default function Menu() {
 
   return (
     <div className="page menu ch-cream">
-      <Seo page={PAGES.menu} />
+      <Seo page={PAGES.menu} data={MENU_DATA} />
 
       <header className="mast wrap menu__mast">
         <h1 className="dsp dsp-lg">Menu</h1>
