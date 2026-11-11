@@ -9,7 +9,8 @@ export default function Flavors() {
     <div className="page flav">
       <Seo page={PAGES.flavors} />
 
-      <FlavorStage heading="Pick your flavor." />
+      {/* the page's main heading */}
+      <FlavorStage heading="Pick your flavor." as="h1" />
 
       {/* The client's full heat chart, hottest to mildest */}
       <SauceMeter />

@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
-import { SITE_NAME, pageTitle, canonicalUrl } from '../data/routes'
+import { PAGES, SITE_NAME, pageTitle, canonicalUrl } from '../data/routes'
+import { breadcrumbData } from '../data/structuredData'
+import { JsonLd } from './JsonLd'
 
 function setMeta(attr, key, content) {
   if (!content) return
@@ -34,8 +36,12 @@ function setCanonical(href) {
  * before JavaScript runs and what this sets afterwards always agree. The
  * not-found page passes a title and description directly and gets no
  * canonical URL.
+ *
+ * It also writes the page's structured data: a breadcrumb trail for every page
+ * but the home page, plus whatever the page passes in `data` (the menu, the
+ * shop list).
  */
-export function Seo({ page, title, description }) {
+export function Seo({ page, title, description, data }) {
   const full = page ? pageTitle(page) : title ? `${title} | ${SITE_NAME}` : pageTitle(null)
   const desc = page ? page.description : description
   const canonical = page ? canonicalUrl(page.path) : null
@@ -53,5 +59,14 @@ export function Seo({ page, title, description }) {
     if (canonical) setMeta('property', 'og:url', canonical)
   }, [full, desc, canonical])
 
-  return null
+  const trail = page && page !== PAGES.home
+    ? breadcrumbData(...(page.parent ? [PAGES[page.parent]] : []), page)
+    : null
+
+  return (
+    <>
+      {trail && <JsonLd data={trail} />}
+      {data && <JsonLd data={data} />}
+    </>
+  )
 }

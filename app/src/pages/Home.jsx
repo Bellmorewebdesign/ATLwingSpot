@@ -1,5 +1,6 @@
 import { Seo } from '../components/Seo'
 import { PAGES } from '../data/routes'
+import { organizationData } from '../data/structuredData'
 import { Hero } from '../components/Hero'
 import { GroupBand } from '../components/GroupBand'
 import { WordStripe } from '../components/WordStripe'
@@ -19,7 +20,7 @@ import { BOX_WORDS, BOX_STRIPE_TONE, TICKER } from '../data/site'
 export default function Home() {
   return (
     <>
-      <Seo page={PAGES.home} />
+      <Seo page={PAGES.home} data={organizationData()} />
 
       {/* cream */}
       <Hero />

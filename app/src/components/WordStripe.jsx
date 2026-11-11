@@ -1,5 +1,10 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './WordStripe.css'
+
+// The pages are prerendered at build time, where there is no layout to
+// measure; React asks for a plain effect there. In the browser this is still a
+// layout effect, so the stripe is measured before it is first painted.
+const useBrowserLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
 /**
  * Our own packaging motif: the cyan takeout box is printed with big white words
@@ -25,7 +30,7 @@ export function WordStripe({ words, tone = 'cyan', speed = 34, size = 'md', sepa
   const [copies, setCopies] = useState(2)
   const [shift, setShift] = useState(0)
 
-  useLayoutEffect(() => {
+  useBrowserLayoutEffect(() => {
     const stripe = stripeRef.current
     const track = trackRef.current
     if (!stripe || !track) return

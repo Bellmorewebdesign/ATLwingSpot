@@ -1,6 +1,7 @@
 # Dependencies & build caches (source lives in /app)
 app/node_modules
 app/dist
+app/dist-ssr
 app/.vite
 node_modules
 

@@ -21,8 +21,12 @@
 // uses the one brand ordering link (ORDER_URL in site.js); guests pick their
 // shop on Snackpass.
 //
-// Still open: Jersey City is temporarily closed and has no hours. Add them,
-// and remove tempClosed, when it reopens.
+// Still open:
+//   - Jersey City is temporarily closed and has no hours. Add them, and remove
+//     tempClosed, when it reopens.
+//   - Pittsburgh has no hours shown. Its Google listing says daily 11am to
+//     10pm, but ATL reports Snackpass showing Sun to Thu 11am to 2am and Fri
+//     to Sat 11am to 3am. Fill in whichever the shop confirms.
 //
 // Do not put a "]" inside any value: app/scripts/build-zip-areas.mjs reads
 // this list as text. After adding, moving or closing a shop, re-run that script
@@ -42,9 +46,24 @@ export const LOCATIONS = [
   { id: 'jersey-city', name: 'Jersey City', street: '588 West Side Ave', city: 'Jersey City', state: 'NJ', zip: '07304', area: 'Hudson County', phone: '(201) 356-9139', hours: null, tempClosed: true },
   { id: 'linden', name: 'Linden', street: '1600 E St Georges Ave', city: 'Linden', state: 'NJ', zip: '07036', area: 'Union County', phone: '(609) 689-5201', hours: 'Daily 11am–midnight' },
   { id: 'south-orange', name: 'South Orange', street: '319 S Orange Ave', city: 'South Orange Village', state: 'NJ', zip: '07079', area: 'Essex County, South Orange Avenue', phone: '(973) 275-1234', hours: 'Daily 11am–1am' },
-  { id: 'pittsburgh', name: 'Pittsburgh', street: '412 Semple St', city: 'Pittsburgh', state: 'PA', zip: '15213', area: 'Oakland, Allegheny County', phone: '(412) 282-8268', hours: 'Daily 11am–10pm' },
+  { id: 'pittsburgh', name: 'Pittsburgh', street: '412 Semple St', city: 'Pittsburgh', state: 'PA', zip: '15213', area: 'Oakland, Allegheny County', phone: '(412) 282-8268', hours: null },
   { id: 'frisco', name: 'Frisco', street: '6363 Dallas Pkwy, Suite 107', city: 'Frisco', state: 'TX', zip: '75034', area: 'Dallas, DFW, Collin County', phone: '(214) 308-9704', hours: 'Sun–Thu 10:30am–10:30pm · Fri–Sat 10:30am–midnight' },
   { id: 'redlands', name: 'Redlands', street: '1755 E Lugonia Ave, Suite 210', city: 'Redlands', state: 'CA', zip: '92374', area: 'Inland Empire, San Bernardino County', phone: '(909) 321-4746', hours: 'Sun–Thu 11am–midnight · Fri–Sat 11am–1am' },
+]
+
+// Shops ATL has announced but not opened (Wally, by email, 8 Nov 2026). City
+// and state only: no address, phone or hours until a shop opens, at which point
+// it moves into LOCATIONS above (and the ZIP table is rebuilt). They are listed
+// on the locations page and are not part of the ZIP lookup or the shop count.
+export const COMING_SOON = [
+  { city: 'Brooklyn', state: 'NY' },
+  { city: 'Centereach', state: 'NY' },
+  { city: 'Farmingdale', state: 'NY' },
+  { city: 'Nutley', state: 'NJ' },
+  { city: 'Sewell', state: 'NJ' },
+  { city: 'Towson', state: 'MD' },
+  { city: 'Greenfield', state: 'WI' },
+  { city: 'Milwaukee', state: 'WI' },
 ]
 
 // The state categories on the locations page and the home page band, in the
