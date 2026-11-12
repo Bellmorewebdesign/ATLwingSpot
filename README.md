@@ -112,6 +112,12 @@ finishes, which is worth reading rather than skipping.
    - **Folder:** `/ (root)`
 3. That's it, no Actions workflow needed.
 
+**If a deploy fails with "Startup failure / No jobs were run".** That is GitHub failing to
+start its own "pages build and deployment" step (usually during a GitHub incident, see
+githubstatus.com), not a problem with the site. Re-running that run can keep failing even
+after GitHub recovers. The site stays on the last version that deployed. To get a fresh
+deploy, merge any new commit into `main`; the next deploy publishes everything on `main`.
+
 ### URLs
 
 Pages live at clean paths that match the old WordPress site wherever that page still
