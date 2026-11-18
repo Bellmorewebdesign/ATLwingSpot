@@ -39,8 +39,10 @@ Resources:
       DeletionProtectionEnabled: true
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
-      SSESpecification:
-        SSEEnabled: true
+      # No SSESpecification: DynamoDB encrypts every table at rest by default
+      # with an AWS-owned key. Setting SSEEnabled here selects the AWS-managed
+      # KMS key instead, which does not exist until something creates it and
+      # made the first deploy fail.
       AttributeDefinitions:
         - { AttributeName: submissionId, AttributeType: S }
         - { AttributeName: createdAt,    AttributeType: S }
