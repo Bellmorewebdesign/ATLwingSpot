@@ -5,9 +5,9 @@ the existing email. Email keeps working exactly as it does today (it is where
 replies happen). The database is a second copy that cannot be deleted by
 accident and that the whole team can search.
 
-Status: **phase 1 archive stack deployed** (`atl-franchise-archive`,
-us-east-1). The form Lambda change is written and tested but not yet deployed,
-so nothing is being archived yet. Phases 2 and 3 are a plan only.
+Status: **phase 1 is live** (2026-11-18). Every franchising submission is
+emailed as before and also saved to `atl-franchise-submissions` (us-east-1),
+verified end to end with a real submission. Phases 2 and 3 are a plan only.
 
 ## Ground rules
 
@@ -81,9 +81,9 @@ while the dashboard is built.
 - [x] `src/worker/worker.py` with 16 tests
 - [x] Deploy the stack
 - [x] Form Lambda change written, with 12 new tests (87 total)
-- [ ] Confirm the SNS alert subscription email
-- [ ] Deploy the form Lambda change with `setup.sh`
-- [ ] Send a test submission; confirm the email arrives **and** a row appears
+- [x] Confirm the SNS alert subscription email
+- [x] Deploy the form Lambda change with `setup.sh`
+- [x] Send a test submission; confirm the email arrives **and** a row appears
 
 ### Phase 2: the dashboard (not started)
 
