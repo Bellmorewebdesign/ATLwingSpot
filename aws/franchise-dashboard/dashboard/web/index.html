@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Franchise Submissions · ATL Wing Spot</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js" defer></script>
+  <script src="lib.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+  <!-- Shown until signed in. No data is fetched before then. -->
+  <section id="signin" class="signin" hidden>
+    <div class="signin-card">
+      <div class="mark">ATL</div>
+      <h1>Franchise submissions</h1>
+      <p class="muted">ATL Wing Spot staff only.</p>
+      <p id="signin-error" class="error" hidden></p>
+      <button id="signin-btn" class="btn primary big" type="button">Sign in</button>
+    </div>
+  </section>
+
+  <div id="app" hidden>
+    <header class="bar">
+      <div class="brand"><span class="mark small">ATL</span><span>Franchise submissions</span></div>
+      <div class="who"><span id="who"></span><button id="signout" class="btn ghost" type="button">Sign out</button></div>
+    </header>
+
+    <main class="main">
+      <nav id="chips" class="chips" aria-label="Filter by status"></nav>
+
+      <section class="toolbar">
+        <input id="search" type="search" placeholder="Search name, email, phone, state, notes…" aria-label="Search">
+        <select id="filter" aria-label="Show"></select>
+        <div class="actions">
+          <button id="add" class="btn" type="button">Add</button>
+          <button id="import" class="btn" type="button">Import CSV</button>
+          <button id="export" class="btn" type="button">Export CSV</button>
+          <button id="refresh" class="btn ghost" type="button">Refresh</button>
+        </div>
+      </section>
+
+      <p id="status-line" class="muted" role="status"></p>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Received</th><th>Name</th><th>State / territory</th><th>Email</th>
+              <th>Phone</th><th>Status</th><th>Last contacted</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p id="empty" class="empty" hidden>Nothing here yet.</p>
+    </main>
+  </div>
+
+  <!-- One submission -->
+  <dialog id="detail" aria-labelledby="d-name">
+    <div class="dialog-head">
+      <div>
+        <h2 id="d-name"></h2>
+        <p id="d-received" class="muted"></p>
+      </div>
+      <button class="icon" type="button" data-close aria-label="Close">×</button>
+    </div>
+    <dl class="facts">
+      <dt>Email</dt><dd><a id="d-email"></a></dd>
+      <dt>Phone</dt><dd><a id="d-phone"></a></dd>
+      <dt>State / territory</dt><dd id="d-territory"></dd>
+      <dt>Added by</dt><dd id="d-source"></dd>
+    </dl>
+    <h3>Message</h3>
+    <p id="d-message" class="message"></p>
+
+    <form id="d-form" class="edit">
+      <label>Status <select id="d-status"></select></label>
+      <label>Last contacted <input id="d-contacted" type="date"></label>
+      <label class="wide">Notes <textarea id="d-notes" rows="5" maxlength="10000"></textarea></label>
+      <div class="row-actions wide">
+        <button type="submit" class="btn primary">Save</button>
+        <button type="button" id="d-archive" class="btn ghost"></button>
+      </div>
+    </form>
+
+    <h3>History</h3>
+    <ol id="d-history" class="history"></ol>
+  </dialog>
+
+  <!-- Add one by hand -->
+  <dialog id="add-dialog" aria-labelledby="add-title">
+    <div class="dialog-head">
+      <h2 id="add-title">Add a submission</h2>
+      <button class="icon" type="button" data-close aria-label="Close">×</button>
+    </div>
+    <p class="muted">For an inquiry that came in some other way, or an old one from the inbox.</p>
+    <form id="add-form" class="edit">
+      <label>First name * <input name="firstName" required maxlength="100" autocomplete="off"></label>
+      <label>Last name * <input name="lastName" required maxlength="100" autocomplete="off"></label>
+      <label>Email * <input name="email" type="email" required maxlength="254" autocomplete="off"></label>
+      <label>Phone <input name="phone" maxlength="40" autocomplete="off"></label>
+      <label>State / territory <input name="territory" maxlength="120" autocomplete="off"></label>
+      <label>Received on <input name="createdAt" type="date"></label>
+      <label>Status <select name="status" id="add-status"></select></label>
+      <label class="wide">Message <textarea name="message" rows="3" maxlength="4000"></textarea></label>
+      <label class="wide">Notes <textarea name="notes" rows="3" maxlength="10000"></textarea></label>
+      <p id="add-error" class="error wide" hidden></p>
+      <div class="row-actions wide"><button type="submit" class="btn primary">Add</button></div>
+    </form>
+  </dialog>
+
+  <!-- CSV import -->
+  <dialog id="import-dialog" aria-labelledby="import-title">
+    <div class="dialog-head">
+      <h2 id="import-title">Import past submissions</h2>
+      <button class="icon" type="button" data-close aria-label="Close">×</button>
+    </div>
+    <p>Upload a <strong>.csv</strong> file (Google Sheets: File → Download → CSV). The first row must be
+      column names. Recognised columns:</p>
+    <ul class="cols">
+      <li><strong>First name</strong>, <strong>Last name</strong> (or one <strong>Name</strong> column)</li>
+      <li><strong>Email</strong> (required)</li>
+      <li>Phone, State / territory, Message</li>
+      <li><strong>Date</strong> received: 2026-03-14, 3/14/2026, or a full date and time</li>
+      <li>Status and Notes (optional)</li>
+    </ul>
+    <p class="muted">Rows with a date are safe to import twice: a copy that is already in the list is skipped.</p>
+    <input id="import-file" type="file" accept=".csv,text/csv">
+    <div id="import-preview" class="preview"></div>
+    <div class="row-actions"><button id="import-go" class="btn primary" type="button" disabled>Import</button></div>
+    <div id="import-result" class="preview"></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" popover="manual"></div>
+</body>
+</html>

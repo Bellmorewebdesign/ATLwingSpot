@@ -1,0 +1,157 @@
+/* ATL Wing Spot franchise dashboard. Brand colours from the public site. */
+:root {
+  --ink: #121012;
+  --ink-soft: #1c191c;
+  --ink-mute: #6d6a6d;
+  --cream: #f6efe1;
+  --cream-warm: #fbf6ec;
+  --cream-deep: #ece1cd;
+  --paper: #ffffff;
+  --orange: #f47c20;
+  --orange-deep: #d55f0b;
+  --cyan-deep: #0e7f95;
+  --cyan-ink: #06525f;
+  --red: #e0342a;
+  --line: #e4dccd;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(18, 16, 18, .06), 0 8px 24px rgba(18, 16, 18, .08);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+  background: var(--cream-warm);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--cream-warm); color: var(--ink); font-size: 15px; line-height: 1.45; }
+[hidden] { display: none !important; }
+h1, h2, h3 { margin: 0; line-height: 1.2; }
+h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-mute); margin: 20px 0 8px; }
+a { color: var(--cyan-deep); }
+.muted { color: var(--ink-mute); }
+.error { color: var(--red); font-weight: 600; }
+
+/* ---------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  padding: 8px 14px; border-radius: 8px; min-height: 38px;
+}
+.btn:hover { border-color: var(--ink-mute); }
+.btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .icon:focus-visible {
+  outline: 3px solid rgba(14, 127, 149, .45); outline-offset: 1px;
+}
+.btn.primary { background: var(--orange); border-color: var(--orange); color: #1a0d02; }
+.btn.primary:hover { background: var(--orange-deep); border-color: var(--orange-deep); color: #fff; }
+.btn.ghost { background: transparent; }
+.btn.big { padding: 12px 28px; font-size: 16px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.icon { font-size: 26px; line-height: 1; background: none; border: 0; cursor: pointer; color: var(--ink-mute); padding: 2px 8px; border-radius: 6px; }
+
+/* ----------------------------------------------------------------- signin */
+.signin { min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--ink); }
+.signin-card { background: var(--cream); border-radius: 16px; padding: 40px 32px; width: 100%; max-width: 380px; text-align: center; box-shadow: var(--shadow); }
+.signin-card h1 { font-size: 24px; margin: 14px 0 6px; }
+.signin-card .btn { margin-top: 22px; width: 100%; }
+.mark {
+  display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 12px;
+  background: var(--orange); color: var(--ink); font-weight: 900; letter-spacing: .02em;
+}
+.mark.small { width: 34px; height: 34px; border-radius: 8px; font-size: 12px; }
+
+/* -------------------------------------------------------------------- app */
+.bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 24px; background: var(--ink); color: var(--cream);
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+.who { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.who .btn { color: var(--cream); border-color: rgba(246, 239, 225, .3); min-height: 32px; padding: 4px 12px; }
+.main { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.chip {
+  font: inherit; cursor: pointer; display: flex; gap: 8px; align-items: baseline;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px;
+}
+.chip b { font-size: 17px; }
+.chip.on { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 8px; }
+.toolbar input[type=search] { flex: 1 1 260px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+input, select, textarea {
+  font: inherit; color: var(--ink); background: var(--paper);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-height: 38px; width: 100%;
+}
+.toolbar select { width: auto; }
+textarea { resize: vertical; }
+
+.table-wrap { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.table { width: 100%; border-collapse: collapse; }
+.table th {
+  text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--ink-mute); background: var(--cream); padding: 10px 12px; border-bottom: 1px solid var(--line);
+}
+.table td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.table tbody tr { cursor: pointer; }
+.table tbody tr:hover, .table tbody tr:focus-visible { background: var(--cream-warm); outline: none; }
+.table tbody tr:last-child td { border-bottom: 0; }
+.name { font-weight: 650; }
+.nowrap { white-space: nowrap; }
+.empty { text-align: center; padding: 40px 0; color: var(--ink-mute); }
+
+.pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; background: var(--cream-deep); color: var(--ink-soft); }
+.pill.new { background: #ffe3cc; color: #8a3a04; }
+.pill.contacted { background: #d7f1f6; color: var(--cyan-ink); }
+.pill.qualified { background: #dff0d8; color: #2f5a1e; }
+.pill.discovery { background: #e7e1f7; color: #3e2f78; }
+.pill.fdd_sent { background: #fff1c2; color: #6b5100; }
+.pill.signed { background: #1f6f3a; color: #fff; }
+.pill.declined { background: #eee; color: #666; }
+
+/* ---------------------------------------------------------------- dialogs */
+dialog {
+  border: 0; border-radius: 14px; padding: 24px; width: min(720px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px); box-shadow: var(--shadow); background: var(--paper); color: var(--ink);
+}
+dialog::backdrop { background: rgba(18, 16, 18, .55); }
+.dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.dialog-head h2 { font-size: 22px; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+.facts dt { color: var(--ink-mute); }
+.facts dd { margin: 0; overflow-wrap: anywhere; }
+.message { white-space: pre-wrap; background: var(--cream-warm); border-radius: 8px; padding: 12px; margin: 0; }
+.edit { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.edit label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+.edit .wide { grid-column: 1 / -1; }
+.row-actions { display: flex; gap: 10px; justify-content: flex-start; margin-top: 4px; }
+.history { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.history li { padding: 8px 0; border-top: 1px solid var(--line); }
+.history .when { color: var(--ink-mute); font-size: 13px; }
+.cols { margin: 6px 0 10px; padding-left: 20px; }
+.preview { margin: 12px 0; font-size: 14px; }
+.preview ul { margin: 6px 0; padding-left: 20px; max-height: 180px; overflow: auto; }
+
+.toast {
+  position: fixed; inset: auto; margin: 0; border: 0;
+  left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+  background: var(--ink); color: var(--cream); padding: 10px 18px; border-radius: 999px;
+  opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; max-width: calc(100vw - 32px);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.bad { background: var(--red); color: #fff; }
+
+/* ----------------------------------------------------------------- mobile */
+@media (max-width: 760px) {
+  .bar { padding: 10px 16px; }
+  .main { padding: 16px 16px 40px; }
+  .who #who { display: none; }
+  .toolbar select { flex: 1 1 auto; }
+  .table-wrap { background: transparent; border: 0; }
+  .table thead { display: none; }
+  .table, .table tbody, .table tr, .table td { display: block; width: 100%; }
+  .table tr { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; padding: 6px 0; }
+  .table td { border: 0; padding: 4px 14px; display: flex; gap: 12px; overflow-wrap: anywhere; }
+  .table td::before { content: attr(data-label); flex: 0 0 110px; color: var(--ink-mute); font-size: 13px; font-weight: 400; }
+  .edit { grid-template-columns: 1fr; }
+  dialog { padding: 18px 16px; }
+}
