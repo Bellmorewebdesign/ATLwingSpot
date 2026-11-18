@@ -119,10 +119,20 @@ CURRENT_ENV="$(aws lambda get-function-configuration --function-name "$FUNCTION"
 # resets the rate-limit buckets; it is not a credential for anything.
 NEW_SECRET="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
 
-MERGED="$(python3 - "$CURRENT_ENV" "$TABLE" "$NEW_SECRET" "$TURNSTILE_HOSTNAMES" <<'PY'
+# The submissions archive (aws/franchise-dashboard), if that stack has been
+# deployed. Read from its output so nobody has to copy the URL by hand. If the
+# stack is absent this stays empty and the handler skips the archive step.
+ARCHIVE_STACK="${ARCHIVE_STACK:-atl-franchise-archive}"
+QUEUE_URL="${SUBMISSIONS_QUEUE_URL:-$(aws cloudformation describe-stacks \
+  --stack-name "$ARCHIVE_STACK" --region "$REGION" \
+  --query "Stacks[0].Outputs[?OutputKey=='SubmissionsQueueUrl'].OutputValue" \
+  --output text 2>/dev/null || true)}"
+[[ "$QUEUE_URL" == "None" ]] && QUEUE_URL=""
+
+MERGED="$(python3 - "$CURRENT_ENV" "$TABLE" "$NEW_SECRET" "$TURNSTILE_HOSTNAMES" "$QUEUE_URL" <<'PY'
 import json, sys
 current = json.loads(sys.argv[1]) if sys.argv[1] not in ("", "None", "null") else {}
-table, generated, hostnames = sys.argv[2], sys.argv[3], sys.argv[4]
+table, generated, hostnames, queue_url = sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
 
 # Existing values win: this must never clobber SES_FROM, FRANCHISE_RECIPIENT,
 # or a RATE_LIMIT_SECRET that is already in place and already has live
@@ -143,7 +153,9 @@ defaults = {
     "MAX_BODY_BYTES": "16384",
     "SES_FROM_NAME": "ATL Wing Spot",
 }
-added = [k for k, v in defaults.items() if not current.get(k)]
+if queue_url:
+    defaults["SUBMISSIONS_QUEUE_URL"] = queue_url
+added =[k for k, v in defaults.items() if not current.get(k)]
 merged = dict(defaults)
 merged.update({k: v for k, v in current.items() if v not in (None, "")})
 print(json.dumps({
@@ -161,6 +173,11 @@ aws lambda update-function-configuration --function-name "$FUNCTION" --region "$
 aws lambda wait function-updated-v2 --function-name "$FUNCTION" --region "$REGION"
 ok "added (existing values preserved): ${ADDED}"
 ok "secret not printed; re-running will not overwrite one already set"
+if [[ -n "$QUEUE_URL" ]]; then
+  ok "submissions archive: on (stack ${ARCHIVE_STACK})"
+else
+  ok "submissions archive: off (no ${ARCHIVE_STACK} stack found; the form only emails)"
+fi
 
 HAS_TS="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1])["has_turnstile_secret"])' "$MERGED")"
 if [[ "$HAS_TS" == "True" ]]; then

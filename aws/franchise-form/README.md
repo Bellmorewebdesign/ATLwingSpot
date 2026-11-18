@@ -16,8 +16,11 @@ browser  ──POST JSON──▶  API Gateway HTTP API (jva4k2azf7)
                               │                (before any quota is spent)
                               ├──▶ DynamoDB  atl-franchise-form-ratelimit
                               │                (conditional TransactWriteItems)
-                              └──▶ SES  forms@bellmorewebdesign.com
-                                        → FRANCHISE_RECIPIENT
+                              ├──▶ SES  forms@bellmorewebdesign.com
+                              │         → FRANCHISE_RECIPIENT
+                              └──▶ SQS  atl-franchise-submissions  (optional)
+                                        → archive for the dashboard,
+                                          see ../franchise-dashboard
 ```
 
 The order inside the handler is deliberate and each step is cheaper than the
@@ -26,6 +29,7 @@ one after it:
 ```
 method → size → JSON → honeypot → field validation
    → Turnstile (network)  → rate-limit quota (durable)  → SES
+   → archive copy (only after SES succeeds; cannot fail the request)
 ```
 
 Nothing reaches Cloudflare that has not already passed local validation, and
@@ -35,7 +39,7 @@ nothing reaches the quota that has not already proved it is a person.
 | --- | --- |
 | `lambda_function.py` | The whole handler. This is the file to deploy. |
 | `setup.sh` | Idempotent setup for everything around it. |
-| `tests/test_lambda_function.py` | 75 tests. No AWS, no network. |
+| `tests/test_lambda_function.py` | 87 tests. No AWS, no network. |
 | `tests/fakes.py` | DynamoDB and SES doubles. The DynamoDB one evaluates the real conditions under a lock, so the concurrency tests mean something. |
 
 ---
@@ -129,6 +133,7 @@ Existing values are preserved by `setup.sh`; it only fills in what is missing.
 | `PER_IP_DAILY_LIMIT` | `10` | Per IP, per UTC calendar day. |
 | `GLOBAL_DAILY_LIMIT` | `50` | Across everyone, per UTC calendar day. |
 | `MAX_BODY_BYTES` | `16384` | Request bodies above this are refused unparsed. |
+| `SUBMISSIONS_QUEUE_URL` | — | Optional. Queue of the submissions archive. Unset means no archive copy. `setup.sh` fills it from the `atl-franchise-archive` stack if that exists. |
 
 Missing `TURNSTILE_SECRET`, `RATE_LIMIT_SECRET`, `SES_FROM` or
 `FRANCHISE_RECIPIENT` makes the form return 503 rather than run without the
@@ -297,12 +302,15 @@ python3 -m venv .venv && .venv/bin/pip install boto3 pytest
 cd tests && ../.venv/bin/python -m pytest -q
 ```
 
-75 tests, no AWS and no network. They cover the happy path and the exact email
+87 tests, no AWS and no network. They cover the happy path and the exact email
 format, every validation rejection, the honeypot, each of the four limits,
 window resets across hour and day boundaries, missing and spoofed source IPs,
 concurrency at the per-IP and global caps (20 and 25 threads racing for 3 and 5
 places), DynamoDB failures of four kinds, SES failure, and that no personal
-detail is ever written to the log.
+detail is ever written to the log. The archive tests check that the email and
+the response are identical whether the queue is unset, working or failing, that
+nothing is archived unless the email went out, and that the archive worker
+accepts exactly what the form queues.
 
 For Turnstile specifically: a valid verification; `success: false` for each of
 Cloudflare's failure codes; a token from the wrong hostname; a token from the

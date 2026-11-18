@@ -9,8 +9,10 @@ no network: both clients are replaced with the fakes in fakes.py.
 import importlib
 import json
 import os
+import re
 import sys
 import threading
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
@@ -22,7 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 
-from fakes import FakeDynamoDB, FakeSES  # noqa: E402
+from fakes import FakeDynamoDB, FakeSES, FakeSQS  # noqa: E402
 
 ENV = {
     # Stand-ins. The real sender and recipient live only in the Lambda's
@@ -81,6 +83,7 @@ def mod(monkeypatch):
     importlib.reload(lambda_function)
     lambda_function._ddb = FakeDynamoDB()
     lambda_function._ses = FakeSES()
+    lambda_function._sqs = FakeSQS()
     lambda_function._post_form = FakeVerify()
     return lambda_function
 
@@ -637,3 +640,148 @@ def test_rate_limit_still_applies_to_verified_submissions(mod):
     second = mod.lambda_handler(event(GOOD), None)
     assert second["statusCode"] == 429       # the limiter is still in charge
     assert len(mod._ses.sent) == 1
+
+
+# ------------------------------------------------------------- archive copy
+#
+# After a successful send the handler queues a copy for the submissions
+# archive (aws/franchise-dashboard). These pin down that it is additive only:
+# the email and the response are identical whether the queue is unset, works,
+# or fails.
+
+QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/000000000000/test-queue"
+
+
+@pytest.fixture
+def archived(mod, monkeypatch):
+    monkeypatch.setenv("SUBMISSIONS_QUEUE_URL", QUEUE_URL)
+    importlib.reload(mod)
+    mod._ddb = FakeDynamoDB()
+    mod._ses = FakeSES()
+    mod._sqs = FakeSQS()
+    mod._post_form = FakeVerify()
+    return mod
+
+
+def queued(m):
+    return [json.loads(s["MessageBody"]) for s in m._sqs.sent]
+
+
+def test_archive_is_skipped_when_no_queue_is_configured(mod):
+    resp = mod.lambda_handler(event(GOOD), None)
+    assert resp["statusCode"] == 200
+    assert len(mod._ses.sent) == 1
+    assert mod._sqs.sent == []
+
+
+def test_successful_send_queues_one_copy(archived):
+    resp = archived.lambda_handler(event(GOOD), None)
+    assert resp["statusCode"] == 200
+    assert body_of(resp) == {"ok": True}
+    assert len(archived._ses.sent) == 1
+    assert len(archived._sqs.sent) == 1
+    assert archived._sqs.sent[0]["QueueUrl"] == QUEUE_URL
+    copy = queued(archived)[0]
+    for name in ("firstName", "lastName", "email", "phone", "territory", "message"):
+        assert copy[name] == GOOD[name]
+    assert "turnstileToken" not in copy
+    assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", copy["createdAt"])
+    assert uuid.UUID(copy["submissionId"]).version == 4
+
+
+def test_email_is_byte_for_byte_the_same_with_the_archive_on(mod, archived):
+    # `archived` is `mod` reloaded with the queue set; compare against a
+    # fresh, queue-less send of the same submission.
+    archived.lambda_handler(event(GOOD), None)
+    with_archive = archived._ses.sent[0]
+    archived._ses = FakeSES()
+    archived._ddb = FakeDynamoDB()
+    archived.SUBMISSIONS_QUEUE_URL = ""
+    archived.lambda_handler(event(GOOD), None)
+    assert archived._ses.sent[0] == with_archive
+
+
+def test_each_submission_gets_its_own_id(archived, monkeypatch):
+    archived.lambda_handler(event(GOOD), None)
+    archived.lambda_handler(event(GOOD, ip="198.51.100.7"), None)
+    ids = [c["submissionId"] for c in queued(archived)]
+    assert len(ids) == 2 and ids[0] != ids[1]
+
+
+@pytest.mark.parametrize("failure", [
+    "client",
+    "connection",
+    "unexpected",
+])
+def test_queue_failure_never_changes_the_response(archived, caplog, failure):
+    archived._sqs = FakeSQS(fail_with={
+        "client": _client_error("AccessDenied"),
+        "connection": EndpointConnectionError(endpoint_url=QUEUE_URL),
+        "unexpected": RuntimeError("boom"),
+    }[failure])
+    caplog.set_level("INFO")
+    resp = archived.lambda_handler(event(GOOD), None)
+    assert resp["statusCode"] == 200
+    assert body_of(resp) == {"ok": True}
+    assert len(archived._ses.sent) == 1
+    logged = "\n".join(r.getMessage() for r in caplog.records)
+    assert "archive_enqueue_failed" in logged
+    for secret in ["Dana", "Okafor", "dana@example.com", "516-555-0142", "Interested in two units"]:
+        assert secret not in logged
+
+
+def test_nothing_is_archived_when_the_email_fails(archived):
+    archived._ses = FakeSES(fail_with=_client_error("MessageRejected"))
+    assert archived.lambda_handler(event(GOOD), None)["statusCode"] == 502
+    assert archived._sqs.sent == []
+
+
+def test_nothing_is_archived_for_the_honeypot(archived):
+    payload = dict(GOOD)
+    payload[archived.HONEYPOT_FIELD] = "http://spam.example"
+    assert archived.lambda_handler(event(payload), None)["statusCode"] == 200
+    assert archived._sqs.sent == []
+
+
+def test_nothing_is_archived_when_rate_limited(archived):
+    archived.lambda_handler(event(GOOD), None)
+    assert archived.lambda_handler(event(GOOD), None)["statusCode"] == 429
+    assert len(archived._sqs.sent) == 1
+
+
+def test_nothing_is_archived_for_invalid_input(archived):
+    archived.lambda_handler(event(dict(GOOD, email="nope")), None)
+    assert archived._sqs.sent == []
+
+
+def test_the_archive_worker_accepts_what_the_form_queues(archived):
+    # Contract test: the field names here and in the worker must agree, or
+    # every copy would land in the dead-letter queue.
+    worker_dir = os.path.join(os.path.dirname(os.path.dirname(HERE)),
+                              "franchise-dashboard", "src", "worker")
+    if not os.path.isdir(worker_dir):
+        pytest.skip("archive worker not present")
+    sys.path.insert(0, worker_dir)
+    try:
+        import worker
+        importlib.reload(worker)
+    finally:
+        sys.path.remove(worker_dir)
+
+    class Table:
+        items = []
+
+        def put_item(self, **kwargs):
+            self.items.append(kwargs["Item"])
+
+    worker._ddb = Table()
+    archived.lambda_handler(event(GOOD), None)
+    no_message = {k: v for k, v in GOOD.items() if k != "message"}
+    archived.lambda_handler(event(no_message, ip="198.51.100.7"), None)
+    assert len(archived._sqs.sent) == 2
+    records = [{"messageId": f"m{i}", "body": s["MessageBody"]}
+               for i, s in enumerate(archived._sqs.sent)]
+    assert worker.handler({"Records": records}, None) == {"batchItemFailures": []}
+    assert worker._ddb.items[0]["email"] == {"S": GOOD["email"]}
+    assert worker._ddb.items[0]["message"] == {"S": GOOD["message"]}
+    assert "message" not in worker._ddb.items[1]

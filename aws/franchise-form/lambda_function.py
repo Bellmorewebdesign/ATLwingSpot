@@ -36,9 +36,11 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import uuid
 from datetime import datetime, timezone
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 
 LOG = logging.getLogger()
@@ -76,6 +78,11 @@ PER_IP_HOURLY_LIMIT = _int_env("PER_IP_HOURLY_LIMIT", 3)
 PER_IP_DAILY_LIMIT = _int_env("PER_IP_DAILY_LIMIT", 10)
 GLOBAL_DAILY_LIMIT = _int_env("GLOBAL_DAILY_LIMIT", 50)
 MAX_BODY_BYTES = _int_env("MAX_BODY_BYTES", 16384)
+
+# Queue that feeds the submissions archive (aws/franchise-dashboard). Unset
+# means the archive step is skipped entirely, so this code is safe to deploy
+# before or without that stack.
+SUBMISSIONS_QUEUE_URL = os.environ.get("SUBMISSIONS_QUEUE_URL", "").strip()
 
 # --- Cloudflare Turnstile ---------------------------------------------------
 # The URL is hard-coded on purpose. Making it configurable would turn one
@@ -117,6 +124,7 @@ EMAIL_RE = re.compile(r"^[^\s@<>,;:\\\"]{1,64}@[A-Za-z0-9.-]{1,252}\.[A-Za-z]{2,
 
 _ddb = None
 _ses = None
+_sqs = None
 
 
 def _dynamodb():
@@ -131,6 +139,19 @@ def _sesclient():
     if _ses is None:
         _ses = boto3.client("ses", region_name=AWS_REGION)
     return _ses
+
+
+def _sqsclient():
+    global _sqs
+    if _sqs is None:
+        # Short timeouts and a single attempt: by the time this runs the email
+        # has already gone, and a slow queue must not hold up the response.
+        _sqs = boto3.client(
+            "sqs",
+            region_name=AWS_REGION,
+            config=Config(connect_timeout=2, read_timeout=3, retries={"max_attempts": 1}),
+        )
+    return _sqs
 
 
 # --------------------------------------------------------------------------
@@ -530,6 +551,30 @@ def _send_email(cleaned):
 
 
 # --------------------------------------------------------------------------
+# Archive copy
+# --------------------------------------------------------------------------
+
+def _archive(cleaned):
+    """
+    Queue a copy of a submission that has already been emailed, for the
+    dashboard's database. Never raises and never changes the response: the
+    email is the thing the applicant was promised, and it has been sent.
+
+    A failure here is logged as "archive_enqueue_failed" (no personal data),
+    which the archive stack turns into an alarm.
+    """
+    if not SUBMISSIONS_QUEUE_URL:
+        return
+    try:
+        body = {name: cleaned.get(name, "") for name in FIELDS}
+        body["submissionId"] = str(uuid.uuid4())
+        body["createdAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        _sqsclient().send_message(QueueUrl=SUBMISSIONS_QUEUE_URL, MessageBody=json.dumps(body))
+    except Exception as exc:  # noqa: BLE001 - nothing here may reach the caller
+        LOG.error(json.dumps({"event": "archive_enqueue_failed", "error": type(exc).__name__}))
+
+
+# --------------------------------------------------------------------------
 # Handler
 # --------------------------------------------------------------------------
 
@@ -655,6 +700,10 @@ def lambda_handler(event, context):
             "error": type(exc).__name__,
         }))
         return _error(502, "send_failed", "We could not send that just now. Please try again in a few minutes.")
+
+    # Only after a successful send, so the archive never holds anything the
+    # inbox does not. See _archive: it cannot fail this request.
+    _archive(cleaned)
 
     # Nothing about the person is logged: no name, no email, no phone, no
     # message. The truncated hash is enough to correlate abuse and is not an
