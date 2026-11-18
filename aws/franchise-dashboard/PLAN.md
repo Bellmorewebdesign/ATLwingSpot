@@ -5,8 +5,9 @@ the existing email. Email keeps working exactly as it does today (it is where
 replies happen). The database is a second copy that cannot be deleted by
 accident and that the whole team can search.
 
-Status: **phase 1 is written and tested, not deployed.** Phases 2 and 3 are a
-plan only.
+Status: **phase 1 archive stack deployed** (`atl-franchise-archive`,
+us-east-1). The form Lambda change is written and tested but not yet deployed,
+so nothing is being archived yet. Phases 2 and 3 are a plan only.
 
 ## Ground rules
 
@@ -78,8 +79,10 @@ while the dashboard is built.
 
 - [x] `template.yaml`: table, queue, DLQ, worker, alarms, backups
 - [x] `src/worker/worker.py` with 16 tests
-- [ ] Deploy the stack (see "What you do on AWS")
-- [ ] Apply the form Lambda change below, then set `SUBMISSIONS_QUEUE_URL`
+- [x] Deploy the stack
+- [x] Form Lambda change written, with 12 new tests (87 total)
+- [ ] Confirm the SNS alert subscription email
+- [ ] Deploy the form Lambda change with `setup.sh`
 - [ ] Send a test submission; confirm the email arrives **and** a row appears
 
 ### Phase 2: the dashboard (not started)
@@ -103,59 +106,27 @@ while the dashboard is built.
   DynamoDB and AWS Backup.
 - One-time import of past submissions from Gmail, if wanted.
 
-## The form Lambda change (phase 1, not yet applied)
+## The form Lambda change (phase 1)
 
-This is the only edit to existing code. It is deliberately outside the email
-path and cannot affect the response.
+The only edit to existing code, in `aws/franchise-form/lambda_function.py`:
 
-In `aws/franchise-form/lambda_function.py`, near the other clients and env vars:
+- A new `_archive(cleaned)` function sends the validated fields, a new
+  `submissionId` (UUID) and `createdAt` to the queue.
+- It is called once, **after** `_send_email` has succeeded. Nothing is archived
+  for a failed send, the honeypot, a rate-limited request or invalid input.
+- It never raises. Any failure is logged as `archive_enqueue_failed` (no
+  personal data), which the stack's alarm watches; the response is still 200.
+- The SQS client uses 2s/3s timeouts and a single attempt, so a slow queue
+  cannot hold up the applicant.
+- With `SUBMISSIONS_QUEUE_URL` unset it does nothing at all.
 
-```python
-import uuid
-from datetime import datetime, timezone
-from botocore.config import Config
+The email itself is untouched: a test asserts the SES call is byte-for-byte
+identical with the archive on and off, and a contract test feeds what the form
+queues into the real worker.
 
-SUBMISSIONS_QUEUE_URL = os.environ.get("SUBMISSIONS_QUEUE_URL", "").strip()
-
-_sqs = None
-
-def _sqsclient():
-    global _sqs
-    if _sqs is None:
-        # Short timeouts and one attempt: a stuck queue must never hold up the
-        # response to someone whose email already went out.
-        _sqs = boto3.client(
-            "sqs",
-            region_name=AWS_REGION,
-            config=Config(connect_timeout=2, read_timeout=3, retries={"max_attempts": 1}),
-        )
-    return _sqs
-
-
-def _archive(cleaned):
-    """Queue a copy for the dashboard. Never raises; never affects the email."""
-    if not SUBMISSIONS_QUEUE_URL:
-        return
-    try:
-        body = dict(cleaned)
-        body["submissionId"] = str(uuid.uuid4())
-        body["createdAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        _sqsclient().send_message(QueueUrl=SUBMISSIONS_QUEUE_URL, MessageBody=json.dumps(body))
-    except Exception as exc:  # noqa: BLE001 - the email has already been sent
-        LOG.error(json.dumps({"event": "archive_enqueue_failed", "error": type(exc).__name__}))
-```
-
-and in `lambda_handler`, immediately after the `_send_email(cleaned)` try/except
-and before the final `LOG.info(... "sent" ...)`:
-
-```python
-    _archive(cleaned)
-```
-
-If `SUBMISSIONS_QUEUE_URL` is unset the function does nothing, so deploying the
-code before the infrastructure is harmless. Tests for it go in
-`aws/franchise-form/tests/` (queue accepts; queue raises and the response is
-still 200; queue unset).
+`setup.sh` now reads the queue URL from the `atl-franchise-archive` stack's
+output and merges it into the Lambda's environment, keeping every existing
+value.
 
 ## What you do on AWS
 
@@ -178,23 +149,18 @@ still 200; queue unset).
 4. **Deploy:**
    ```bash
    cd aws/franchise-dashboard
-   sam build
    sam deploy --guided --stack-name atl-franchise-archive --region us-east-1 \
      --capabilities CAPABILITY_IAM
    ```
-   It asks for `FormFunctionRoleName` and `AlertEmail`; accept the defaults for
-   the rest. Say yes to saving the answers to `samconfig.toml` (it holds no
-   secrets, but check before committing it).
+   No `sam build` is needed: the worker has no dependencies. It asks for
+   `FormFunctionRoleName` and `AlertEmail`; accept the defaults for the rest.
+   Say yes to saving the answers to `samconfig.toml` (it holds no secrets, but
+   check before committing it).
 5. **Confirm the alert email.** AWS sends a confirmation link to `AlertEmail`;
    alarms are silent until it is clicked.
-6. **Wire up the form Lambda:** apply the code change above, deploy it with
-   `aws/franchise-form/setup.sh`, then add the environment variable (merge, do
-   not replace, the existing ones; the stack's `SubmissionsQueueUrl` output is
-   the value):
-   ```bash
-   aws cloudformation describe-stacks --stack-name atl-franchise-archive \
-     --query "Stacks[0].Outputs[?OutputKey=='SubmissionsQueueUrl'].OutputValue" --output text
-   ```
+6. **Deploy the form Lambda change.** From `aws/franchise-form`, run
+   `./setup.sh`. It deploys the new code and sets `SUBMISSIONS_QUEUE_URL` from
+   the stack automatically; look for `submissions archive: on` in its output.
 7. **Test end to end** with a real submission: the email arrives, and
    `aws dynamodb scan --table-name atl-franchise-submissions --max-items 5`
    shows the row.

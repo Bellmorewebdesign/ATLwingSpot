@@ -106,3 +106,15 @@ class FakeSES:
             raise self.fail_with
         self.sent.append(kwargs)
         return {"MessageId": "fake-message-id"}
+
+
+class FakeSQS:
+    def __init__(self, fail_with=None):
+        self.sent = []
+        self.fail_with = fail_with
+
+    def send_message(self, **kwargs):
+        if self.fail_with is not None:
+            raise self.fail_with
+        self.sent.append(kwargs)
+        return {"MessageId": "fake-sqs-message-id"}
