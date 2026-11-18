@@ -1,0 +1,280 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  ATL Wing Spot franchise submissions archive, phase 1 (capture).
+  Adds a durable copy of every franchising submission alongside the existing
+  SES email. Does not change the email path. See PLAN.md.
+
+Parameters:
+  FormFunctionRoleName:
+    Type: String
+    Description: >
+      Execution role of the existing atl-franchise-form Lambda. Find it with:
+      aws lambda get-function-configuration --function-name atl-franchise-form
+      --query Role --output text   (use the part after "role/").
+  FormLogGroupName:
+    Type: String
+    Default: /aws/lambda/atl-franchise-form
+    Description: Log group of the existing form Lambda (for the enqueue-failure alarm).
+  AlertEmail:
+    Type: String
+    Description: Where alarms are sent. AWS emails this address a confirmation link once.
+  TableName:
+    Type: String
+    Default: atl-franchise-submissions
+
+Resources:
+
+  # ---------------------------------------------------------------- the data
+  # No TTL, on purpose: the existing rate-limit table expires its rows; this
+  # one must never. Retain on delete or replace, so removing or reshaping this
+  # stack cannot take the leads with it.
+  SubmissionsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Ref TableName
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      AttributeDefinitions:
+        - { AttributeName: submissionId, AttributeType: S }
+        - { AttributeName: createdAt,    AttributeType: S }
+        - { AttributeName: status,       AttributeType: S }
+        - { AttributeName: entity,       AttributeType: S }
+      KeySchema:
+        - { AttributeName: submissionId, KeyType: HASH }
+      GlobalSecondaryIndexes:
+        # "everything, newest first" for the dashboard's main list.
+        # entity is the constant "SUB"; fine at franchise-inquiry volume.
+        - IndexName: by-created
+          KeySchema:
+            - { AttributeName: entity,    KeyType: HASH }
+            - { AttributeName: createdAt, KeyType: RANGE }
+          Projection: { ProjectionType: ALL }
+        # "everything in status X, newest first" for the pipeline filter.
+        - IndexName: by-status
+          KeySchema:
+            - { AttributeName: status,    KeyType: HASH }
+            - { AttributeName: createdAt, KeyType: RANGE }
+          Projection: { ProjectionType: ALL }
+
+  # --------------------------------------------------------------- the queue
+  SubmissionsDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: atl-franchise-submissions-dlq
+      MessageRetentionPeriod: 1209600   # 14 days, the maximum
+      SqsManagedSseEnabled: true
+
+  SubmissionsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: atl-franchise-submissions
+      SqsManagedSseEnabled: true
+      MessageRetentionPeriod: 345600    # 4 days
+      # At least 6x the worker timeout, per the Lambda/SQS guidance.
+      VisibilityTimeout: 120
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SubmissionsDLQ.Arn
+        maxReceiveCount: 5
+
+  # --------------------------------------------------- the form Lambda's side
+  # One narrow permission added to the EXISTING role: send to this one queue.
+  # Nothing else on the role is touched, and the form Lambda gets no access to
+  # the table, so a bug or compromise there cannot read or delete leads.
+  FormFunctionSendPolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      RoleName: !Ref FormFunctionRoleName
+      PolicyName: atl-franchise-submissions-enqueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: EnqueueSubmission
+            Effect: Allow
+            Action: sqs:SendMessage
+            Resource: !GetAtt SubmissionsQueue.Arn
+
+  # --------------------------------------------------------------- the worker
+  WorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: atl-franchise-archive
+      Description: Writes each queued franchise submission to DynamoDB.
+      CodeUri: src/worker/
+      Handler: worker.handler
+      Runtime: python3.12
+      Architectures: [arm64]
+      MemorySize: 128
+      Timeout: 15
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref SubmissionsTable
+      Policies:
+        - Statement:
+            - Sid: WriteSubmissions
+              Effect: Allow
+              Action: dynamodb:PutItem
+              Resource: !GetAtt SubmissionsTable.Arn
+      Events:
+        FromQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt SubmissionsQueue.Arn
+            BatchSize: 10
+            FunctionResponseTypes: [ReportBatchItemFailures]
+
+  WorkerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${WorkerFunction}
+      RetentionInDays: 90
+
+  # ---------------------------------------------------------------- alerting
+  AlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: atl-franchise-submissions-alerts
+      Subscription:
+        - { Protocol: email, Endpoint: !Ref AlertEmail }
+
+  # A message in the DLQ means a submission was emailed but could not be
+  # archived after five tries. This is the alarm that matters most.
+  DlqNotEmptyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: atl-franchise-submissions-dlq-not-empty
+      AlarmDescription: A submission failed to archive after retries. Redrive it from the DLQ.
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - { Name: QueueName, Value: !GetAtt SubmissionsDLQ.QueueName }
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertTopic]
+
+  QueueBackedUpAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: atl-franchise-submissions-queue-backed-up
+      AlarmDescription: A submission has waited over 15 minutes to be archived.
+      Namespace: AWS/SQS
+      MetricName: ApproximateAgeOfOldestMessage
+      Dimensions:
+        - { Name: QueueName, Value: !GetAtt SubmissionsQueue.QueueName }
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 900
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertTopic]
+
+  WorkerErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: atl-franchise-archive-worker-errors
+      AlarmDescription: The archive worker crashed (not a per-message failure).
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - { Name: FunctionName, Value: !Ref WorkerFunction }
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertTopic]
+
+  # The one gap in the design: the email went out but the form Lambda could not
+  # even enqueue. The handler logs "archive_enqueue_failed" in that case; this
+  # turns that line into an alarm. (Phase 3's reconcile job is the backstop.)
+  EnqueueFailedFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FormLogGroupName
+      FilterPattern: '"archive_enqueue_failed"'
+      MetricTransformations:
+        - MetricNamespace: ATLFranchise
+          MetricName: ArchiveEnqueueFailed
+          MetricValue: '1'
+          DefaultValue: 0
+
+  EnqueueFailedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: atl-franchise-archive-enqueue-failed
+      AlarmDescription: >
+        A franchise email was sent but the copy never reached the queue.
+        Find it in the form Lambda's logs (no PII there; match by time) and
+        re-enter it manually.
+      Namespace: ATLFranchise
+      MetricName: ArchiveEnqueueFailed
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertTopic]
+
+  # ------------------------------------------------------------------ backups
+  # Point-in-time recovery (35 days) is already on the table. This adds
+  # independent daily backups kept 90 days, in a separate vault.
+  BackupVault:
+    Type: AWS::Backup::BackupVault
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BackupVaultName: atl-franchise-vault
+
+  BackupPlan:
+    Type: AWS::Backup::BackupPlan
+    Properties:
+      BackupPlan:
+        BackupPlanName: atl-franchise-daily
+        BackupPlanRule:
+          - RuleName: daily
+            TargetBackupVault: !Ref BackupVault
+            ScheduleExpression: cron(0 7 * * ? *)
+            Lifecycle: { DeleteAfterDays: 90 }
+
+  BackupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: backup.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup
+
+  BackupSelection:
+    Type: AWS::Backup::BackupSelection
+    Properties:
+      BackupPlanId: !Ref BackupPlan
+      BackupSelection:
+        SelectionName: submissions-table
+        IamRoleArn: !GetAtt BackupRole.Arn
+        Resources: [!GetAtt SubmissionsTable.Arn]
+
+Outputs:
+  SubmissionsQueueUrl:
+    Description: Set this as SUBMISSIONS_QUEUE_URL on the atl-franchise-form Lambda.
+    Value: !Ref SubmissionsQueue
+  SubmissionsTableName:
+    Value: !Ref SubmissionsTable
+  DeadLetterQueueUrl:
+    Value: !Ref SubmissionsDLQ
