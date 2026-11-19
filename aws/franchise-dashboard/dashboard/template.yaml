@@ -1,0 +1,383 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  ATL Wing Spot franchise dashboard, phase 2. A login-protected page for the
+  submissions that the archive stack (atl-franchise-archive) saves. Separate
+  stack, so the dashboard can be changed or rebuilt without touching capture.
+  See ../PLAN.md.
+
+Parameters:
+  TableName:
+    Type: String
+    Default: atl-franchise-submissions
+    Description: The submissions table created by the archive stack.
+  DomainName:
+    Type: String
+    Default: ''
+    Description: >
+      Optional custom hostname, e.g. admin.atlwingspot.com. Leave empty on the
+      first deploy; the dashboard is then served on its cloudfront.net address.
+  CertificateArn:
+    Type: String
+    Default: ''
+    Description: ACM certificate (us-east-1) for DomainName. Required with DomainName.
+    AllowedPattern: '^$|^arn:aws:acm:us-east-1:[0-9]{12}:certificate/[0-9a-f-]+$'
+    ConstraintDescription: must be empty or an ACM certificate ARN in us-east-1
+  RequireMfa:
+    Type: String
+    Default: 'OFF'
+    AllowedValues: ['ON', 'OFF']
+    Description: >
+      ON makes every login also ask for a 6-digit code from an authenticator
+      app; the first login after switching it on shows a key to add to the
+      app. Recommended for personal data. Can be switched at any redeploy.
+
+Rules:
+  DomainNeedsCertificate:
+    RuleCondition: !Not [!Equals [!Ref DomainName, '']]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref CertificateArn, '']]
+        AssertDescription: CertificateArn is required when DomainName is set.
+
+Conditions:
+  HasDomain: !Not [!Equals [!Ref DomainName, '']]
+  MfaOn: !Equals [!Ref RequireMfa, 'ON']
+
+Resources:
+
+  # ------------------------------------------------------------------ audit
+  # Who changed what, when. Written only by the API; nothing else can.
+  AuditTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: atl-franchise-audit
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      AttributeDefinitions:
+        - { AttributeName: submissionId, AttributeType: S }
+        - { AttributeName: at,           AttributeType: S }
+      KeySchema:
+        - { AttributeName: submissionId, KeyType: HASH }
+        - { AttributeName: at,           KeyType: RANGE }
+
+  # ------------------------------------------------------------------ login
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: atl-franchise-dashboard
+      UserPoolTier: ESSENTIALS
+      UsernameConfiguration:
+        CaseSensitive: true            # "ATLWingSpotAdmin" exactly
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true # nobody can sign themselves up
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - { Name: admin_only, Priority: 1 } # no email on file; reset via create-admin.sh
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 10
+          RequireNumbers: true
+          RequireLowercase: false
+          RequireUppercase: false
+          RequireSymbols: false
+          TemporaryPasswordValidityDays: 7
+      MfaConfiguration: !If [MfaOn, 'ON', 'OFF']
+      EnabledMfas: !If [MfaOn, [SOFTWARE_TOKEN_MFA], !Ref AWS::NoValue]
+
+  # The dashboard's own branded form signs in through Cognito's API
+  # (USER_PASSWORD_AUTH over HTTPS). No OAuth redirects and no hosted page.
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: dashboard
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false            # a browser app cannot keep a secret
+      ExplicitAuthFlows: [ALLOW_USER_PASSWORD_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      AuthSessionValidity: 5           # minutes to finish an MFA or new-password step
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      RefreshTokenValidity: 12
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: hours
+
+  # -------------------------------------------------------------------- API
+  # Written out as plain API Gateway resources rather than SAM's HttpApi on
+  # purpose. SAM puts the JWT authorizer inside the API definition, which makes
+  # the API depend on the app client; the app client needs the CloudFront
+  # address for its callback URL; CloudFront needs the API as an origin. That
+  # loop cannot deploy. A separate Authorizer resource breaks it.
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: atl-franchise-dashboard
+      ProtocolType: HTTP
+
+  HttpApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: $default
+      AutoDeploy: true
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 20
+        ThrottlingRateLimit: 10
+
+  JwtAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref HttpApi
+      Name: cognito
+      AuthorizerType: JWT
+      IdentitySource: [$request.header.Authorization]
+      JwtConfiguration:
+        Issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
+        Audience: [!Ref UserPoolClient]
+
+  ApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt ApiFunction.Arn
+      PayloadFormatVersion: '2.0'
+      TimeoutInMillis: 10000
+
+  # Every route requires a valid login token; there is no unauthenticated route.
+  ListRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: GET /api/submissions
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub integrations/${ApiIntegration}
+
+  CreateRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: POST /api/submissions
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub integrations/${ApiIntegration}
+
+  GetRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: GET /api/submissions/{id}
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub integrations/${ApiIntegration}
+
+  UpdateRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: PATCH /api/submissions/{id}
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub integrations/${ApiIntegration}
+
+  ApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ApiFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: atl-franchise-dashboard-api
+      Description: Reads and updates franchise submissions for the dashboard.
+      CodeUri: src/api/
+      Handler: api.handler
+      Runtime: python3.12
+      Architectures: [arm64]
+      MemorySize: 256
+      Timeout: 10
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TableName
+          AUDIT_TABLE: !Ref AuditTable
+      Policies:
+        - Statement:
+            # No DeleteItem anywhere: "archive" is a flag, so nothing can be
+            # lost through the dashboard.
+            - Sid: Submissions
+              Effect: Allow
+              Action: [dynamodb:GetItem, dynamodb:Query, dynamodb:UpdateItem, dynamodb:PutItem]
+              Resource:
+                - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TableName}
+                - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TableName}/index/*
+            - Sid: Audit
+              Effect: Allow
+              Action: [dynamodb:PutItem, dynamodb:Query]
+              Resource: !GetAtt AuditTable.Arn
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ApiFunction}
+      RetentionInDays: 90
+
+  # ---------------------------------------------------------------- website
+  # Private bucket; only this CloudFront distribution can read it.
+  WebBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules: [{ ObjectOwnership: BucketOwnerEnforced }]
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+
+  WebBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: CloudFrontOnly
+            Effect: Allow
+            Principal: { Service: cloudfront.amazonaws.com }
+            Action: s3:GetObject
+            Resource: !Sub ${WebBucket.Arn}/*
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}
+
+  WebOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub atl-franchise-dashboard-${AWS::StackName}
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # The Authorization header reaches the API only if it is part of the cache
+  # key. Responses carry Cache-Control: no-store, so nothing is actually cached.
+  ApiCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: !Sub atl-franchise-dashboard-api-${AWS::StackName}
+        MinTTL: 0
+        DefaultTTL: 0
+        MaxTTL: 1
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers: [Authorization]
+          QueryStringsConfig: { QueryStringBehavior: all }
+          CookiesConfig: { CookieBehavior: none }
+
+  SecurityHeaders:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub atl-franchise-dashboard-headers-${AWS::StackName}
+        SecurityHeadersConfig:
+          ContentSecurityPolicy:
+            Override: true
+            ContentSecurityPolicy: !Sub >-
+              default-src 'none'; script-src 'self'; style-src 'self';
+              img-src 'self' data:; font-src 'self';
+              connect-src 'self' https://cognito-idp.${AWS::Region}.amazonaws.com;
+              form-action 'self'; base-uri 'none'; frame-ancestors 'none'
+          StrictTransportSecurity:
+            Override: true
+            AccessControlMaxAgeSec: 63072000
+            IncludeSubdomains: false
+            Preload: false
+          ContentTypeOptions: { Override: true }
+          FrameOptions: { Override: true, FrameOption: DENY }
+          ReferrerPolicy: { Override: true, ReferrerPolicy: no-referrer }
+        CustomHeadersConfig:
+          Items:
+            - { Header: X-Robots-Tag, Value: 'noindex, nofollow', Override: true }
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Metadata:
+      cfn-lint:
+        config:
+          # CertificateArn is only used when DomainName is set, and the
+          # DomainNeedsCertificate rule makes it a real ARN in that case.
+          ignore_checks: [W1030]
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: ATL Wing Spot franchise dashboard
+        HttpVersion: http2and3
+        PriceClass: PriceClass_100
+        DefaultRootObject: index.html
+        Aliases: !If [HasDomain, [!Ref DomainName], !Ref AWS::NoValue]
+        ViewerCertificate: !If
+          - HasDomain
+          - AcmCertificateArn: !Ref CertificateArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true
+        Origins:
+          - Id: web
+            DomainName: !GetAtt WebBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt WebOriginAccessControl.Id
+            S3OriginConfig: { OriginAccessIdentity: '' }
+          # The API sits behind the same hostname under /api, so the browser
+          # never makes a cross-origin call and no CORS is needed.
+          - Id: api
+            DomainName: !Sub ${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols: [TLSv1.2]
+        DefaultCacheBehavior:
+          TargetOriginId: web
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6   # Managed-CachingOptimized
+          ResponseHeadersPolicyId: !Ref SecurityHeaders
+          Compress: true
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: api
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+            CachedMethods: [GET, HEAD]
+            CachePolicyId: !Ref ApiCachePolicy
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac  # Managed-AllViewerExceptHostHeader
+            ResponseHeadersPolicyId: !Ref SecurityHeaders
+            Compress: true
+
+Outputs:
+  DashboardUrl:
+    Value: !If [HasDomain, !Sub 'https://${DomainName}/', !Sub 'https://${Distribution.DomainName}/']
+  CloudFrontDomain:
+    Description: Point the Cloudflare CNAME for the custom domain at this.
+    Value: !GetAtt Distribution.DomainName
+  DistributionId:
+    Value: !Ref Distribution
+  WebBucketName:
+    Value: !Ref WebBucket
+  UserPoolId:
+    Value: !Ref UserPool
+  UserPoolClientId:
+    Value: !Ref UserPoolClient

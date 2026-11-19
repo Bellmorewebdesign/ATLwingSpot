@@ -7,7 +7,9 @@ accident and that the whole team can search.
 
 Status: **phase 1 is live** (2026-11-18). Every franchising submission is
 emailed as before and also saved to `atl-franchise-submissions` (us-east-1),
-verified end to end with a real submission. Phases 2 and 3 are a plan only.
+verified end to end with a real submission. **Phase 2 (the login dashboard) is
+written and tested, not yet deployed**; it lives in `dashboard/`. Phase 3 is a
+plan only.
 
 ## Ground rules
 
@@ -36,9 +38,15 @@ browser ─▶ API Gateway ─▶ atl-franchise-form  (existing Lambda)
                         Lambda atl-franchise-archive  (idempotent conditional write)
                               ▼
                         DynamoDB  atl-franchise-submissions
-                              ▲
-   Phase 2:  Cognito login ─▶ API Gateway (JWT authorizer) ─▶ dashboard Lambdas
-             S3 + CloudFront  admin.atlwingspot.com  (static dashboard)
+
+   Phase 2 (stack atl-franchise-dashboard):
+
+   browser ─▶ CloudFront  admin.atlwingspot.com
+                 ├── /        ─▶ S3 (private)  the dashboard page
+                 └── /api/*   ─▶ HTTP API, Cognito JWT authorizer ─▶ Lambda atl-franchise-dashboard-api
+                                                                      ├─▶ atl-franchise-submissions
+                                                                      └─▶ atl-franchise-audit
+   login: the dashboard's own branded form → Cognito API (USER_PASSWORD_AUTH, HTTPS) → tokens
 ```
 
 Why a queue rather than the form Lambda writing straight to DynamoDB:
@@ -57,22 +65,32 @@ Why a queue rather than the form Lambda writing straight to DynamoDB:
 | `createdAt` | S | UTC ISO-8601, e.g. `2026-11-18T15:04:05Z` |
 | `firstName`, `lastName`, `email`, `phone`, `territory` | S | exactly the form's fields |
 | `message` | S | optional |
-| `status` | S | `new` → `contacted` → `qualified` → `discovery` → `fdd_sent` → `signed` / `declined` |
+| `status` | S | always `new` today; kept in the data and API, not shown in the dashboard |
 | `entity` | S | constant `SUB`, for the "newest first" index |
 | `schemaVersion` | N | currently `1` |
 
-Added by the dashboard in phase 2 (database only): `owner`, `notes`,
-`lastContactedAt`, `statusHistory`, `archivedAt` (soft delete).
+Added by the dashboard (database only, never written back to email): `notes`,
+`lastContactedAt` (YYYY-MM-DD), `archivedAt` (archive is a flag, not a
+delete), `updatedAt`/`updatedBy`. Rows added by hand or imported also carry
+`source` (`manual` / `import`) and `createdBy`. Imported rows get a
+deterministic id from email + date, so importing the same file twice skips the
+copies.
+
+The dashboard cannot change what the applicant sent (name, email, phone,
+territory, message) and has no delete permission at all.
+
+`atl-franchise-audit` (key: `submissionId`, `at`) records every change: who,
+when, and the before and after values.
 
 Indexes: `by-created` (entity, createdAt) for the main list; `by-status`
-(status, createdAt) for the pipeline filter.
+(status, createdAt), unused by the dashboard today.
 
 No IP address is stored. The form Lambda already keeps only a keyed hash for
 rate limiting, and the dashboard has no need for it.
 
 ## Phases
 
-### Phase 1: capture (written here)
+### Phase 1: capture (live)
 
 Starts saving every submission immediately, with no UI yet, so nothing is lost
 while the dashboard is built.
@@ -85,26 +103,47 @@ while the dashboard is built.
 - [x] Deploy the form Lambda change with `setup.sh`
 - [x] Send a test submission; confirm the email arrives **and** a row appears
 
-### Phase 2: the dashboard (not started)
+### Phase 2: the dashboard (`dashboard/`, written and tested)
 
-- Cognito user pool: invite-only (self sign-up off), **MFA required**, groups
-  `admin` / `staff` / `readonly`.
-- HTTP API with a JWT authorizer and a small Lambda for: list (paged, filter by
-  status, search), get one, update status/notes/owner, archive. Role checks
-  inside the Lambda from the token's `cognito:groups`.
-- `atl-franchise-audit` table: who viewed or changed what, and when.
-- Static dashboard on S3 behind CloudFront at `admin.atlwingspot.com`
-  (ACM certificate in `us-east-1`; CloudFront is the only reader of the bucket).
-- Strict CORS: only the dashboard origin. Security headers (CSP, HSTS) set by
-  CloudFront.
+- **Login:** one Cognito user, `ATLWingSpotAdmin` (usernames are case
+  sensitive). No self sign-up. Password: at least 10 characters including a
+  number, set at a hidden prompt by `create-admin.sh`, never stored in the repo.
+  The sign-in form is the dashboard's own, in ATL Wing Spot branding: it sends
+  the username and password straight to Cognito's API over HTTPS and clears
+  the password from the page. Cognito throttles repeated wrong passwords.
+  Optional authenticator-app codes (`REQUIRE_MFA=ON`); the form handles the
+  code, first-time setup and a forced new password. Tokens last an hour
+  (refreshed for up to 12) and are dropped when the tab closes.
+- **Page:** a list of every lead with a one-line message preview, sortable
+  like a file browser (click a column header, click again to flip; dates start
+  newest first) plus a Sort menu, and search. Every lead has a **Reply**
+  button: on a computer it opens a Gmail draft in a new tab, on a phone the
+  mail app, addressed to the applicant with a subject and their message
+  quoted. Click a lead for the full message, Reply and Call buttons, private
+  notes and Archive. On a phone the
+  list becomes cards and a lead opens full screen. Import a CSV of past
+  submissions and export what is on screen (with spreadsheet-formula injection
+  blocked). The sort choice is remembered per browser.
+- **Branding:** the logo, favicons, colours (orange #f47c20, blue #29c1db,
+  cream) and fonts (Anton, Manrope) are the public site's own files, served
+  from the dashboard so the strict CSP stays intact.
+- **API:** `GET/POST /api/submissions`, `GET/PATCH /api/submissions/{id}` behind
+  a Cognito JWT authorizer, served through the same CloudFront hostname so no
+  CORS is needed.
+- **Security headers** from CloudFront: a strict Content-Security-Policy
+  (scripts only from the dashboard itself), HSTS, no framing, no referrer,
+  `noindex`.
+- Tests: 54 API tests (against an in-memory DynamoDB with the real indexes),
+  18 for the CSV, date, sorting and reply helpers, and a browser run of the real page
+  under the production CSP with Cognito faked (`tests/ui.smoke.js`): sign-in
+  incl. MFA and new-password steps, sorting, previews, notes, archive,
+  import/export, token refresh, sign-out, phone layout down to 320px.
 
 ### Phase 3: hardening (not started)
 
 - Reconcile job (EventBridge, daily): compares recent SES sends to table rows
   and alerts on any email with no matching row.
-- Admin-only CSV export; nightly export to S3 as a copy independent of both
-  DynamoDB and AWS Backup.
-- One-time import of past submissions from Gmail, if wanted.
+- Nightly export to S3 as a copy independent of both DynamoDB and AWS Backup.
 
 ## The form Lambda change (phase 1)
 
@@ -168,14 +207,53 @@ value.
 You do **not** need to change SES, the API Gateway route, or the existing
 DynamoDB table.
 
-**Phase 2 will additionally need:**
+**Phase 2** (in AWS CloudShell, from an up-to-date copy of `main`):
 
-- A DNS record for `admin.atlwingspot.com` (and one to validate the ACM
-  certificate), added wherever `atlwingspot.com`'s DNS is managed. The site
-  itself is served from GitHub Pages (`CNAME` file in the repo root), so this
-  is probably your registrar or Cloudflare, not Route 53.
-- Decide who gets accounts and at what level (admin / staff / read-only).
-- MFA app for each user on first login.
+1. **Deploy the dashboard:**
+   ```bash
+   cd ~/ATLwingSpot && git checkout main && git pull
+   cd aws/franchise-dashboard/dashboard
+   ./deploy.sh
+   ```
+   It takes 5-10 minutes (CloudFront is slow to create) and ends by printing
+   the dashboard address, a `https://d….cloudfront.net/` URL.
+2. **Create the login:**
+   ```bash
+   ./create-admin.sh
+   ```
+   Type the password twice at the hidden prompt. Run it again any time to
+   change the password; that also signs out every existing session.
+3. **Sign in** at the printed address with `ATLWingSpotAdmin` and the password.
+4. **Import past submissions** (optional): put them in a spreadsheet with
+   columns like First name, Last name, Email, Phone, State, Date received,
+   download it as CSV, and use **Import CSV** on the dashboard.
+
+**Custom domain `admin.atlwingspot.com`** (DNS is in Cloudflare):
+
+1. Request a certificate (must be `us-east-1`, which is where CloudFront looks):
+   ```bash
+   CERT_ARN=$(aws acm request-certificate --domain-name admin.atlwingspot.com \
+     --validation-method DNS --region us-east-1 --query CertificateArn --output text)
+   echo "$CERT_ARN"
+   aws acm describe-certificate --certificate-arn "$CERT_ARN" --region us-east-1 \
+     --query 'Certificate.DomainValidationOptions[0].ResourceRecord'
+   ```
+   (If the record shows as `null`, wait a few seconds and run the last command
+   again.)
+2. In Cloudflare, **DNS → Add record**: type `CNAME`, the `Name` and `Value`
+   from that output, **Proxy status: DNS only** (grey cloud).
+3. Wait for AWS to see it (usually a few minutes):
+   ```bash
+   aws acm wait certificate-validated --certificate-arn "$CERT_ARN" --region us-east-1 && echo validated
+   ```
+4. Redeploy with the domain:
+   ```bash
+   DOMAIN=admin.atlwingspot.com CERT_ARN="$CERT_ARN" ./deploy.sh
+   ```
+5. In Cloudflare, add a second record: `CNAME`, name `admin`, target the
+   `d….cloudfront.net` name that `deploy.sh` printed, **DNS only** (grey cloud).
+6. Open `https://admin.atlwingspot.com`. The cloudfront.net address keeps
+   working too. Later plain `./deploy.sh` runs remember the domain.
 
 ## Cost
 
@@ -193,13 +271,22 @@ negligible.
 | Worker can't write | Retried 5×, then DLQ; DLQ alarm; messages kept 14 days to redrive |
 | Duplicate delivery | Conditional put on `submissionId`; never overwrites staff edits |
 | Table deleted or corrupted | Deletion protection, retain-on-delete, PITR (35 days), AWS Backup (90 days) |
-| Credentials phished | Cognito MFA required, invite-only, role-based access, audit log (phase 2) |
+| Password guessed or leaked | Invite-only, 10+ characters, Cognito throttles failed logins, `create-admin.sh` resets and signs everyone out, audit log; turn on `REQUIRE_MFA=ON` for a second factor |
+| Script injected through form text | Page inserts all data as text, never HTML; CSP allows only the dashboard's own scripts |
+| Bad CSV export opened in Excel | Cells starting with `= + - @` are prefixed so they show as text |
 | Form Lambda compromised | Can only send to one queue; cannot read the leads |
-| Replies aren't mirrored | Out of scope. Staff record `lastContactedAt`/notes in the dashboard |
+| Replies aren't mirrored | Out of scope. Staff keep notes on each lead in the dashboard |
 
-## Open questions
+## Decisions
 
-1. Which AWS account owns this: the current one, or one ATL Wing Spot owns?
-2. Who needs logins, and should anyone be read-only?
-3. Do you want past submissions imported from Gmail?
-4. Is the status list above right for how franchise sales actually run?
+1. **Account:** the existing AWS account (the one the form Lambda already runs in).
+2. **Logins:** one shared login, `ATLWingSpotAdmin`. More can be added with
+   `./create-admin.sh <name>`; every login has full access.
+3. **History:** past submissions are imported by hand through **Import CSV**.
+4. **No sales pipeline in the UI.** The dashboard is a sortable list of leads
+   with full messages, notes and archive. Status values stay in the data and
+   API (all `new`) in case they are wanted later.
+5. **Branded sign-in** on the dashboard itself rather than Cognito's hosted
+   page, which could not carry the ATL Wing Spot logo and colours.
+6. **Release:** changes are reviewed on the live cloudfront.net address from
+   the branch, merged once approved, then moved to the custom domain.
