@@ -16,6 +16,22 @@
 //             Order Now button (directions stay). Delete it when the shop
 //             reopens.
 //
+// Optional, for the shop's own page (/locations/<shop>-<state>/). Each is
+// left out until the shop gives it; nothing shows until it is filled in, and
+// nothing here should be guessed or written from a map. These are what make
+// one shop page different from the next, so they are worth getting:
+//   orderUrl  the shop's own Snackpass page, so Order Now on its page (and the
+//             phone's bottom bar there) opens that shop's menu directly.
+//             Without it, the brand link is used and guests pick the shop.
+//   about     a few sentences in the shop's own words: the block, what it is
+//             near (campus, station, mall, mosque, highway exit), who comes in.
+//   parking   one line: "Free lot behind the building", "Street parking on
+//             Front St", etc.
+//   reviews   real customer quotes the shop has permission to use:
+//             [{ quote: '…', name: 'First name or initial', source: 'Google' }].
+//             Shown as quotes only; no review markup, because Google ignores
+//             a business's own reviews of itself.
+//
 // Phones and hours come from public listings (mostly each shop's Google
 // listing), checked with the client in November 2026. Every Order Now button
 // uses the one brand ordering link (ORDER_URL in site.js); guests pick their
@@ -33,6 +49,8 @@
 // so the ZIP lookup knows about it (see the README).
 
 import { SHOP_IDS, ZIP_NEAR, ZIP_AREAS } from './zip-areas'
+import { lateNight } from './hours'
+import { ORDER_URL } from './site'
 
 export const LOCATIONS = [
   { id: 'east-meadow', name: 'East Meadow', street: '1860 Front St', city: 'East Meadow', state: 'NY', zip: '11554', area: 'Long Island, Nassau', phone: '(516) 833-9464', hours: 'Daily 11am–1am' },
@@ -191,7 +209,11 @@ export const locationSlug = (loc) => `${loc.id}-${loc.state.toLowerCase()}`
 export const locationPath = (loc) => `/locations/${locationSlug(loc)}/`
 export const findLocationBySlug = (slug) => LOCATIONS.find((l) => locationSlug(l) === slug) || null
 
+// Where Order Now goes for this shop: its own Snackpass page once known.
+export const shopOrderUrl = (loc) => loc.orderUrl || ORDER_URL
+
 export function locationPage(loc) {
+  const late = lateNight(loc.hours)
   return {
     path: locationPath(loc),
     parent: 'locations', // breadcrumb: Home > Locations > East Meadow
@@ -199,7 +221,9 @@ export function locationPage(loc) {
     title: `Halal Wings in ${loc.name}, ${loc.state}`,
     description: loc.tempClosed
       ? `ATL Wing Spot ${loc.name}, ${loc.street}, ${loc.city}, ${loc.state}, is temporarily closed. Find the nearest open shop for fresh, never frozen halal wings.`
-      : `ATL Wing Spot ${loc.name} at ${loc.street}, ${loc.city}, ${loc.state}: fresh, never frozen halal wings in 25+ sauces. Hours, phone, directions and ordering.`,
+      : late
+        ? `ATL Wing Spot ${loc.name}, ${loc.street}, ${loc.city}, ${loc.state}: fresh, never frozen halal wings in 25+ sauces. ${late}. Order pickup or delivery.`
+        : `ATL Wing Spot ${loc.name} at ${loc.street}, ${loc.city}, ${loc.state}: fresh, never frozen halal wings in 25+ sauces. Hours, phone, directions and ordering.`,
   }
 }
 

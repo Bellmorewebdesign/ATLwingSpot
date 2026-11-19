@@ -2,10 +2,11 @@ import { Link, useParams } from 'react-router-dom'
 import { Seo } from '../components/Seo'
 import { ArrowRight, ArrowUpRight } from '../components/Icons'
 import { PAGES } from '../data/routes'
-import { ORDER_URL, ORDER_LABEL, BRAND } from '../data/site'
+import { ORDER_LABEL, BRAND } from '../data/site'
 import {
-  LOCATIONS, findLocationBySlug, locationPage, locationPath, mapsUrl, mapEmbedUrl, formatPhone, stateName,
+  LOCATIONS, findLocationBySlug, locationPage, locationPath, mapsUrl, mapEmbedUrl, formatPhone, stateName, shopOrderUrl,
 } from '../data/locations'
+import { lateNight } from '../data/hours'
 import { locationData } from '../data/structuredData'
 import './LocationPage.css'
 
@@ -28,7 +29,9 @@ export default function LocationPage({ fallback = null }) {
   const tel = loc.phone ? `tel:${String(loc.phone).replace(/\D/g, '')}` : null
   const hours = loc.hours ? loc.hours.split(' · ') : []
   const state = stateName(loc.state)
+  const late = !loc.tempClosed && lateNight(loc.hours)
   const nearby = LOCATIONS.filter((l) => l.state === loc.state && l.id !== loc.id)
+  const reviews = (loc.reviews || []).filter((r) => r && r.quote)
 
   return (
     <div className="page shop ch-cream">
@@ -41,10 +44,12 @@ export default function LocationPage({ fallback = null }) {
           <span>{state}</span>
         </nav>
         <h1 className="dsp dsp-lg">Halal wings in<br /><span className="t-cyan">{loc.name}.</span></h1>
+        {late && <p className="shop__late">{late}</p>}
         <p className="mast__sub">
           ATL Wing Spot {loc.name}: fresh, never frozen wings, fried to order and tossed in {BRAND.flavorCount} sauces
           and dry rubs. 100% halal, for pickup or delivery.
         </p>
+        {loc.about && <p className="shop__about">{loc.about}</p>}
       </header>
 
       <div className="wrap shop__body">
@@ -69,10 +74,16 @@ export default function LocationPage({ fallback = null }) {
                   <dd><a href={tel}>{phone}</a></dd>
                 </div>
               )}
+              {loc.parking && (
+                <div>
+                  <dt>Parking</dt>
+                  <dd>{loc.parking}</dd>
+                </div>
+              )}
             </dl>
             <div className="shop__acts">
               {!loc.tempClosed && (
-                <a className="btn btn-orange" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+                <a className="btn btn-orange" href={shopOrderUrl(loc)} target="_blank" rel="noopener noreferrer">
                   {ORDER_LABEL} <ArrowRight />
                 </a>
               )}
@@ -81,6 +92,9 @@ export default function LocationPage({ fallback = null }) {
               </a>
               {tel && <a className="btn btn-line" href={tel}>Call</a>}
             </div>
+            <a className="shop__google" href={mapsUrl(loc)} target="_blank" rel="noopener noreferrer">
+              Reviews and photos on Google <ArrowUpRight size={13} />
+            </a>
           </section>
 
           <div className="shop__map">
@@ -92,6 +106,20 @@ export default function LocationPage({ fallback = null }) {
             />
           </div>
         </div>
+
+        {reviews.length > 0 && (
+          <section className="shop__said" aria-labelledby="shop-said">
+            <h2 className="dsp shop__h" id="shop-said">What people say</h2>
+            <ul className="shop__quotes">
+              {reviews.map((r) => (
+                <li key={r.quote}>
+                  <blockquote className="shop__quote">&ldquo;{r.quote}&rdquo;</blockquote>
+                  <p className="shop__by">{r.name}{r.source ? `, on ${r.source}` : ''}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section className="shop__more" aria-labelledby="shop-menu">
           <h2 className="dsp shop__h" id="shop-menu">On the menu</h2>

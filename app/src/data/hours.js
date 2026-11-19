@@ -57,3 +57,29 @@ export function parseHours(hours) {
   if (new Set(seen).size !== seen.length) throw new Error(`hours: a day appears twice in "${hours}"`)
   return groups
 }
+
+/**
+ * The latest a shop stays open past midnight, in words for the page:
+ *
+ *   'Daily 10am–4am'                                  -> 'Open till 4am every night'
+ *   'Sun–Thu 11am–midnight · Fri–Sat 11am–2am'        -> 'Open till 2am Fri–Sat'
+ *   'Daily 11am–midnight', 'Daily 11am–10pm', null    -> null
+ *
+ * "Late" means closing at 1am or later. Built only from the hours string, so it
+ * can never claim later hours than the shop publishes.
+ */
+export function lateNight(hours) {
+  if (!hours) return null
+  let best = null
+  for (const g of hours.split('·')) {
+    const m = g.trim().match(/^(\S+)\s+(\S+)–(\S+)$/)
+    if (!m) throw new Error(`hours: cannot read "${g.trim()}" in "${hours}"`)
+    const closes = time(m[3])
+    const h = Number(closes.slice(0, 2))
+    if (h < 1 || h > 5) continue              // not past midnight
+    if (!best || closes > best.closes) {
+      best = { closes, until: m[3], when: m[1].toLowerCase() === 'daily' ? 'every night' : m[1] }
+    }
+  }
+  return best && `Open till ${best.until} ${best.when}`
+}
