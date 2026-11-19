@@ -5,8 +5,10 @@
 #   ./create-admin.sh                    the ATLWingSpotAdmin login
 #   ./create-admin.sh SomeoneElse        another login (usernames are case sensitive)
 #
-# The password is typed at a hidden prompt. It is never written to a file, to
-# shell history, or onto a command line where other processes could see it.
+# The password is typed at a hidden prompt. It never goes into shell history
+# or onto a command line where other processes could see it. It reaches the
+# AWS CLI through a temporary file only you can read, deleted straight after.
+# (AWS CLI v2 cannot read --cli-input-json from stdin.)
 # Rules: at least 10 characters, at least one number.
 #
 # Re-running it for an existing login sets the new password and signs that
@@ -50,13 +52,21 @@ else
   echo "Created ${USERNAME}."
 fi
 
-# The password reaches the AWS CLI on stdin as JSON, not as an argument.
-POOL="$POOL" USERNAME="$USERNAME" PW="$PW" python3 -c '
+# The password reaches the AWS CLI as JSON in a private temp file, not as an
+# argument. umask 077 makes the directory and file readable by this user only.
+REQ_DIR="$(umask 077; mktemp -d)"
+trap 'rm -rf "$REQ_DIR"' EXIT
+(
+  umask 077
+  POOL="$POOL" USERNAME="$USERNAME" PW="$PW" python3 -c '
 import json, os
 print(json.dumps({"UserPoolId": os.environ["POOL"], "Username": os.environ["USERNAME"],
                   "Password": os.environ["PW"], "Permanent": True}))
-' | aws cognito-idp admin-set-user-password --region "$REGION" --cli-input-json file:///dev/stdin
+' > "$REQ_DIR/request.json"
+)
 unset PW PW2
+aws cognito-idp admin-set-user-password --region "$REGION" --cli-input-json "file://$REQ_DIR/request.json"
+rm -rf "$REQ_DIR"
 
 if [[ "$EXISTS" -eq 1 ]]; then
   aws cognito-idp admin-user-global-sign-out --user-pool-id "$POOL" --username "$USERNAME" \
