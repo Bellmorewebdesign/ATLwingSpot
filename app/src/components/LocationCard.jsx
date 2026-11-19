@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom'
-import { ORDER_URL, ORDER_LABEL } from '../data/site'
-import { mapsUrl, formatPhone, locationPath } from '../data/locations'
+import { ORDER_LABEL } from '../data/site'
+import { mapsUrl, formatPhone, locationPath, shopOrderUrl } from '../data/locations'
+import { lateNight } from '../data/hours'
 import { ArrowUpRight } from './Icons'
 import './LocationCard.css'
 
 // A scannable row, not a boxed card — reads fast on a phone.
 export function LocationCard({ loc }) {
   const phone = formatPhone(loc.phone)
+  const late = !loc.tempClosed && lateNight(loc.hours)
   return (
     <li className="loc">
       <div className="loc__main">
@@ -18,6 +20,7 @@ export function LocationCard({ loc }) {
           {loc.street}, {loc.city}, {loc.state} {loc.zip}
         </address>
         {loc.hours && <p className="loc__hours">{loc.hours}</p>}
+        {late && <span className="loc__late">{late}</span>}
         {phone && (
           <a className="loc__phone" href={`tel:${String(loc.phone).replace(/\D/g, '')}`}>
             {phone}
@@ -27,7 +30,7 @@ export function LocationCard({ loc }) {
       </div>
       <div className="loc__acts">
         {!loc.tempClosed && (
-          <a className="btn btn-orange btn-sm" href={ORDER_URL} target="_blank" rel="noopener noreferrer">
+          <a className="btn btn-orange btn-sm" href={shopOrderUrl(loc)} target="_blank" rel="noopener noreferrer">
             {ORDER_LABEL}
           </a>
         )}

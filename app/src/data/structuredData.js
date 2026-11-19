@@ -9,8 +9,8 @@
 // range, ratings, reviews and map coordinates.
 
 import { PAGES, SITE_ORIGIN, SITE_NAME, canonicalUrl } from './routes'
-import { ORDER_URL, SOCIAL } from './site'
-import { LOCATIONS, mapsUrl, locationPath } from './locations'
+import { SOCIAL } from './site'
+import { LOCATIONS, mapsUrl, locationPath, shopOrderUrl } from './locations'
 import { MENU_CATEGORIES, MENU_ITEMS } from './menu'
 import { parseHours } from './hours'
 
@@ -88,7 +88,7 @@ function restaurant(loc) {
     hasMap: mapsUrl(loc),
     acceptsReservations: false,
     parentOrganization: { '@id': ORG_ID },
-    potentialAction: { '@type': 'OrderAction', target: ORDER_URL },
+    potentialAction: { '@type': 'OrderAction', target: shopOrderUrl(loc) },
   }
 }
 

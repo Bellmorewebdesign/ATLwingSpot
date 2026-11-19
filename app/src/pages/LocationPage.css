@@ -11,6 +11,29 @@
 .shop__crumbs a { color: var(--cyan-deep); text-decoration: none; }
 .shop__crumbs a:hover { text-decoration: underline; }
 
+.shop__late {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.45em 1em;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--cream);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.shop__about { margin-top: 0.9rem; max-width: 60ch; font-size: var(--step-0); line-height: 1.55; }
+.shop__google {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: var(--cyan-deep);
+}
+
 .shop__body { padding-bottom: clamp(4rem, 8vw, 7rem); }
 .shop__grid {
   display: grid;
@@ -55,7 +78,11 @@
 }
 .shop__map iframe { display: block; width: 100%; height: 100%; min-height: 320px; border: 0; }
 
-.shop__more, .shop__near { margin-top: clamp(3rem, 7vw, 5rem); }
+.shop__more, .shop__near, .shop__said { margin-top: clamp(3rem, 7vw, 5rem); }
+.shop__quotes { list-style: none; margin: 1.2rem 0 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+.shop__quotes li { background: var(--paper); border-radius: var(--r-lg); padding: 1.2rem 1.4rem; border-left: 4px solid var(--orange); }
+.shop__quote { margin: 0; font-size: var(--step-0); line-height: 1.5; }
+.shop__by { margin-top: 0.6rem; font-size: var(--step--1); font-weight: 700; color: var(--fg-mute); }
 .shop__more p { margin-top: 0.8rem; max-width: 46ch; color: var(--fg-mute); }
 .shop__links { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.2rem; }
 
