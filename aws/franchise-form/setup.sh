@@ -150,6 +150,7 @@ defaults = {
     "PER_IP_HOURLY_LIMIT": "3",
     "PER_IP_DAILY_LIMIT": "10",
     "GLOBAL_DAILY_LIMIT": "50",
+    "PER_EMAIL_DAILY_LIMIT": "3",
     "MAX_BODY_BYTES": "16384",
     "SES_FROM_NAME": "ATL Wing Spot",
 }

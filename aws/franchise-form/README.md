@@ -39,7 +39,7 @@ nothing reaches the quota that has not already proved it is a person.
 | --- | --- |
 | `lambda_function.py` | The whole handler. This is the file to deploy. |
 | `setup.sh` | Idempotent setup for everything around it. |
-| `tests/test_lambda_function.py` | 87 tests. No AWS, no network. |
+| `tests/test_lambda_function.py` | 94 tests. No AWS, no network. |
 | `tests/fakes.py` | DynamoDB and SES doubles. The DynamoDB one evaluates the real conditions under a lock, so the concurrency tests mean something. |
 
 ---
@@ -132,6 +132,7 @@ Existing values are preserved by `setup.sh`; it only fills in what is missing.
 | `PER_IP_HOURLY_LIMIT` | `3` | Per IP, per fixed UTC hour. |
 | `PER_IP_DAILY_LIMIT` | `10` | Per IP, per UTC calendar day. |
 | `GLOBAL_DAILY_LIMIT` | `50` | Across everyone, per UTC calendar day. |
+| `PER_EMAIL_DAILY_LIMIT` | `3` | Per email address (case-insensitive, stored only as a keyed hash), per UTC day, across every IP. |
 | `MAX_BODY_BYTES` | `16384` | Request bodies above this are refused unparsed. |
 | `SUBMISSIONS_QUEUE_URL` | — | Optional. Queue of the submissions archive. Unset means no archive copy. `setup.sh` fills it from the `atl-franchise-archive` stack if that exists. |
 
@@ -302,8 +303,8 @@ python3 -m venv .venv && .venv/bin/pip install boto3 pytest
 cd tests && ../.venv/bin/python -m pytest -q
 ```
 
-87 tests, no AWS and no network. They cover the happy path and the exact email
-format, every validation rejection, the honeypot, each of the four limits,
+94 tests, no AWS and no network. They cover the happy path and the exact email
+format, every validation rejection, the honeypot, each of the five limits (including per email address),
 window resets across hour and day boundaries, missing and spoofed source IPs,
 concurrency at the per-IP and global caps (20 and 25 threads racing for 3 and 5
 places), DynamoDB failures of four kinds, SES failure, and that no personal

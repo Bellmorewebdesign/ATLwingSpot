@@ -785,3 +785,59 @@ def test_the_archive_worker_accepts_what_the_form_queues(archived):
     assert worker._ddb.items[0]["email"] == {"S": GOOD["email"]}
     assert worker._ddb.items[0]["message"] == {"S": GOOD["message"]}
     assert "message" not in worker._ddb.items[1]
+
+
+# ------------------------------------------------------- per-email limit
+#
+# The per-IP limits cannot stop one address being resubmitted from many IPs.
+
+def test_same_email_from_many_ips_is_capped_per_day(mod):
+    ips = ["198.51.100.%d" % i for i in range(1, 6)]
+    codes = [mod.lambda_handler(event(GOOD, ip=ip), None)["statusCode"] for ip in ips]
+    assert codes == [200, 200, 200, 429, 429]
+    assert len(mod._ses.sent) == 3
+    refused = mod.lambda_handler(event(GOOD, ip="198.51.100.99"), None)
+    assert body_of(refused)["message"].startswith("We already have your request from today")
+    assert int(refused["headers"]["retry-after"]) > 0
+
+
+def test_email_limit_ignores_case_and_spaces(mod):
+    for i, email in enumerate(["dana@example.com", "DANA@example.com", " Dana@Example.com "]):
+        assert mod.lambda_handler(event(dict(GOOD, email=email.strip()), ip=f"203.0.113.{i + 20}"), None)["statusCode"] == 200
+    assert mod.lambda_handler(event(dict(GOOD, email="dAnA@example.com"), ip="203.0.113.40"), None)["statusCode"] == 429
+
+
+def test_different_emails_are_not_affected(mod):
+    for i in range(6):
+        resp = mod.lambda_handler(event(dict(GOOD, email=f"person{i}@example.com"), ip=f"192.0.2.{i + 1}"), None)
+        assert resp["statusCode"] == 200
+
+
+def test_email_limit_resets_the_next_utc_day(mod, monkeypatch):
+    start = 1_800_000_000 - (1_800_000_000 % 86400) + 3600   # 01:00 UTC
+    for i in range(3):
+        monkeypatch.setattr(mod.time, "time", lambda t=start + i * 120: t)
+        assert mod.lambda_handler(event(GOOD, ip=f"192.0.2.{i + 1}"), None)["statusCode"] == 200
+    monkeypatch.setattr(mod.time, "time", lambda: start + 600)
+    assert mod.lambda_handler(event(GOOD, ip="192.0.2.50"), None)["statusCode"] == 429
+    monkeypatch.setattr(mod.time, "time", lambda: start + 86400)
+    assert mod.lambda_handler(event(GOOD, ip="192.0.2.51"), None)["statusCode"] == 200
+
+
+def test_email_refusal_spends_no_ip_or_global_quota(mod):
+    for i in range(3):
+        mod.lambda_handler(event(GOOD, ip=f"192.0.2.{i + 1}"), None)
+    before = {k: dict(v) for k, v in mod._ddb.items.items()}
+    assert mod.lambda_handler(event(GOOD, ip="192.0.2.77"), None)["statusCode"] == 429
+    assert mod._ddb.items == before, "a refused transaction writes nothing"
+
+
+def test_email_is_not_stored_in_the_clear(mod):
+    mod.lambda_handler(event(GOOD), None)
+    keys = " ".join(mod._ddb.items)
+    assert "dana@example.com" not in keys.lower()
+    assert any(k.startswith("email#") for k in mod._ddb.items)
+
+
+def test_responses_carry_nosniff(mod):
+    assert mod.lambda_handler(event(GOOD), None)["headers"]["x-content-type-options"] == "nosniff"

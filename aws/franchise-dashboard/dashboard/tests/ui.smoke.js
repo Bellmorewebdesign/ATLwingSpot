@@ -5,8 +5,12 @@
 // Cognito's API and the dashboard API with page.route, and drives the real
 // page: branded sign-in (wrong password, MFA, MFA setup, new password),
 // sorting like a file browser, previews, the full message, notes, archive,
-// CSV import and export, token refresh, sign-out, and the phone layout.
-// Fails on any page error or CSP violation.
+// CSV import and export, token refresh, sign-out, pages for long lists, the
+// account panel (devices, signing devices out, changing the password), a
+// device signed out from elsewhere, the firewall's block, the idle sign-out,
+// and the phone layout. Fails on any page error or CSP violation.
+//
+// WEB_DIR=<folder> runs it against a build (python3 build.py web <folder>).
 'use strict';
 const http = require('node:http');
 const fs = require('node:fs');
@@ -14,11 +18,13 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 
-const WEB = path.join(__dirname, '..', 'web');
+const WEB = process.env.WEB_DIR ? path.resolve(process.env.WEB_DIR) : path.join(__dirname, '..', 'web');
 const IDP = 'https://cognito-idp.us-east-1.amazonaws.com/';
 const CSP = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; " +
-  "connect-src 'self' https://cognito-idp.us-east-1.amazonaws.com; form-action 'self'; base-uri 'none'; frame-ancestors 'none'";
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.woff2': 'font/woff2' };
+  "connect-src 'self' https://cognito-idp.us-east-1.amazonaws.com; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; " +
+  "require-trusted-types-for 'script'; trusted-types 'none'";
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.woff2': 'font/woff2', '.txt': 'text/plain' };
+const NEW_PASSWORD = 'Fresh7start2026';
 const SHOTS = process.argv[2];
 const PASSWORD = 'Good4pass99';
 
@@ -41,10 +47,20 @@ function jwt(payload) {
   const b = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
   return `${b({ alg: 'none' })}.${b(payload)}.sig`;
 }
-const tokens = (user, access) => ({
-  AccessToken: access || 'access-1', IdToken: jwt({ 'cognito:username': user }),
-  RefreshToken: 'refresh-1', ExpiresIn: 3600, TokenType: 'Bearer',
-});
+// Access tokens carry what the page reads from them: the token id (jti), the
+// sign-in id that survives refreshes (origin_jti), the user and sign-in time.
+let signIns = 0;
+function accessToken(jti, sid, user) {
+  return jwt({ jti, origin_jti: sid, username: user, auth_time: Math.floor(Date.now() / 1000) });
+}
+const tokens = (user, sid) => {
+  sid = sid || 'sess-' + (++signIns);
+  return {
+    AccessToken: accessToken('access-1', sid, user), IdToken: jwt({ 'cognito:username': user }),
+    RefreshToken: 'refresh-1', ExpiresIn: 3600, TokenType: 'Bearer',
+  };
+};
+const claimsOf = (header) => JSON.parse(Buffer.from(String(header).replace('Bearer ', '').split('.')[1], 'base64url').toString());
 
 const LONG = 'Hi! I own two restaurants in Savannah and have been a fan since the Hempstead opening. ' +
   'I would like to talk about bringing ATL Wing Spot to coastal Georgia, ideally two or three units over the next two years.\n\n' +
@@ -71,6 +87,9 @@ async function main() {
   const calls = [];
   let db = seed();
   const history = {};
+  // Fake sign-in log, as the API keeps it: id -> row.
+  const devices = {};
+  const IPHONE = { browser: 'Safari', os: 'iOS', device: 'Phone', city: 'Rahway', region: 'NJ', country: 'US', lastIp: '198.51.100.20', firstIp: '198.51.100.20' };
 
   async function newPage(viewport, extra) {
     const ctx = await browser.newContext(Object.assign(
@@ -85,7 +104,8 @@ async function main() {
     page.on('console', (m) => {
       // The import test sends a deliberate duplicate (409) and the sign-in tests
       // deliberately fail (400); Chrome logs every non-2xx fetch as an error.
-      if (m.type() === 'error' && !/status of (409|400)/.test(m.text())) problems.push('console: ' + m.text());
+      // (and 401/403 where a test makes the API or the firewall refuse on purpose).
+      if (m.type() === 'error' && !/status of (409|400|401|403)/.test(m.text())) problems.push('console: ' + m.text());
     });
     page.on('dialog', (d) => { problems.push('unexpected browser dialog: ' + d.message()); d.dismiss(); });
 
@@ -103,7 +123,11 @@ async function main() {
       assert.equal(body.ClientId === undefined || body.ClientId === 'test-client', true);
       if (action === 'InitiateAuth' && body.AuthFlow === 'USER_PASSWORD_AUTH') {
         const { USERNAME: u, PASSWORD: p } = body.AuthParameters;
-        if (p !== PASSWORD) return fail('NotAuthorizedException', 'Incorrect username or password.');
+        if (u === 'blocked') {
+          return route.fulfill({ status: 403, contentType: 'application/x-amz-json-1.1', headers: cors,
+            body: JSON.stringify({ __type: 'ForbiddenException', message: 'Request not allowed due to WAF block.' }) });
+        }
+        if (p !== PASSWORD && p !== NEW_PASSWORD) return fail('NotAuthorizedException', 'Incorrect username or password.');
         if (u === 'ATLWingSpotAdmin') return ok({ AuthenticationResult: tokens(u) });
         if (u === 'mfa-user') return ok({ ChallengeName: 'SOFTWARE_TOKEN_MFA', Session: 's-mfa', ChallengeParameters: { USER_ID_FOR_SRP: u } });
         if (u === 'setup-user') return ok({ ChallengeName: 'MFA_SETUP', Session: 's-setup', ChallengeParameters: { USER_ID_FOR_SRP: u } });
@@ -112,9 +136,10 @@ async function main() {
       }
       if (action === 'InitiateAuth' && body.AuthFlow === 'REFRESH_TOKEN_AUTH') {
         assert.equal(body.AuthParameters.REFRESH_TOKEN, 'refresh-1');
-        const t = tokens('ATLWingSpotAdmin', 'access-2');
-        delete t.RefreshToken;
-        return ok({ AuthenticationResult: t });
+        // Same sign-in, new access token: origin_jti carries over.
+        const sid = 'sess-' + signIns;
+        return ok({ AuthenticationResult: { AccessToken: accessToken('access-2', sid, 'ATLWingSpotAdmin'),
+          IdToken: jwt({ 'cognito:username': 'ATLWingSpotAdmin' }), ExpiresIn: 3600 } });
       }
       if (action === 'RespondToAuthChallenge') {
         const r = body.ChallengeResponses;
@@ -137,6 +162,12 @@ async function main() {
         return body.UserCode === '654321' ? ok({ Status: 'SUCCESS', Session: 's-verified' }) : fail('EnableSoftwareTokenMFAException', 'Code mismatch');
       }
       if (action === 'RevokeToken') return ok({});
+      if (action === 'ChangePassword') {
+        assert.ok(body.AccessToken, 'ChangePassword sends the access token');
+        if (body.PreviousPassword !== PASSWORD) return fail('NotAuthorizedException', 'Incorrect username or password.');
+        return ok({});
+      }
+      if (action === 'GlobalSignOut') return ok({});
       return fail('InvalidParameterException', 'unexpected ' + action);
     });
 
@@ -145,11 +176,39 @@ async function main() {
       const req = route.request();
       const u = new URL(req.url());
       const auth = req.headers().authorization;
-      assert.ok(auth === 'Bearer access-1' || auth === 'Bearer access-2', 'API call carries the access token');
-      calls.push({ api: req.method() + ' ' + u.pathname + u.search, auth, body: req.postData() && JSON.parse(req.postData()) });
+      const claims = claimsOf(auth);
+      assert.ok(claims.jti === 'access-1' || claims.jti === 'access-2', 'API call carries the access token');
+      calls.push({ api: req.method() + ' ' + u.pathname + u.search, token: claims.jti, sid: claims.origin_jti,
+        body: req.postData() && JSON.parse(req.postData()) });
+      const json = (status, body) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
+
+      // The sign-in log: every call records its device; a signed-out device is refused.
+      const sid = claims.origin_jti;
+      const row = devices[sid] || (devices[sid] = { id: sid, username: claims.username, browser: 'Chrome', os: 'Windows',
+        device: 'Computer', city: 'Bellmore', region: 'NY', country: 'US', firstIp: '203.0.113.7', lastIp: '203.0.113.7',
+        signedInAt: new Date().toISOString(), status: 'active' });
+      if (row.status === 'signed_out') return json(401, { error: 'session_revoked', message: 'This device was signed out.' });
+      row.lastSeenAt = new Date().toISOString();
+      const sm = u.pathname.match(/^\/api\/sessions(?:\/([^/]+))?$/);
+      if (sm) {
+        const target = sm[1] && decodeURIComponent(sm[1]);
+        const signOut = (r) => { r.status = 'signed_out'; r.revokedAt = new Date().toISOString(); r.revokedBy = claims.username; };
+        if (req.method() === 'GET' && !target) {
+          return json(200, { sessions: Object.values(devices).map((d) => Object.assign({}, d, { current: d.id === sid })) });
+        }
+        if (req.method() === 'DELETE' && target) {
+          if (!devices[target]) return json(404, { message: 'No such device.' });
+          signOut(devices[target]);
+          return json(200, { revoked: target, current: target === sid });
+        }
+        if (req.method() === 'POST' && target === 'revoke-others') {
+          const others = Object.values(devices).filter((d) => d.id !== sid && d.status === 'active');
+          others.forEach(signOut);
+          return json(200, { revoked: others.length });
+        }
+      }
       const m = u.pathname.match(/^\/api\/submissions(?:\/([^/]+))?$/);
       const id = m && m[1] && decodeURIComponent(m[1]);
-      const json = (status, body) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
       if (req.method() === 'GET' && !id) {
         const archived = u.searchParams.get('archived') === '1';
         return json(200, { items: db.filter((s) => !!s.archivedAt === archived), nextCursor: null });
@@ -208,6 +267,13 @@ async function main() {
     await page.waitForTimeout(200);
     await shot(page, 'signin');
 
+    // Discreet: a neutral tab title and heading, robots told to stay out.
+    assert.equal(await page.title(), 'Sign in');
+    assert.equal(await page.textContent('.signin h1'), 'Sign in.');
+    assert.match(await page.getAttribute('meta[name=robots]', 'content'), /noindex.*nofollow.*noarchive.*nosnippet/);
+    const robots = await page.request.get(base + '/robots.txt');
+    assert.equal(await robots.text(), 'User-agent: *\nDisallow: /\n');
+
     // Empty, then wrong password.
     await page.click('#signin-form button[type=submit]');
     assert.equal(await page.textContent('#signin-error'), 'Enter your username and password.');
@@ -226,6 +292,8 @@ async function main() {
     assert.equal(await page.textContent('#who'), 'ATLWingSpotAdmin');
     await page.waitForSelector('#rows tr');
     assert.equal(await page.textContent('#count'), '4 leads');
+    assert.equal(await page.title(), 'Leads');
+    assert.equal(await page.isVisible('#pager'), false, 'no page controls for a short list');
 
     // Newest first by default.
     assert.deepEqual(await names(page), ['Dana Okafor', 'Zoe Brown', 'Lee Park', 'Ana Diaz']);
@@ -354,12 +422,17 @@ async function main() {
     await page.click('#refresh');
     await page.waitForFunction(() => document.getElementById('count').textContent.includes('leads'));
     assert.ok(calls.some((c) => c.idp === 'InitiateAuth' && c.body.AuthFlow === 'REFRESH_TOKEN_AUTH'));
-    assert.equal(calls.filter((c) => c.api).pop().auth, 'Bearer access-2');
+    const last = calls.filter((c) => c.api).pop();
+    assert.equal(last.token, 'access-2');
+    assert.equal(devices[last.sid].status, 'active', 'a refresh is the same sign-in, not a new device');
 
-    // Sign out revokes the session and clears it.
+    // Sign out: revoked with Cognito, marked in the sign-in log, forgotten here.
     await page.click('#signout');
     await page.waitForSelector('#signin:not([hidden])');
     assert.ok(calls.some((c) => c.idp === 'RevokeToken' && c.body.Token === 'refresh-1'));
+    await page.waitForFunction(() => true);
+    assert.ok(calls.some((c) => c.api === 'DELETE /api/sessions/' + last.sid), 'sign-out recorded in the log');
+    assert.equal(devices[last.sid].status, 'signed_out');
     assert.equal(await page.evaluate(() => sessionStorage.getItem('access_token')), null);
     await ctx.close();
   }
@@ -369,6 +442,10 @@ async function main() {
     const { ctx, page } = await newPage();
     await page.goto(base + '/');
     await page.waitForSelector('#signin:not([hidden])');
+
+    // The firewall's per-IP limit on sign-in calls shows a plain message.
+    await signIn(page, 'blocked', PASSWORD);
+    await page.waitForSelector('#signin-error:has-text("Too many sign-in attempts from this network")');
 
     // Authenticator code: wrong, then right.
     await signIn(page, 'mfa-user', PASSWORD);
@@ -408,6 +485,146 @@ async function main() {
     await page.fill('#challenge-input', 'Brand9newpass');
     await page.click('#challenge-form button[type=submit]');
     await page.waitForSelector('#app:not([hidden])');
+    await ctx.close();
+  }
+
+  // ================================================================ long lists, account, devices
+  {
+    db = seed();
+    for (let i = 0; i < 116; i++) {
+      const at = new Date(Date.UTC(2026, 9, 1, 12) - i * 7 * 3600e3).toISOString().replace(/\.\d{3}Z$/, 'Z');
+      db.push({ submissionId: 'bulk' + i, createdAt: at, entity: 'SUB', status: 'new', firstName: 'Lead',
+        lastName: String(i + 1).padStart(3, '0'), email: `lead${i + 1}@example.com`, phone: '555-0' + (100 + i),
+        territory: i % 2 ? 'Georgia' : 'New York', message: 'Bulk lead ' + (i + 1) });
+    }
+    for (const k of Object.keys(devices)) delete devices[k];
+    const earlier = new Date(Date.now() - 3 * 3600e3).toISOString();
+    devices['sess-iphone'] = Object.assign({ id: 'sess-iphone', username: 'ATLWingSpotAdmin', signedInAt: earlier,
+      lastSeenAt: earlier, status: 'active' }, IPHONE);
+    devices['sess-tablet'] = { id: 'sess-tablet', username: 'ATLWingSpotAdmin', browser: 'Chrome', os: 'Android', device: 'Tablet',
+      city: 'Hempstead', region: 'NY', country: 'US', firstIp: '192.0.2.40', lastIp: '192.0.2.41', signedInAt: earlier,
+      lastSeenAt: earlier, status: 'active' };
+
+    const { ctx, page } = await newPage();
+    await page.goto(base + '/');
+    await page.waitForSelector('#signin:not([hidden])');
+    await signIn(page, 'ATLWingSpotAdmin', PASSWORD);
+    await page.waitForSelector('#rows tr');
+
+    // Pages: 120 leads, 50 to a page. Sort and search cover every lead.
+    assert.equal(await page.textContent('#count'), '120 leads · showing 1–50');
+    assert.equal(await page.locator('#rows tr').count(), 50);
+    assert.equal(await page.textContent('#page-info'), 'Page 1 of 3');
+    assert.ok(await page.isDisabled('#page-prev'));
+    await page.click('#page-next');
+    assert.equal(await page.textContent('#count'), '120 leads · showing 51–100');
+    await page.click('#page-next');
+    assert.equal(await page.locator('#rows tr').count(), 20);
+    assert.ok(await page.isDisabled('#page-next'));
+    await shot(page, 'pages', { fullPage: true });
+    await page.selectOption('#sort', 'createdAt:asc');
+    assert.equal(await page.textContent('#page-info'), 'Page 1 of 3', 'a new sort starts at page 1');
+    assert.equal((await names(page))[0], 'Lead 116', 'oldest of all 120, not of the page');
+    await page.fill('#search', 'lead116@');
+    assert.deepEqual(await names(page), ['Lead 116']);
+    assert.equal(await page.isVisible('#pager'), false);
+    await page.fill('#search', 'georgia');
+    assert.equal(await page.textContent('#count'), '59 of 120 leads match · showing 1–50');
+    await page.fill('#search', '');
+    await page.selectOption('#page-size', '100');
+    assert.equal(await page.textContent('#page-info'), 'Page 1 of 2');
+    await page.reload();
+    await page.waitForSelector('#rows tr');
+    assert.equal(await page.inputValue('#page-size'), '100', 'per-page choice remembered');
+    await page.selectOption('#page-size', '50');
+    await page.selectOption('#sort', 'createdAt:desc');
+
+    // Account: every signed-in device, with IP, place, browser and OS.
+    await page.click('#account-btn');
+    await page.waitForSelector('#account[open]');
+    await page.waitForSelector('#device-list li.device');
+    assert.equal(await page.locator('#device-list li.device').count(), 3);
+    const mine = page.locator('#device-list li.device.is-current');
+    assert.match(await mine.textContent(), /Chrome on Windows/);
+    assert.match(await mine.textContent(), /This device/);
+    assert.match(await mine.textContent(), /Computer · Bellmore, NY, US · IP\u00a0203\.0\.113\.7/);
+    const iphone = page.locator('#device-list li.device:has-text("Safari on iOS")');
+    assert.match(await iphone.textContent(), /Phone · Rahway, NJ, US · IP\u00a0198\.51\.100\.20/);
+    assert.match(await page.textContent('#device-list li.device:has-text("Chrome on Android")'),
+      /IP\u00a0192\.0\.2\.41 \(signed in from 192\.0\.2\.40\)/);
+    await page.waitForTimeout(300);
+    await shot(page, 'account');
+
+    // Sign one device out, then every other one.
+    assert.match(await page.textContent('#device-list > li.device:first-child'), /This device/, 'this device listed first');
+    await iphone.locator('button:has-text("Sign out")').click();
+    await page.waitForSelector('#device-list li.past summary:has-text("Earlier sign-ins (1)")');
+    await page.click('#device-list li.past summary');
+    await page.waitForSelector('#device-list li.device:has-text("Safari on iOS"):has-text("Signed out")');
+    assert.ok(calls.some((c) => c.api === 'DELETE /api/sessions/sess-iphone'));
+    await page.click('#revoke-others');
+    await page.waitForSelector('#device-list li.past summary:has-text("Earlier sign-ins (2)")');
+    assert.equal(await page.locator('#device-list > li.device').count(), 1, 'only this device still active');
+    await page.click('#device-list li.past summary');
+    await page.waitForSelector('#device-list li.device:has-text("Chrome on Android"):has-text("Signed out")');
+    assert.ok(await page.isDisabled('#revoke-others'), 'nothing left to sign out');
+    assert.equal(devices['sess-tablet'].status, 'signed_out');
+
+    // Change password: checked here first, then by Cognito.
+    await page.fill('#pw-current', 'not-it-12345');
+    await page.fill('#pw-new', NEW_PASSWORD);
+    await page.fill('#pw-confirm', NEW_PASSWORD);
+    await page.click('#password-form button[type=submit]');
+    await page.waitForSelector('#pw-error:has-text("Your current password is not right.")');
+    await page.fill('#pw-current', PASSWORD);
+    await page.fill('#pw-confirm', 'Different12345');
+    await page.click('#password-form button[type=submit]');
+    assert.equal(await page.textContent('#pw-error'), 'The two new passwords do not match.');
+    await page.fill('#pw-new', 'short1');
+    await page.fill('#pw-confirm', 'short1');
+    await page.click('#password-form button[type=submit]');
+    assert.match(await page.textContent('#pw-error'), /10 characters/);
+    await page.fill('#pw-new', NEW_PASSWORD);
+    await page.fill('#pw-confirm', NEW_PASSWORD);
+    const sidBefore = calls.filter((c) => c.api).pop().sid;
+    await page.click('#password-form button[type=submit]');
+    await page.waitForSelector('#signin-error:has-text("Password changed. Sign in with your new password.")');
+    const change = calls.filter((c) => c.idp === 'ChangePassword').pop().body;
+    assert.equal(change.PreviousPassword, PASSWORD);
+    assert.equal(change.ProposedPassword, NEW_PASSWORD);
+    assert.ok(calls.some((c) => c.idp === 'GlobalSignOut'), 'every refresh token revoked with Cognito');
+    assert.ok(calls.some((c) => c.api === 'DELETE /api/sessions/' + sidBefore));
+    assert.equal(devices[sidBefore].status, 'signed_out');
+    assert.equal(await page.title(), 'Sign in');
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('access_token')), null);
+    assert.equal(await page.inputValue('#pw-new'), '', 'password fields cleared');
+
+    // Signed out from another device: the very next request is refused.
+    await signIn(page, 'ATLWingSpotAdmin', NEW_PASSWORD);
+    await page.waitForSelector('#rows tr');
+    devices[calls.filter((c) => c.api).pop().sid].status = 'signed_out';
+    await page.click('#refresh');
+    await page.waitForSelector('#signin-error:has-text("This device was signed out. Sign in again.")');
+    assert.equal(await page.isVisible('#app'), false);
+    await ctx.close();
+  }
+
+  // ================================================================ idle sign-out
+  {
+    db = seed();
+    const { ctx, page } = await newPage();
+    await page.clock.install();
+    await page.goto(base + '/');
+    await page.waitForSelector('#signin:not([hidden])');
+    await signIn(page, 'ATLWingSpotAdmin', PASSWORD);
+    await page.waitForSelector('#rows tr');
+    await page.clock.fastForward('58:00');
+    assert.equal(await page.isVisible('#app'), true, 'still signed in after 58 quiet minutes');
+    await page.mouse.click(5, 300);                       // activity resets the clock
+    await page.clock.fastForward('58:00');
+    assert.equal(await page.isVisible('#app'), true, 'activity keeps the session');
+    await page.clock.fastForward('03:00');
+    await page.waitForSelector('#signin-error:has-text("Signed out after an hour without activity.")');
     await ctx.close();
   }
 
@@ -464,6 +681,17 @@ async function main() {
     await shot(page, 'detail-phone');
     await page.click('#detail .back');
     assert.equal(await page.isVisible('#detail'), false);
+
+    // Account on a phone: full screen; Sign out lives inside it.
+    assert.equal(await page.isVisible('#signout'), false);
+    await page.click('#account-btn');
+    await page.waitForSelector('#device-list li.device');
+    assert.equal(await page.isVisible('#signout-2'), true);
+    const acct = await page.locator('#account').boundingBox();
+    assert.equal(Math.round(acct.width), 390);
+    await page.waitForTimeout(200);
+    await shot(page, 'account-phone');
+    await page.click('#account .back');
 
     // The narrowest phones in common use.
     await page.setViewportSize({ width: 320, height: 640 });

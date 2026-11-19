@@ -7,6 +7,16 @@ Routes (all behind the Cognito JWT authorizer on the HTTP API):
     POST  /api/submissions            add one by hand, or one row of a CSV import
     GET   /api/submissions/{id}       one submission plus its change history
     PATCH /api/submissions/{id}       status, notes, lastContactedAt, archived
+    GET   /api/sessions               signed-in devices: IP, place, browser, OS
+    DELETE /api/sessions/{id}         sign one device out
+    POST  /api/sessions/revoke-others sign every other device out
+
+Every request must carry CloudFront's secret origin header (so the API cannot
+be called around CloudFront and its firewall) and belong to a sign-in that has
+not been signed out. Each sign-in is one row in the sessions table, keyed by
+the token's origin_jti, which stays the same across token refreshes; signing
+a device out marks that row, and from then on every request from it is
+refused with 401, whatever its tokens say.
 
 What it deliberately cannot do:
 
@@ -23,6 +33,7 @@ and after values. Nothing about applicants is written to CloudWatch.
 import base64
 import binascii
 import hashlib
+import hmac
 import json
 import logging
 import os
@@ -30,6 +41,7 @@ import re
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
+from urllib.parse import unquote
 
 import boto3
 from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
@@ -40,6 +52,12 @@ LOG.setLevel(logging.INFO)
 
 TABLE_NAME = os.environ.get("TABLE_NAME", "atl-franchise-submissions")
 AUDIT_TABLE = os.environ.get("AUDIT_TABLE", "atl-franchise-audit")
+SESSIONS_TABLE = os.environ.get("SESSIONS_TABLE", "atl-franchise-sessions")
+# Set by CloudFront on every request it forwards. Empty only in tests.
+ORIGIN_SECRET = os.environ.get("ORIGIN_SECRET", "")
+SESSION_KEEP_DAYS = 30                 # sign-in log retention (DynamoDB TTL)
+SESSION_ACTIVE_SECONDS = 12 * 3600     # = refresh token lifetime
+SESSION_ID_RE = re.compile(r"^[A-Za-z0-9@._:-]{1,200}$")
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 
 STATUSES = ("new", "contacted", "qualified", "discovery", "fdd_sent", "signed", "declined")
@@ -127,8 +145,124 @@ def _response(status, payload):
     }
 
 
+def _claims(event):
+    return (((event.get("requestContext") or {}).get("authorizer") or {}).get("jwt") or {}).get("claims") or {}
+
+
+def _headers(event):
+    return {str(k).lower(): str(v) for k, v in (event.get("headers") or {}).items()}
+
+
+def _check_origin(event):
+    """Refuse anything that did not come through CloudFront (and its WAF)."""
+    if not ORIGIN_SECRET:
+        return
+    got = _headers(event).get("x-origin-verify", "")
+    if not hmac.compare_digest(got.encode("utf-8"), ORIGIN_SECRET.encode("utf-8")):
+        raise HttpError(403, "forbidden", "Forbidden.")
+
+
+def _session_id(event):
+    """One sign-in. origin_jti survives token refreshes; the fallback (user and
+    sign-in time) does too."""
+    c = _claims(event)
+    sid = c.get("origin_jti") or (f"{c.get('username', '')}@{c.get('auth_time', '')}" if c.get("auth_time") else "")
+    return sid if SESSION_ID_RE.match(sid or "") else None
+
+
+def viewer_ip(event):
+    """The visitor's address as CloudFront saw it ("ip:port", IPv6 too). The
+    origin check above guarantees the header came from CloudFront."""
+    addr = _headers(event).get("cloudfront-viewer-address", "").strip()
+    if addr:
+        if addr.startswith("[") and "]" in addr:
+            return addr[1:addr.index("]")]
+        host, _, port = addr.rpartition(":")
+        return host if host and port.isdigit() else addr
+    return ((event.get("requestContext") or {}).get("http") or {}).get("sourceIp") or ""
+
+
+def describe_user_agent(ua):
+    """(browser, operating system, kind of device) in plain words."""
+    u = ua or ""
+    if "iPhone" in u:
+        os_name, device = "iOS", "Phone"
+    elif "iPad" in u:
+        os_name, device = "iPadOS", "Tablet"
+    elif "Android" in u:
+        os_name, device = "Android", ("Phone" if "Mobile" in u else "Tablet")
+    elif "Windows" in u:
+        os_name, device = "Windows", "Computer"
+    elif "CrOS" in u:
+        os_name, device = "ChromeOS", "Computer"
+    elif "Macintosh" in u or "Mac OS X" in u:
+        os_name, device = "macOS", "Computer"
+    elif "Linux" in u:
+        os_name, device = "Linux", "Computer"
+    else:
+        os_name, device = "Unknown", "Unknown"
+    for marker, name in (("Edg", "Edge"), ("OPR/", "Opera"), ("SamsungBrowser/", "Samsung Internet"),
+                         ("CriOS/", "Chrome"), ("FxiOS/", "Firefox"), ("Firefox/", "Firefox"),
+                         ("Chrome/", "Chrome"), ("Safari/", "Safari")):
+        if marker in u:
+            return name, os_name, device
+    return "Unknown", os_name, device
+
+
+def _track_session(event, actor):
+    """Record this request against its sign-in; refuse it if that sign-in was
+    signed out."""
+    sid = _session_id(event)
+    if not sid:
+        raise HttpError(401, "unauthorized", "Sign in again.")
+    h = _headers(event)
+    ua = h.get("user-agent", "")[:400]
+    browser, os_name, device = describe_user_agent(ua)
+    now = _now()
+    ip = viewer_ip(event)[:64]
+    try:
+        signed_in = _iso(datetime.fromtimestamp(int(_claims(event).get("auth_time")), tz=timezone.utc))
+    except (TypeError, ValueError):
+        signed_in = _iso(now)
+    fields = {
+        "username": actor,
+        "lastSeenAt": _iso(now),
+        "lastIp": ip,
+        "userAgent": ua,
+        "browser": browser,
+        "os": os_name,
+        "device": device,
+        "country": h.get("cloudfront-viewer-country", "")[:8],
+        "region": unquote(h.get("cloudfront-viewer-country-region", ""))[:64],
+        "city": unquote(h.get("cloudfront-viewer-city", ""))[:100],
+        "expiresAt": int((now + timedelta(days=SESSION_KEEP_DAYS)).timestamp()),
+    }
+    names, values, parts = {"#r": "revokedAt"}, {}, []
+    for i, (k, v) in enumerate(fields.items()):
+        names[f"#f{i}"] = k
+        values[f":f{i}"] = _ser.serialize(v)
+        parts.append(f"#f{i} = :f{i}")
+    names.update({"#c": "createdAt", "#fi": "firstIp", "#si": "signedInAt"})
+    values.update({":now": _ser.serialize(_iso(now)), ":ip": _ser.serialize(ip), ":si": _ser.serialize(signed_in)})
+    parts += ["#c = if_not_exists(#c, :now)", "#fi = if_not_exists(#fi, :ip)", "#si = if_not_exists(#si, :si)"]
+    try:
+        _dynamodb().update_item(
+            TableName=SESSIONS_TABLE,
+            Key={"sid": {"S": sid}},
+            UpdateExpression="SET " + ", ".join(parts),
+            ConditionExpression="attribute_not_exists(#r)",
+            ExpressionAttributeNames=names,
+            ExpressionAttributeValues=values,
+        )
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") == "ConditionalCheckFailedException":
+            raise HttpError(401, "session_revoked", "This device was signed out. Sign in again.")
+        raise
+    return sid
+
+
 def _actor(event):
-    claims = (((event.get("requestContext") or {}).get("authorizer") or {}).get("jwt") or {}).get("claims") or {}
+    claims = _claims(event)
     who = claims.get("username") or claims.get("cognito:username")
     if not who:
         # Only reachable if a route were ever deployed without the authorizer.
@@ -479,7 +613,83 @@ def create_submission(event, actor):
     return 201, {"submission": item}
 
 
+def _all_sessions():
+    out, kwargs = [], {"TableName": SESSIONS_TABLE}
+    while True:
+        res = _dynamodb().scan(**kwargs)
+        out += [_plain(i) for i in res.get("Items", [])]
+        if not res.get("LastEvaluatedKey") or len(out) >= 1000:
+            return out
+        kwargs["ExclusiveStartKey"] = res["LastEvaluatedKey"]
+
+
+def _status(s, now):
+    if s.get("revokedAt"):
+        return "signed_out"
+    try:
+        seen = datetime.fromisoformat(s["lastSeenAt"].replace("Z", "+00:00"))
+        signed = datetime.fromisoformat(s.get("signedInAt", s["lastSeenAt"]).replace("Z", "+00:00"))
+    except (KeyError, ValueError):
+        return "expired"
+    limit = timedelta(seconds=SESSION_ACTIVE_SECONDS)
+    return "active" if now - seen < limit and now - signed < limit else "expired"
+
+
+SESSION_FIELDS = ("username", "signedInAt", "lastSeenAt", "firstIp", "lastIp", "browser", "os", "device",
+                  "city", "region", "country", "revokedAt", "revokedBy")
+
+
+def list_sessions(event, actor):
+    current, now = _session_id(event), _now()
+    rows = []
+    for s in _all_sessions():
+        row = {k: s.get(k) for k in SESSION_FIELDS if s.get(k) not in (None, "")}
+        row["id"] = s["sid"]
+        row["current"] = s["sid"] == current
+        row["status"] = _status(s, now)
+        rows.append(row)
+    rows.sort(key=lambda r: r.get("lastSeenAt", ""), reverse=True)
+    return 200, {"sessions": rows}
+
+
+def _revoke(sid, actor):
+    """Idempotent: the first sign-out time and who did it are kept."""
+    try:
+        _dynamodb().update_item(
+            TableName=SESSIONS_TABLE,
+            Key={"sid": {"S": sid}},
+            UpdateExpression="SET #r = if_not_exists(#r, :now), #b = if_not_exists(#b, :who)",
+            ConditionExpression="attribute_exists(sid)",
+            ExpressionAttributeNames={"#r": "revokedAt", "#b": "revokedBy"},
+            ExpressionAttributeValues={":now": {"S": _iso(_now())}, ":who": {"S": actor}},
+        )
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") == "ConditionalCheckFailedException":
+            raise HttpError(404, "not_found", "No such device.")
+        raise
+
+
+def revoke_session(event, actor):
+    sid = (event.get("pathParameters") or {}).get("id") or ""
+    if not SESSION_ID_RE.match(sid):
+        raise HttpError(404, "not_found", "No such device.")
+    _revoke(sid, actor)
+    return 200, {"revoked": sid, "current": sid == _session_id(event)}
+
+
+def revoke_other_sessions(event, actor):
+    current, count = _session_id(event), 0
+    for s in _all_sessions():
+        if s["sid"] != current and not s.get("revokedAt"):
+            _revoke(s["sid"], actor)
+            count += 1
+    return 200, {"revoked": count}
+
+
 ROUTES = {
+    "GET /api/sessions": list_sessions,
+    "DELETE /api/sessions/{id}": revoke_session,
+    "POST /api/sessions/revoke-others": revoke_other_sessions,
     "GET /api/submissions": list_submissions,
     "POST /api/submissions": create_submission,
     "GET /api/submissions/{id}": get_submission,
@@ -492,10 +702,12 @@ def handler(event, context):
     route = event.get("routeKey", "")
     actor = None
     try:
+        _check_origin(event)
         fn = ROUTES.get(route)
         if fn is None:
             raise HttpError(404, "not_found", "No such route.")
         actor = _actor(event)
+        _track_session(event, actor)
         status, payload = fn(event, actor)
     except HttpError as err:
         status = err.status

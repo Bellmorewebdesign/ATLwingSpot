@@ -139,6 +139,65 @@ while the dashboard is built.
   incl. MFA and new-password steps, sorting, previews, notes, archive,
   import/export, token refresh, sign-out, phone layout down to 320px.
 
+### Phase 2.1: security and account (`dashboard/`, written and tested)
+
+**Kept out of sight**
+- `robots.txt` disallows everything; every response carries
+  `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex`.
+- Neutral wording before sign-in: the tab says "Sign in", the page "Sign in."
+  Nothing about franchises or leads until after sign-in.
+- Only the dashboard's own files exist. A CloudFront Function answers any
+  other path (`/.env`, `/admin`, `/wp-login.php`…) with an empty 404.
+- Comments are stripped from the published HTML, CSS and JS (`build.py`); the
+  `Server` header is removed.
+
+**Rate limits and firewall** (AWS WAF, `EnableWaf`, on by default)
+- Login: 30 Cognito calls per IP per 5 minutes, plus AWS's bad-IP list, on
+  top of Cognito's own lockout after repeated wrong passwords. A person
+  signing in makes a handful of calls.
+- Dashboard (page and API): 1,000 requests per IP per 5 minutes, AWS's bad-IP
+  list, and AWS's known-bad-inputs rules.
+- API Gateway throttling stays as a second layer.
+
+**Locked-down API**
+- CloudFront adds a random secret header (from Secrets Manager); the API
+  refuses any request without it, so it cannot be reached around CloudFront
+  and the firewall.
+- Access tokens last 15 minutes (refreshed quietly); refresh tokens 12 hours.
+- Content-Security-Policy now also requires Trusted Types; plus
+  Permissions-Policy, Cross-Origin-Opener/Resource-Policy, HSTS, no framing,
+  no referrer.
+
+**Account panel**
+- Signed-in devices: every sign-in in the last 30 days with browser, OS,
+  kind of device, IP (and the IP it first signed in from), city/region/
+  country, when it signed in and when it was last active. This device is
+  marked.
+- Sign out any device, or all others. A signed-out device is refused by the
+  API on its very next request (tracked per sign-in by the token's
+  `origin_jti` in `atl-franchise-sessions`).
+- Change password (Cognito `ChangePassword`). With "sign out every device"
+  (on by default) it also signs every device out in the log, revokes every
+  refresh token with Cognito (`GlobalSignOut`) and signs this tab out.
+- Sign-out also marks the sign-in as signed out in the log; an hour without
+  activity signs the tab out.
+
+**Long lists**
+- 50 leads a page (25/50/100, remembered), with Prev/Next. Search, sorting,
+  the Archived view and Export work on every lead, not just the page shown.
+- All leads are loaded in pages of 200 behind the scenes; this stays quick
+  into the thousands. Past roughly 5,000 leads, move search and sorting into
+  the API (the `by-created` index already supports date order).
+
+**Form (`aws/franchise-form`)**
+- Already had: Cloudflare Turnstile, a honeypot, field and size validation,
+  1 per minute / 3 per hour / 10 per day per IP, 50 per day overall, API
+  Gateway throttling, and fail-closed behaviour.
+- Added: at most 3 submissions per email address per day across every IP
+  (stored only as a keyed hash), and `X-Content-Type-Options: nosniff`.
+- AWS WAF cannot be attached to this kind of API (HTTP API); the limits above
+  do that job inside the function.
+
 ### Phase 3: hardening (not started)
 
 - Reconcile job (EventBridge, daily): compares recent SES sends to table rows
@@ -262,6 +321,11 @@ cents to well under a dollar a month. Phase 2 adds Cognito (free for the first
 50,000 monthly users), CloudFront/S3 and the API (cents), plus a Route 53 zone
 only if you choose to host DNS there. AWS Backup storage for a tiny table is
 negligible.
+
+Phase 2.1 adds AWS WAF, about **$15 a month** (two web ACLs at $5 each plus
+$1 per rule; request charges are negligible at this volume) and Secrets
+Manager at $0.40 a month. `WAF=off ./deploy.sh` removes the firewall and its
+cost; everything else keeps working.
 
 ## Risks and how they are covered
 

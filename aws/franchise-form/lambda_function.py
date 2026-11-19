@@ -77,6 +77,9 @@ MIN_INTERVAL_SECONDS = _int_env("MIN_INTERVAL_SECONDS", 60)
 PER_IP_HOURLY_LIMIT = _int_env("PER_IP_HOURLY_LIMIT", 3)
 PER_IP_DAILY_LIMIT = _int_env("PER_IP_DAILY_LIMIT", 10)
 GLOBAL_DAILY_LIMIT = _int_env("GLOBAL_DAILY_LIMIT", 50)
+# Per email address, per UTC day, across every IP. The per-IP limits cannot
+# stop one address being resubmitted from many IPs; this does.
+PER_EMAIL_DAILY_LIMIT = _int_env("PER_EMAIL_DAILY_LIMIT", 3)
 MAX_BODY_BYTES = _int_env("MAX_BODY_BYTES", 16384)
 
 # Queue that feeds the submissions archive (aws/franchise-dashboard). Unset
@@ -165,7 +168,11 @@ def _response(status, payload, extra_headers=None):
     integration is how you end up with a duplicated
     Access-Control-Allow-Origin that every browser rejects.
     """
-    headers = {"content-type": "application/json", "cache-control": "no-store"}
+    headers = {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+    }
     if extra_headers:
         headers.update(extra_headers)
     return {"statusCode": status, "headers": headers, "body": json.dumps(payload)}
@@ -210,6 +217,14 @@ def _ip_hash(ip):
     """
     key = RATE_LIMIT_SECRET.encode("utf-8")
     msg = (ip if ip is not None else "\x00no-source-ip").encode("utf-8")
+    return hmac.new(key, msg, hashlib.sha256).hexdigest()
+
+
+def _email_hash(email):
+    """Same keyed hash, for the per-email limit. Case-insensitive, and
+    prefixed so an email can never collide with an IP digest."""
+    key = RATE_LIMIT_SECRET.encode("utf-8")
+    msg = ("email:" + email.strip().lower()).encode("utf-8")
     return hmac.new(key, msg, hashlib.sha256).hexdigest()
 
 
@@ -362,7 +377,7 @@ def _n(value):
     return {"N": str(int(value))}
 
 
-def acquire_quota(ip_hash, now=None):
+def acquire_quota(ip_hash, now=None, email_hash=None):
     """
     Take one unit from every window at once, or take nothing.
 
@@ -463,6 +478,25 @@ def acquire_quota(ip_hash, now=None):
         },
     ]
 
+    if email_hash is not None:
+        # Fifth item, same shape as the others, same transaction: a request
+        # refused here spends nothing from the per-IP or global windows.
+        items.append({
+            "Update": {
+                "TableName": RATE_LIMIT_TABLE,
+                "Key": {"pk": {"S": f"email#{email_hash}#d#{day_bucket}"}},
+                "UpdateExpression": "SET #n = if_not_exists(#n, :zero) + :one, expires_at = :exp",
+                "ConditionExpression": "attribute_not_exists(#n) OR #n < :limit",
+                "ExpressionAttributeNames": {"#n": "n"},
+                "ExpressionAttributeValues": {
+                    ":zero": _n(0),
+                    ":one": _n(1),
+                    ":limit": _n(PER_EMAIL_DAILY_LIMIT),
+                    ":exp": _n(day_expiry),
+                },
+            }
+        })
+
     try:
         _dynamodb().transact_write_items(TransactItems=items)
     except ClientError as exc:
@@ -502,6 +536,8 @@ def _cancellation_to_limit(exc, now):
         return RateLimited("daily", _seconds_to_next_utc_day(now))
     if failed(3):
         return RateLimited("global", _seconds_to_next_utc_day(now))
+    if failed(4):
+        return RateLimited("email", _seconds_to_next_utc_day(now))
     # Cancelled for a reason that is not a failed condition (a capacity
     # problem, say). Treat it as the store being unavailable.
     raise RateLimitUnavailable("TransactionCanceled")
@@ -514,6 +550,8 @@ _LIMIT_MESSAGES = {
              "or reach us on Instagram.",
     "global": "This form is at its limit for today. Please try again tomorrow, "
               "or reach us on Instagram.",
+    "email": "We already have your request from today, so there is no need to send "
+             "it again. We will be in touch.",
 }
 
 
@@ -671,7 +709,7 @@ def lambda_handler(event, context):
         )
 
     try:
-        acquire_quota(ip_hash)
+        acquire_quota(ip_hash, email_hash=_email_hash(cleaned["email"]))
     except RateLimited as limited:
         LOG.info(json.dumps({
             "event": "rate_limited",

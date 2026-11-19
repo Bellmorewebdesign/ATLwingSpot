@@ -7,6 +7,7 @@
 #   DOMAIN=admin.atlwingspot.com CERT_ARN=arn:aws:acm:us-east-1:...:certificate/... ./deploy.sh
 #                                        move it to the custom domain (see ../PLAN.md)
 #   REQUIRE_MFA=ON ./deploy.sh           also ask for an authenticator-app code at login
+#   WAF=off ./deploy.sh                  drop the firewall (saves about $15 a month)
 #
 # Each setting is remembered from the last deploy, so a plain ./deploy.sh later
 # keeps the domain and MFA choice. DOMAIN= (empty) removes the custom domain.
@@ -45,6 +46,11 @@ DOMAIN="${DOMAIN-$(previous DomainName)}"
 CERT_ARN="${CERT_ARN-$(previous CertificateArn)}"
 REQUIRE_MFA="${REQUIRE_MFA:-$(previous RequireMfa)}"
 REQUIRE_MFA="${REQUIRE_MFA:-OFF}"
+case "${WAF:-}" in
+  on|ON|true)   ENABLE_WAF=true ;;
+  off|OFF|false) ENABLE_WAF=false ;;
+  *)            ENABLE_WAF="$(previous EnableWaf)"; ENABLE_WAF="${ENABLE_WAF:-true}" ;;
+esac
 [[ -z "$DOMAIN" ]] && CERT_ARN=""
 
 if [[ -n "$DOMAIN" && -z "$CERT_ARN" ]]; then
@@ -55,8 +61,9 @@ fi
 say "Stack ${STACK} (${REGION})"
 ok "domain:      ${DOMAIN:-(none, cloudfront.net address)}"
 ok "require MFA: ${REQUIRE_MFA}"
+ok "firewall:    ${ENABLE_WAF}"
 
-OVERRIDES=("RequireMfa=${REQUIRE_MFA}")
+OVERRIDES=("RequireMfa=${REQUIRE_MFA}" "EnableWaf=${ENABLE_WAF}")
 [[ -n "$DOMAIN" ]] && OVERRIDES+=("DomainName=${DOMAIN}" "CertificateArn=${CERT_ARN}")
 
 # No `sam build`: the API has no dependencies beyond boto3, which Lambda provides.
@@ -77,7 +84,8 @@ URL="$(output DashboardUrl)"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-cp -R web/. "$TMP/"
+# Comments stripped on the way out (see build.py).
+python3 build.py web "$TMP"
 # The only per-deploy values the page needs. Neither is a secret: the app
 # client id is sent with every sign-in and is visible to anyone using the page.
 python3 - "$REGION" "$CLIENT" > "$TMP/config.js" <<'PY'
