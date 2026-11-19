@@ -1,21 +1,17 @@
 /*
- * ATL Wing Spot franchise dashboard.
+ * The dashboard, served only to a signed-in browser (see signin.js, which
+ * loads this through /api/app/ and provides ATL_AUTH).
  *
- * Sign-in: the branded form on this page sends the username and password
- * straight to Amazon Cognito's API over HTTPS (InitiateAuth,
- * USER_PASSWORD_AUTH) and gets tokens back. Nothing else ever sees the
- * password, and it is cleared from the form as soon as it has been sent.
- * Tokens live in sessionStorage, so closing the tab signs out. Every API call
- * carries the access token, which API Gateway checks before any code runs.
- *
+ * Every API call carries the access token, which API Gateway checks before
+ * any code runs; the API also refuses a sign-in that has been signed out.
  * Everything from the API is put on the page with textContent, never as HTML.
  */
 (function () {
   'use strict';
 
-  var CFG = window.ATL_CONFIG || {};
   var L = window.ATL_LIB;
-  var IDP = 'https://cognito-idp.' + (CFG.region || 'us-east-1') + '.amazonaws.com/';
+  var A = window.ATL_AUTH;
+  var accessToken = A.accessToken, idp = A.idp, busy = A.busy, username = A.username, signOut = A.signOut, noop = A.noop;
 
   function $(id) { return document.getElementById(id); }
 
@@ -38,236 +34,11 @@
   }
   function show(id, msg) { var e = $(id); e.textContent = msg || ''; e.hidden = !msg; }
 
-  // ------------------------------------------------------------- storage
-  var session = {
-    get: function (k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
-    set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* private mode */ } },
-    del: function (k) { try { sessionStorage.removeItem(k); } catch (e) { /* ignore */ } },
-  };
-  // Only for the remembered sort order, a per-browser convenience.
   var prefs = {
     get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } },
   };
 
-  // ---------------------------------------------------------------- auth
-  function idp(action, body) {
-    return fetch(IDP, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-amz-json-1.1',
-        'X-Amz-Target': 'AWSCognitoIdentityProviderService.' + action,
-      },
-      body: JSON.stringify(body),
-    }).then(function (res) {
-      return res.json().catch(function () { return {}; }).then(function (data) {
-        if (!res.ok) {
-          var err = new Error(friendly(data, res.status));
-          err.code = String(data.__type || '').split('#').pop();
-          throw err;
-        }
-        return data;
-      });
-    }, function () {
-      throw new Error('Could not reach the sign-in service. Check your connection.');
-    });
-  }
-
-  function friendly(data, status) {
-    var type = String(data.__type || '').split('#').pop(), msg = String(data.message || '');
-    // The firewall's per-IP limit on sign-in calls.
-    if (type === 'ForbiddenException' || (!type && status === 403)) {
-      return 'Too many sign-in attempts from this network. Wait a few minutes, then try again.';
-    }
-    if (type === 'NotAuthorizedException') {
-      return /attempts exceeded/i.test(msg) ? 'Too many attempts. Wait a few minutes, then try again.'
-        : /expired/i.test(msg) ? 'That took too long. Start over.'
-          : 'Wrong username or password.';
-    }
-    if (type === 'TooManyRequestsException' || type === 'LimitExceededException') return 'Too many attempts. Wait a few minutes, then try again.';
-    if (type === 'CodeMismatchException' || type === 'EnableSoftwareTokenMFAException') return 'That code did not work. Try the newest one.';
-    if (type === 'ExpiredCodeException') return 'That code expired. Try the newest one.';
-    if (type === 'InvalidPasswordException') return 'Use at least 10 characters, including a number.';
-    if (type === 'PasswordResetRequiredException') return 'This login needs a new password. Run create-admin.sh to set one.';
-    return 'Sign-in failed. Try again.';
-  }
-
-  function keepTokens(r) {
-    session.set('access_token', r.AccessToken);
-    if (r.IdToken) session.set('id_token', r.IdToken);
-    if (r.RefreshToken) session.set('refresh_token', r.RefreshToken);
-    session.set('expires_at', String(Date.now() + (r.ExpiresIn || 3600) * 1000));
-  }
-  function clearTokens() {
-    ['access_token', 'id_token', 'refresh_token', 'expires_at'].forEach(session.del);
-  }
-
-  var refreshing = null;
-  function accessToken() {
-    var tok = session.get('access_token'), exp = Number(session.get('expires_at') || 0);
-    if (tok && Date.now() < exp - 60000) return Promise.resolve(tok);
-    var rt = session.get('refresh_token');
-    if (!rt) return Promise.resolve(null);
-    if (!refreshing) {
-      refreshing = idp('InitiateAuth', {
-        AuthFlow: 'REFRESH_TOKEN_AUTH', ClientId: CFG.clientId, AuthParameters: { REFRESH_TOKEN: rt },
-      }).then(function (r) { keepTokens(r.AuthenticationResult); })
-        .catch(clearTokens)
-        .then(function () { refreshing = null; });
-    }
-    return refreshing.then(function () { return session.get('access_token'); });
-  }
-
-  function claimsOf(name) {
-    var t = session.get(name);
-    if (!t) return {};
-    try {
-      return JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    } catch (e) { return {}; }
-  }
-  function username() { return claimsOf('id_token')['cognito:username'] || ''; }
-  // The same id the API files this sign-in under (see the API's _session_id).
-  function currentSessionId() {
-    var c = claimsOf('access_token');
-    return c.origin_jti || (c.username && c.auth_time ? c.username + '@' + c.auth_time : '');
-  }
-  function noop() { /* best effort */ }
-
-  // The sign-in conversation: password first, then any extra step Cognito asks for.
-  var pending = null;   // { username, session, challenge }
-
-  function busy(form, on, label) {
-    var b = form.querySelector('button[type=submit]');
-    b.disabled = on;
-    b.querySelector('.label').textContent = on ? 'One moment…' : label;
-  }
-
-  function onSignIn(e) {
-    e.preventDefault();
-    var form = $('signin-form'), user = $('username').value.trim(), pass = $('password').value;
-    show('signin-error', '');
-    if (!user || !pass) { show('signin-error', 'Enter your username and password.'); return; }
-    busy(form, true);
-    idp('InitiateAuth', {
-      AuthFlow: 'USER_PASSWORD_AUTH', ClientId: CFG.clientId, AuthParameters: { USERNAME: user, PASSWORD: pass },
-    }).then(function (r) {
-      $('password').value = '';
-      return afterAuth(r, user);
-    }).catch(function (err) {
-      $('password').value = '';
-      show('signin-error', err.message);
-      $('password').focus();
-    }).then(function () { busy(form, false, 'Sign in'); });
-  }
-
-  function afterAuth(r, user) {
-    if (r.AuthenticationResult) {
-      keepTokens(r.AuthenticationResult);
-      pending = null;
-      return enterApp();
-    }
-    pending = {
-      username: (r.ChallengeParameters && r.ChallengeParameters.USER_ID_FOR_SRP) || user,
-      session: r.Session,
-      challenge: r.ChallengeName,
-    };
-    return showChallenge();
-  }
-
-  function showChallenge() {
-    var input = $('challenge-input');
-    $('signin-form').hidden = true;
-    $('challenge-form').hidden = false;
-    show('challenge-error', '');
-    $('challenge-key').hidden = true;
-    input.value = '';
-    if (pending.challenge === 'NEW_PASSWORD_REQUIRED') {
-      $('challenge-text').textContent = 'Choose a new password: at least 10 characters, including a number.';
-      $('challenge-label').textContent = 'New password';
-      input.type = 'password';
-      input.autocomplete = 'new-password';
-      input.removeAttribute('inputmode');
-    } else if (pending.challenge === 'SOFTWARE_TOKEN_MFA' || pending.challenge === 'MFA_SETUP') {
-      $('challenge-label').textContent = '6-digit code';
-      input.type = 'text';
-      input.autocomplete = 'one-time-code';
-      input.setAttribute('inputmode', 'numeric');
-      if (pending.challenge === 'SOFTWARE_TOKEN_MFA') {
-        $('challenge-text').textContent = 'Enter the 6-digit code from your authenticator app.';
-      } else {
-        $('challenge-text').textContent = 'One-time setup: add this key to an authenticator app (Google Authenticator, 1Password, Authy…), then enter the 6-digit code it shows.';
-        return idp('AssociateSoftwareToken', { Session: pending.session }).then(function (r) {
-          pending.session = r.Session;
-          $('challenge-key').textContent = r.SecretCode.replace(/(.{4})/g, '$1 ').trim();
-          $('challenge-key').hidden = false;
-          input.focus();
-        }).catch(function (err) { show('challenge-error', err.message); });
-      }
-    } else {
-      $('challenge-text').textContent = 'This login needs a step this page does not support (' + pending.challenge + ').';
-    }
-    input.focus();
-    return Promise.resolve();
-  }
-
-  function respond(extra) {
-    return idp('RespondToAuthChallenge', {
-      ChallengeName: pending.challenge, ClientId: CFG.clientId, Session: pending.session,
-      ChallengeResponses: Object.assign({ USERNAME: pending.username }, extra),
-    });
-  }
-
-  function onChallenge(e) {
-    e.preventDefault();
-    if (!pending) return;
-    var form = $('challenge-form'), raw = $('challenge-input').value, code = raw.replace(/\s/g, '');
-    var step;
-    show('challenge-error', '');
-    if (pending.challenge === 'NEW_PASSWORD_REQUIRED') {
-      if (raw.length < 10 || !/\d/.test(raw)) { show('challenge-error', 'Use at least 10 characters, including a number.'); return; }
-      step = respond({ NEW_PASSWORD: raw });
-    } else if (pending.challenge === 'SOFTWARE_TOKEN_MFA') {
-      step = respond({ SOFTWARE_TOKEN_MFA_CODE: code });
-    } else if (pending.challenge === 'MFA_SETUP') {
-      step = idp('VerifySoftwareToken', { Session: pending.session, UserCode: code, FriendlyDeviceName: 'ATL dashboard' })
-        .then(function (r) { pending.session = r.Session; return respond({}); });
-    } else {
-      return;
-    }
-    busy(form, true);
-    var user = pending.username;
-    step.then(function (r) {
-      $('challenge-input').value = '';
-      return afterAuth(r, user);
-    }).catch(function (err) {
-      show('challenge-error', err.message);
-    }).then(function () { busy(form, false, 'Continue'); });
-  }
-
-  function startOver() {
-    pending = null;
-    $('challenge-form').hidden = true;
-    $('signin-form').hidden = false;
-    show('signin-error', '');
-    $('password').value = '';
-    $('username').focus();
-  }
-
-  // Marks this sign-in as signed out in the device log, revokes the refresh
-  // token with Cognito, and forgets every token in this tab.
-  function signOut(message, info) {
-    var rt = session.get('refresh_token'), tok = session.get('access_token'), sid = currentSessionId();
-    var mark = tok && sid
-      ? fetch('/api/sessions/' + encodeURIComponent(sid), { method: 'DELETE', headers: { Authorization: 'Bearer ' + tok } }).catch(noop)
-      : Promise.resolve();
-    clearTokens();
-    if (rt) idp('RevokeToken', { Token: rt, ClientId: CFG.clientId }).catch(noop);
-    state.all = [];
-    state.archived = null;
-    state.page = 1;
-    showSignIn(message, info);
-    return mark;
-  }
 
   // ----------------------------------------------------------------- API
   function ApiError(status, body) {
@@ -279,7 +50,7 @@
   function api(method, path, body) {
     return accessToken().then(function (tok) {
       if (!tok) {
-        showSignIn('Your session ended. Please sign in again.');
+        A.leave('Your session ended. Please sign in again.');
         throw new ApiError(401);
       }
       var headers = { Authorization: 'Bearer ' + tok };
@@ -288,8 +59,7 @@
     }).then(function (res) {
       return res.json().catch(function () { return null; }).then(function (data) {
         if (res.status === 401) {
-          clearTokens();
-          showSignIn(data && data.error === 'session_revoked'
+          A.leave(data && data.error === 'session_revoked'
             ? 'This device was signed out. Sign in again.'
             : 'Your session ended. Please sign in again.');
         }
@@ -792,11 +562,9 @@
     }
   }
 
+
   // --------------------------------------------------------------- wiring
   function wire() {
-    $('signin-form').addEventListener('submit', onSignIn);
-    $('challenge-form').addEventListener('submit', onChallenge);
-    $('challenge-cancel').addEventListener('click', startOver);
     $('signout').addEventListener('click', function () { signOut(); });
 
     var sel = $('sort');
@@ -880,43 +648,15 @@
     $('import-go').addEventListener('click', runImport);
   }
 
-  // info: a neutral notice ("Signed out.") rather than a problem.
-  function showSignIn(msg, info) {
-    document.title = 'Sign in';
-    document.querySelectorAll('dialog[open]').forEach(function (d) { d.close(); });
-    pending = null;
-    $('app').hidden = true;
-    $('signin').hidden = false;
-    $('challenge-form').hidden = true;
-    $('signin-form').hidden = false;
-    show('signin-error', msg || '');
-    $('signin-error').classList.toggle('info', !!info);
-    setTimeout(function () { ($('username').value ? $('password') : $('username')).focus(); }, 0);
-  }
-
-  function enterApp() {
+  function start() {
+    wire();
+    renderSort();
     document.title = 'Leads';
     lastActive = Date.now();
-    $('signin').hidden = true;
     $('app').hidden = false;
     $('who').textContent = username();
     return refresh();
   }
 
-  function boot() {
-    if (!CFG.clientId) {
-      show('signin-error', 'This page is not set up yet (config.js is missing).');
-      $('signin').hidden = false;
-      $('signin-form').querySelector('button').disabled = true;
-      return;
-    }
-    wire();
-    renderSort();
-    accessToken().then(function (tok) {
-      if (tok) return enterApp();
-      showSignIn();
-    });
-  }
-
-  boot();
+  window.ATL_APP = { start: start };
 })();

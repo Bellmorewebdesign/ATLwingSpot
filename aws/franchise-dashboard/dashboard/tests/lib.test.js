@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const L = require(path.join(__dirname, '..', 'web', 'lib.js'));
+const L = require(path.join(__dirname, '..', 'web', 'app', 'lib.js'));
 
 test('parseCsv handles quotes, escaped quotes, commas and newlines in fields', () => {
   const rows = L.parseCsv('a,b,c\r\n"x, y","He said ""hi""","line1\nline2"\n\n1,2,3');

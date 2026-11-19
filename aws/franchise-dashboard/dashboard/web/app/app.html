@@ -1,0 +1,167 @@
+<!-- The dashboard's markup, served only after sign-in (see signin.js). -->
+  <div id="app" hidden>
+    <header class="bar">
+      <div class="bar-brand">
+        <img src="brand/logo.png" alt="ATL Wing Spot" width="560" height="246">
+        <span class="bar-title">Leads</span>
+      </div>
+      <div class="bar-right">
+        <span id="who" class="who"></span>
+        <button id="account-btn" class="btn btn-sm btn-outline" type="button">Account</button>
+        <button id="signout" class="btn btn-sm btn-outline desktop-only" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="toolbar">
+        <input id="search" class="search" type="search" placeholder="Search leads" aria-label="Search leads">
+        <label class="sort-pick"><span>Sort</span>
+          <select id="sort" aria-label="Sort leads"></select>
+        </label>
+        <div class="tools">
+          <button id="view-archived" class="btn btn-sm btn-outline" type="button" aria-pressed="false">Archived</button>
+          <button id="import" class="btn btn-sm btn-outline" type="button">Import</button>
+          <button id="export" class="btn btn-sm btn-outline" type="button">Export</button>
+          <button id="refresh" class="btn btn-sm btn-outline" type="button">Refresh</button>
+        </div>
+      </div>
+
+      <p id="archived-banner" class="banner" hidden>
+        Showing archived leads. <button id="back-to-inbox" class="linkish" type="button">Back to all leads</button>
+      </p>
+      <p id="count" class="count" role="status"></p>
+
+      <div class="list-wrap">
+        <table class="list">
+          <thead>
+            <tr>
+              <th class="c-date"><button type="button" data-sort="createdAt">Received</button></th>
+              <th class="c-name"><button type="button" data-sort="name">Name</button></th>
+              <th class="c-state"><button type="button" data-sort="territory">State</button></th>
+              <th class="c-email"><button type="button" data-sort="email">Email</button></th>
+              <th class="c-phone"><button type="button" data-sort="phone">Phone</button></th>
+              <th class="c-msg"><button type="button" data-sort="message">Message</button></th>
+              <th class="c-reply"><span class="sr-only">Reply</span></th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p id="empty" class="empty" hidden></p>
+
+      <nav id="pager" class="pager" aria-label="Pages" hidden>
+        <button id="page-prev" class="btn btn-sm btn-outline" type="button"><span aria-hidden="true">←</span> Prev</button>
+        <span id="page-info" class="page-info"></span>
+        <button id="page-next" class="btn btn-sm btn-outline" type="button">Next <span aria-hidden="true">→</span></button>
+        <label class="per-page"><span>Per page</span> <select id="page-size" aria-label="Leads per page"></select></label>
+      </nav>
+    </main>
+  </div>
+
+  <!-- One lead. Full screen on a phone. -->
+  <dialog id="detail" class="sheet" aria-labelledby="d-name">
+    <div class="sheet-head">
+      <button class="icon back" type="button" data-close aria-label="Back to all leads">←</button>
+      <div class="sheet-title">
+        <h2 id="d-name"></h2>
+        <p id="d-received" class="muted"></p>
+      </div>
+      <button class="icon close" type="button" data-close aria-label="Close">×</button>
+    </div>
+    <div class="sheet-body">
+      <div class="contact-actions">
+        <a id="d-reply-btn" class="btn btn-sm">Reply <span class="ar" aria-hidden="true">→</span></a>
+        <a id="d-call-btn" class="btn btn-sm btn-cyan">Call <span class="ar" aria-hidden="true">→</span></a>
+      </div>
+
+      <h3 class="kicker">Message</h3>
+      <p id="d-message" class="message"></p>
+
+      <dl class="facts">
+        <dt>Email</dt><dd id="d-email"></dd>
+        <dt>Phone</dt><dd id="d-phone"></dd>
+        <dt>State</dt><dd id="d-territory"></dd>
+        <dt>From</dt><dd id="d-source"></dd>
+      </dl>
+
+      <h3 class="kicker">Notes</h3>
+      <form id="d-form" class="stack">
+        <textarea id="d-notes" rows="4" maxlength="10000" placeholder="Private notes, only visible here"></textarea>
+        <div class="row-actions">
+          <button type="submit" class="btn btn-sm">Save notes</button>
+          <button type="button" id="d-archive" class="btn btn-sm btn-outline"></button>
+        </div>
+      </form>
+
+      <details class="history">
+        <summary>History</summary>
+        <ol id="d-history"></ol>
+      </details>
+    </div>
+  </dialog>
+
+  <!-- Account: signed-in devices and password -->
+  <dialog id="account" class="sheet" aria-labelledby="account-title">
+    <div class="sheet-head">
+      <button class="icon back" type="button" data-close aria-label="Back">←</button>
+      <div class="sheet-title"><h2 id="account-title">Account</h2><p id="account-who" class="muted"></p></div>
+      <button class="icon close" type="button" data-close aria-label="Close">×</button>
+    </div>
+    <div class="sheet-body">
+      <h3 class="kicker">Signed-in devices</h3>
+      <p class="muted">Every sign-in from the last 30 days. Signing a device out cuts it off straight away.</p>
+      <ul id="device-list" class="devices"><li class="muted">Loading…</li></ul>
+      <div class="row-actions">
+        <button id="revoke-others" class="btn btn-sm btn-outline" type="button">Sign out all other devices</button>
+      </div>
+
+      <h3 class="kicker">Change password</h3>
+      <form id="password-form" class="stack" method="post" action="#" novalidate>
+        <input id="pw-username" type="text" autocomplete="username" hidden>
+        <label class="field">Current password
+          <input id="pw-current" type="password" autocomplete="current-password" required>
+        </label>
+        <label class="field">New password
+          <input id="pw-new" type="password" autocomplete="new-password" required>
+        </label>
+        <label class="field">New password again
+          <input id="pw-confirm" type="password" autocomplete="new-password" required>
+        </label>
+        <p class="muted hint">At least 10 characters, including a number.</p>
+        <label class="check"><input id="pw-signout" type="checkbox" checked>
+          <span>Sign out every device, this one included, so the new password is needed everywhere</span></label>
+        <p id="pw-error" class="error" role="alert" hidden></p>
+        <div class="row-actions"><button class="btn btn-sm" type="submit"><span class="label">Change password</span></button></div>
+      </form>
+
+      <div class="row-actions mobile-only">
+        <button id="signout-2" class="btn btn-sm btn-outline" type="button">Sign out</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- CSV import -->
+  <dialog id="import-dialog" class="sheet" aria-labelledby="import-title">
+    <div class="sheet-head">
+      <button class="icon back" type="button" data-close aria-label="Back">←</button>
+      <div class="sheet-title"><h2 id="import-title">Import leads</h2></div>
+      <button class="icon close" type="button" data-close aria-label="Close">×</button>
+    </div>
+    <div class="sheet-body">
+      <p>Upload a <strong>.csv</strong> file (Google Sheets: File → Download → CSV) whose first row is column
+        names. Columns it understands:</p>
+      <ul class="cols">
+        <li><strong>First name</strong> and <strong>Last name</strong>, or one <strong>Name</strong> column</li>
+        <li><strong>Email</strong> (required)</li>
+        <li>Phone, State, Message, Notes</li>
+        <li><strong>Date</strong> received, like 2026-03-14 or 3/14/2026</li>
+      </ul>
+      <p class="muted">Rows with a date are safe to import twice: copies already in the list are skipped.</p>
+      <input id="import-file" type="file" accept=".csv,text/csv">
+      <div id="import-preview" class="preview"></div>
+      <div class="row-actions"><button id="import-go" class="btn btn-sm" type="button" disabled>Import</button></div>
+      <div id="import-result" class="preview"></div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" popover="manual"></div>

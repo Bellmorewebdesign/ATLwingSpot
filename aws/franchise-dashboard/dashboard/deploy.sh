@@ -66,6 +66,17 @@ ok "firewall:    ${ENABLE_WAF}"
 OVERRIDES=("RequireMfa=${REQUIRE_MFA}" "EnableWaf=${ENABLE_WAF}")
 [[ -n "$DOMAIN" ]] && OVERRIDES+=("DomainName=${DOMAIN}" "CertificateArn=${CERT_ARN}")
 
+# Build first. Comments are stripped (see build.py). The dashboard itself
+# (web/app/) goes inside the API function's package, served only through
+# /api/app/ with a one-time pass; it is never uploaded to the public bucket.
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+python3 build.py web "$TMP"
+rm -rf src/api/private
+mv "$TMP/app" src/api/private
+ok "built: public $(ls "$TMP" | tr '\n' ' ')"
+ok "built: private (inside the API) $(ls src/api/private | tr '\n' ' ')"
+
 # No `sam build`: the API has no dependencies beyond boto3, which Lambda provides.
 sam deploy \
   --template-file template.yaml \
@@ -82,10 +93,6 @@ DIST="$(output DistributionId)"
 CLIENT="$(output UserPoolClientId)"
 URL="$(output DashboardUrl)"
 
-TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
-# Comments stripped on the way out (see build.py).
-python3 build.py web "$TMP"
 # The only per-deploy values the page needs. Neither is a secret: the app
 # client id is sent with every sign-in and is visible to anyone using the page.
 python3 - "$REGION" "$CLIENT" > "$TMP/config.js" <<'PY'

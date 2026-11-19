@@ -142,10 +142,24 @@ while the dashboard is built.
 ### Phase 2.1: security and account (`dashboard/`, written and tested)
 
 **Kept out of sight**
+- **Nothing but the sign-in form is public.** The public page is the logo, a
+  username and password form, and `signin.js`. The dashboard's markup, code
+  and styles (`web/app/`) ship inside the API function, not the website
+  bucket, and come only from `GET /api/app/{file}` with a one-time pass:
+  after a sign-in, `POST /api/app-ticket` (token required) issues a random
+  pass valid two minutes, stored only as a hash, tied to that sign-in; the
+  page sends it as a cookie scoped to `/api/app/`, loads the four files, and
+  drops it. Without a valid pass every one of those files is a bare 404. The
+  only way they get into the page is the `atl-loader` Trusted Types policy,
+  which the CSP names as the only one allowed and which only accepts the two
+  dashboard scripts. Signing out reloads the page, so nothing from behind
+  the sign-in stays in it. A crawler or an AI fetching the address sees a
+  sign-in form and nothing else; the browser test fetches every public file
+  and fails if any of them mentions what the dashboard does.
 - `robots.txt` disallows everything; every response carries
   `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex`.
 - Neutral wording before sign-in: the tab says "Sign in", the page "Sign in."
-  Nothing about franchises or leads until after sign-in.
+  with the logo.
 - Only the dashboard's own files exist. A CloudFront Function answers any
   other path (`/.env`, `/admin`, `/wp-login.php`…) with an empty 404.
 - Comments are stripped from the published HTML, CSS and JS (`build.py`); the

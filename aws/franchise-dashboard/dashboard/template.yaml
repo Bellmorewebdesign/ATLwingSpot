@@ -92,6 +92,21 @@ Resources:
         AttributeName: expiresAt
         Enabled: true
 
+  # One-time passes (two minutes) that let a signed-in browser download the
+  # dashboard's private files from /api/app/. Stored only as hashes.
+  TicketsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: atl-franchise-app-tickets
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: tid, AttributeType: S }
+      KeySchema:
+        - { AttributeName: tid, KeyType: HASH }
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+
   # Random value CloudFront adds to every API request and the API checks, so
   # the API cannot be reached around CloudFront (and its firewall).
   OriginSecret:
@@ -227,6 +242,26 @@ Resources:
       AuthorizerId: !Ref JwtAuthorizer
       Target: !Sub integrations/${ApiIntegration}
 
+  AppTicketRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: POST /api/app-ticket
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub integrations/${ApiIntegration}
+
+  # The dashboard's own files. No JWT on this one route because a <script>
+  # tag cannot send a header; the function checks the one-time pass cookie
+  # instead and answers 404 to anything else.
+  AppFileRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: GET /api/app/{file}
+      AuthorizationType: NONE
+      Target: !Sub integrations/${ApiIntegration}
+
   SessionsListRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -278,6 +313,7 @@ Resources:
           TABLE_NAME: !Ref TableName
           AUDIT_TABLE: !Ref AuditTable
           SESSIONS_TABLE: !Ref SessionsTable
+          TICKETS_TABLE: !Ref TicketsTable
           ORIGIN_SECRET: !Sub '{{resolve:secretsmanager:${OriginSecret}}}'
       Policies:
         - Statement:
@@ -295,8 +331,12 @@ Resources:
               Resource: !GetAtt AuditTable.Arn
             - Sid: Sessions
               Effect: Allow
-              Action: [dynamodb:UpdateItem, dynamodb:Scan]
+              Action: [dynamodb:GetItem, dynamodb:UpdateItem, dynamodb:Scan]
               Resource: !GetAtt SessionsTable.Arn
+            - Sid: AppTickets
+              Effect: Allow
+              Action: [dynamodb:PutItem, dynamodb:GetItem]
+              Resource: !GetAtt TicketsTable.Arn
 
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
@@ -384,7 +424,22 @@ Resources:
         QueryStringsConfig: { QueryStringBehavior: all }
         CookiesConfig: { CookieBehavior: none }
 
-  # Only the dashboard's own files exist. Any other path gets a bare 404 with
+  # /api/app/: only the one-time pass cookie (and where the visitor is) goes
+  # through. Never cached.
+  AppOriginRequestPolicy:
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: !Sub atl-franchise-dashboard-app-${AWS::StackName}
+        HeadersConfig:
+          HeaderBehavior: whitelist
+          Headers: [User-Agent, CloudFront-Viewer-Address]
+        QueryStringsConfig: { QueryStringBehavior: none }
+        CookiesConfig:
+          CookieBehavior: whitelist
+          Cookies: [atl_app]
+
+  # Only the sign-in page's own files are public. Any other path gets a bare 404 with
   # nothing in it, instead of S3's error document.
   PathGuard:
     Type: AWS::CloudFront::Function
@@ -395,7 +450,7 @@ Resources:
         Comment: ATL dashboard - known files only
         Runtime: cloudfront-js-2.0
       FunctionCode: |
-        var FILES = { '/': 1, '/index.html': 1, '/app.js': 1, '/lib.js': 1, '/styles.css': 1, '/config.js': 1, '/robots.txt': 1 };
+        var FILES = { '/': 1, '/index.html': 1, '/signin.js': 1, '/styles.css': 1, '/config.js': 1, '/robots.txt': 1 };
         function handler(event) {
           var uri = event.request.uri;
           if (FILES[uri] === 1 || /^\/(brand|fonts)\/[a-z0-9-]+\.(png|woff2)$/.test(uri)) {
@@ -417,7 +472,7 @@ Resources:
               img-src 'self' data:; font-src 'self';
               connect-src 'self' https://cognito-idp.${AWS::Region}.amazonaws.com;
               form-action 'self'; base-uri 'none'; frame-ancestors 'none';
-              require-trusted-types-for 'script'; trusted-types 'none'
+              require-trusted-types-for 'script'; trusted-types atl-loader
           StrictTransportSecurity:
             Override: true
             AccessControlMaxAgeSec: 63072000
@@ -485,6 +540,16 @@ Resources:
             - EventType: viewer-request
               FunctionARN: !GetAtt PathGuard.FunctionMetadata.FunctionARN
         CacheBehaviors:
+          # Listed before /api/*: CloudFront takes the first match.
+          - PathPattern: /api/app/*
+            TargetOriginId: api
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD]
+            CachedMethods: [GET, HEAD]
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad   # Managed-CachingDisabled
+            OriginRequestPolicyId: !Ref AppOriginRequestPolicy
+            ResponseHeadersPolicyId: !Ref SecurityHeaders
+            Compress: true
           - PathPattern: /api/*
             TargetOriginId: api
             ViewerProtocolPolicy: https-only

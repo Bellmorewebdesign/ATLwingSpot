@@ -10,6 +10,10 @@
 // device signed out from elsewhere, the firewall's block, the idle sign-out,
 // and the phone layout. Fails on any page error or CSP violation.
 //
+// It also checks the point of the public/private split: before sign-in only
+// the sign-in files exist, none of them says anything about the dashboard,
+// and the dashboard's files come only from /api/app/ with a one-time pass.
+//
 // WEB_DIR=<folder> runs it against a build (python3 build.py web <folder>).
 'use strict';
 const http = require('node:http');
@@ -22,15 +26,22 @@ const WEB = process.env.WEB_DIR ? path.resolve(process.env.WEB_DIR) : path.join(
 const IDP = 'https://cognito-idp.us-east-1.amazonaws.com/';
 const CSP = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; " +
   "connect-src 'self' https://cognito-idp.us-east-1.amazonaws.com; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; " +
-  "require-trusted-types-for 'script'; trusted-types 'none'";
+  "require-trusted-types-for 'script'; trusted-types atl-loader";
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.woff2': 'font/woff2', '.txt': 'text/plain' };
 const NEW_PASSWORD = 'Fresh7start2026';
 const SHOTS = process.argv[2];
 const PASSWORD = 'Good4pass99';
 
+// Same allowlist as the CloudFront path guard in template.yaml.
+const PUBLIC = new Set(['/', '/index.html', '/signin.js', '/styles.css', '/config.js', '/robots.txt']);
+const isPublic = (p) => PUBLIC.has(p) || /^\/(brand|fonts)\/[a-z0-9-]+\.(png|woff2)$/.test(p);
+const PRIVATE = path.join(WEB, 'app');
+const PRIVATE_TYPES = { 'app.html': 'text/html', 'app.css': 'text/css', 'lib.js': 'text/javascript', 'app.js': 'text/javascript' };
+
 function serve() {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://x');
+    if (!isPublic(url.pathname)) { res.writeHead(404); return res.end(); }
     if (url.pathname === '/config.js') {
       res.writeHead(200, { 'content-type': 'text/javascript', 'content-security-policy': CSP });
       return res.end(`window.ATL_CONFIG = ${JSON.stringify({ region: 'us-east-1', clientId: 'test-client' })};`);
@@ -81,7 +92,8 @@ function seed() {
 
 async function main() {
   const server = await serve();
-  const base = `http://127.0.0.1:${server.address().port}`;
+  // localhost: a secure context, so the Secure pass cookie works as on HTTPS.
+  const base = `http://localhost:${server.address().port}`;
   const browser = await chromium.launch();
   const problems = [];
   const calls = [];
@@ -89,6 +101,7 @@ async function main() {
   const history = {};
   // Fake sign-in log, as the API keeps it: id -> row.
   const devices = {};
+  const passes = new Set();
   const IPHONE = { browser: 'Safari', os: 'iOS', device: 'Phone', city: 'Rahway', region: 'NJ', country: 'US', lastIp: '198.51.100.20', firstIp: '198.51.100.20' };
 
   async function newPage(viewport, extra) {
@@ -175,6 +188,18 @@ async function main() {
     await page.route(`${base}/api/**`, async (route) => {
       const req = route.request();
       const u = new URL(req.url());
+      // The dashboard's own files: no token, only the one-time pass cookie.
+      const file = u.pathname.match(/^\/api\/app\/([^/]+)$/);
+      if (file) {
+        const cookie = (await req.allHeaders()).cookie || '';
+        const pass = (cookie.match(/(?:^|;\s*)atl_app=([^;]+)/) || [])[1];
+        calls.push({ appFile: file[1], pass: !!pass });
+        if (!pass || !passes.has(pass) || !PRIVATE_TYPES[file[1]]) {
+          return route.fulfill({ status: 404, contentType: 'text/plain', body: 'Not found' });
+        }
+        return route.fulfill({ status: 200, contentType: PRIVATE_TYPES[file[1]],
+          body: fs.readFileSync(path.join(PRIVATE, file[1]), 'utf8') });
+      }
       const auth = req.headers().authorization;
       const claims = claimsOf(auth);
       assert.ok(claims.jti === 'access-1' || claims.jti === 'access-2', 'API call carries the access token');
@@ -189,6 +214,11 @@ async function main() {
         signedInAt: new Date().toISOString(), status: 'active' });
       if (row.status === 'signed_out') return json(401, { error: 'session_revoked', message: 'This device was signed out.' });
       row.lastSeenAt = new Date().toISOString();
+      if (req.method() === 'POST' && u.pathname === '/api/app-ticket') {
+        const pass = 'pass-' + Math.random().toString(36).slice(2);
+        passes.add(pass);
+        return json(200, { ticket: pass, expiresIn: 120 });
+      }
       const sm = u.pathname.match(/^\/api\/sessions(?:\/([^/]+))?$/);
       if (sm) {
         const target = sm[1] && decodeURIComponent(sm[1]);
@@ -267,6 +297,23 @@ async function main() {
     await page.waitForTimeout(200);
     await shot(page, 'signin');
 
+    // Before sign-in, only the sign-in files exist and none of them says what
+    // the dashboard is or does. The dashboard's files are not public.
+    const publicFiles = ['/', '/signin.js', '/styles.css', '/config.js', '/robots.txt'];
+    const featureWords = /\breply\b|\bimport(ed|ing)?\b|\bexport\b|\barchived?\b|\bcsv\b|franchise|\bleads?\b|\bnotes\b|\bdevices\b|sign-in from|change password|per page/i;
+    for (const f of publicFiles) {
+      const text = await (await page.request.get(base + f)).text();
+      const hit = text.match(featureWords);
+      assert.equal(hit, null, `${f} gives away "${hit && hit[0]}"`);
+    }
+    for (const f of ['/app/app.js', '/app.js', '/lib.js', '/app.html', '/app/app.html', '/app.css']) {
+      assert.equal((await page.request.get(base + f)).status(), 404, f + ' must not be public');
+    }
+    for (const f of ['app.html', 'app.js', 'lib.js', 'app.css']) {
+      assert.equal((await page.request.get(base + '/api/app/' + f)).status(), 404, f + ' without a pass');
+    }
+    assert.equal(await page.locator('#app').count(), 0, 'no dashboard markup before sign-in');
+
     // Discreet: a neutral tab title and heading, robots told to stay out.
     assert.equal(await page.title(), 'Sign in');
     assert.equal(await page.textContent('.signin h1'), 'Sign in.');
@@ -293,6 +340,10 @@ async function main() {
     await page.waitForSelector('#rows tr');
     assert.equal(await page.textContent('#count'), '4 leads');
     assert.equal(await page.title(), 'Leads');
+    const loaded = calls.filter((c) => c.appFile).map((c) => c.appFile + (c.pass ? '' : ' (no pass)'));
+    for (const f of ['app.html', 'app.css', 'lib.js', 'app.js']) assert.ok(loaded.includes(f), f + ' loaded with the pass');
+    const cookies = await page.context().cookies();
+    assert.equal(cookies.filter((c) => c.name === 'atl_app' && c.value).length, 0, 'pass cookie dropped after loading');
     assert.equal(await page.isVisible('#pager'), false, 'no page controls for a short list');
 
     // Newest first by default.
@@ -433,6 +484,8 @@ async function main() {
     await page.waitForFunction(() => true);
     assert.ok(calls.some((c) => c.api === 'DELETE /api/sessions/' + last.sid), 'sign-out recorded in the log');
     assert.equal(devices[last.sid].status, 'signed_out');
+    assert.equal(await page.locator('#app').count(), 0, 'nothing of the dashboard left after sign-out');
+    assert.equal(await page.textContent('#signin-error'), 'Signed out.');
     assert.equal(await page.evaluate(() => sessionStorage.getItem('access_token')), null);
     await ctx.close();
   }
@@ -597,7 +650,7 @@ async function main() {
     assert.equal(devices[sidBefore].status, 'signed_out');
     assert.equal(await page.title(), 'Sign in');
     assert.equal(await page.evaluate(() => sessionStorage.getItem('access_token')), null);
-    assert.equal(await page.inputValue('#pw-new'), '', 'password fields cleared');
+    assert.equal(await page.locator('#app, #pw-new, #account').count(), 0, 'signing out removes the whole dashboard from the page');
 
     // Signed out from another device: the very next request is refused.
     await signIn(page, 'ATLWingSpotAdmin', NEW_PASSWORD);

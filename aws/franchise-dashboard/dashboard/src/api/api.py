@@ -10,6 +10,13 @@ Routes (all behind the Cognito JWT authorizer on the HTTP API):
     GET   /api/sessions               signed-in devices: IP, place, browser, OS
     DELETE /api/sessions/{id}         sign one device out
     POST  /api/sessions/revoke-others sign every other device out
+    POST  /api/app-ticket             a one-time pass (two minutes) for the files below
+    GET   /api/app/{file}             the dashboard's own markup, code and styles.
+                                      No token here (a <script> tag cannot send
+                                      one): the pass travels in the atl_app
+                                      cookie. Anything wrong is a bare 404, so
+                                      the files cannot be found, let alone read,
+                                      without signing in.
 
 Every request must carry CloudFront's secret origin header (so the API cannot
 be called around CloudFront and its firewall) and belong to a sign-in that has
@@ -35,6 +42,7 @@ import binascii
 import hashlib
 import hmac
 import json
+import secrets
 import logging
 import os
 import re
@@ -58,6 +66,17 @@ ORIGIN_SECRET = os.environ.get("ORIGIN_SECRET", "")
 SESSION_KEEP_DAYS = 30                 # sign-in log retention (DynamoDB TTL)
 SESSION_ACTIVE_SECONDS = 12 * 3600     # = refresh token lifetime
 SESSION_ID_RE = re.compile(r"^[A-Za-z0-9@._:-]{1,200}$")
+
+TICKETS_TABLE = os.environ.get("TICKETS_TABLE", "atl-franchise-app-tickets")
+TICKET_SECONDS = 120
+PRIVATE_DIR = os.environ.get("PRIVATE_DIR") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "private")
+APP_FILES = {
+    "app.html": "text/html; charset=utf-8",
+    "app.css": "text/css; charset=utf-8",
+    "lib.js": "text/javascript; charset=utf-8",
+    "app.js": "text/javascript; charset=utf-8",
+}
+_app_cache = {}
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 
 STATUSES = ("new", "contacted", "qualified", "discovery", "fdd_sent", "signed", "declined")
@@ -686,7 +705,71 @@ def revoke_other_sessions(event, actor):
     return 200, {"revoked": count}
 
 
+# ------------------------------------------------------------ app files
+
+def _digest(value):
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def create_app_ticket(event, actor):
+    """A random pass, stored only as its hash, good for two minutes."""
+    ticket = secrets.token_urlsafe(32)
+    _dynamodb().put_item(
+        TableName=TICKETS_TABLE,
+        Item=_typed({
+            "tid": _digest(ticket),
+            "sid": _session_id(event),
+            "username": actor,
+            "expiresAt": int(_now().timestamp()) + TICKET_SECONDS,
+        }),
+    )
+    return 200, {"ticket": ticket, "expiresIn": TICKET_SECONDS}
+
+
+def _cookie(event, name):
+    jar = list(event.get("cookies") or [])
+    jar += _headers(event).get("cookie", "").split(";")
+    for raw in jar:
+        key, _, value = raw.strip().partition("=")
+        if key == name:
+            return value.strip()
+    return ""
+
+
+def _not_found():
+    return {"statusCode": 404, "headers": {"content-type": "text/plain; charset=utf-8", "cache-control": "no-store"},
+            "body": "Not found"}
+
+
+def _app_file(name):
+    if name not in _app_cache:
+        with open(os.path.join(PRIVATE_DIR, name), encoding="utf-8") as fh:
+            _app_cache[name] = fh.read()
+    return _app_cache[name]
+
+
+def serve_app_file(event):
+    name = (event.get("pathParameters") or {}).get("file") or ""
+    ticket = _cookie(event, "atl_app")
+    if name not in APP_FILES or not ticket or len(ticket) > 200:
+        return _not_found()
+    item = _dynamodb().get_item(TableName=TICKETS_TABLE, Key={"tid": {"S": _digest(ticket)}}).get("Item")
+    # DynamoDB's TTL sweep can run late, so the expiry is checked here too.
+    if not item or int(item["expiresAt"]["N"]) < int(_now().timestamp()):
+        return _not_found()
+    sid = item.get("sid", {}).get("S", "")
+    session = _dynamodb().get_item(TableName=SESSIONS_TABLE, Key={"sid": {"S": sid}}).get("Item") if sid else None
+    if not session or "revokedAt" in session:
+        return _not_found()
+    return {
+        "statusCode": 200,
+        "headers": {"content-type": APP_FILES[name], "cache-control": "no-store", "x-content-type-options": "nosniff"},
+        "body": _app_file(name),
+    }
+
+
 ROUTES = {
+    "POST /api/app-ticket": create_app_ticket,
     "GET /api/sessions": list_sessions,
     "DELETE /api/sessions/{id}": revoke_session,
     "POST /api/sessions/revoke-others": revoke_other_sessions,
@@ -701,6 +784,17 @@ def handler(event, context):
     event = event or {}
     route = event.get("routeKey", "")
     actor = None
+    if route == "GET /api/app/{file}":
+        try:
+            _check_origin(event)
+            resp = serve_app_file(event)
+        except HttpError as err:
+            resp = _response(err.status, {"error": err.code, "message": err.message})
+        except Exception as exc:  # noqa: BLE001
+            LOG.error(json.dumps({"event": "api_error", "route": route, "error": type(exc).__name__}))
+            resp = _not_found()
+        LOG.info(json.dumps({"event": "api", "route": route, "status": resp["statusCode"]}))
+        return resp
     try:
         _check_origin(event)
         fn = ROUTES.get(route)

@@ -70,12 +70,20 @@ def ddb(monkeypatch):
             ],
         )
         client.create_table(
+            TableName=api.TICKETS_TABLE,
+            BillingMode="PAY_PER_REQUEST",
+            AttributeDefinitions=[{"AttributeName": "tid", "AttributeType": "S"}],
+            KeySchema=[{"AttributeName": "tid", "KeyType": "HASH"}],
+        )
+        client.create_table(
             TableName=api.SESSIONS_TABLE,
             BillingMode="PAY_PER_REQUEST",
             AttributeDefinitions=[{"AttributeName": "sid", "AttributeType": "S"}],
             KeySchema=[{"AttributeName": "sid", "KeyType": "HASH"}],
         )
         monkeypatch.setattr(api, "_ddb", client)
+        monkeypatch.setattr(api, "PRIVATE_DIR", os.path.join(os.path.dirname(HERE), "web", "app"))
+        api._app_cache.clear()
         yield client
 
 
@@ -533,3 +541,88 @@ def test_auth_time_is_the_fallback_session_id(ddb):
 ])
 def test_user_agents_are_described_plainly(ua, expected):
     assert api.describe_user_agent(ua) == expected
+
+
+# ------------------------------------------------------- private app files
+
+def app_file(name, cookie=None, cookies=None, headers=None):
+    event = {
+        "routeKey": "GET /api/app/{file}",
+        "pathParameters": {"file": name},
+        "headers": dict(headers or {}),
+        "cookies": cookies if cookies is not None else ([f"atl_app={cookie}"] if cookie else []),
+    }
+    return api.handler(event, None)
+
+
+def ticket(session="sess-1"):
+    status, body, _ = call("POST", "", route="/api/app-ticket", session=session)
+    assert status == 200 and body["expiresIn"] == 120
+    return body["ticket"]
+
+
+@pytest.mark.parametrize("name,kind,marker", [
+    ("app.html", "text/html", "<dialog"),
+    ("app.js", "text/javascript", "ATL_APP"),
+    ("lib.js", "text/javascript", "ATL_LIB"),
+    ("app.css", "text/css", ".pager"),
+])
+def test_signed_in_browser_gets_the_app_files(ddb, name, kind, marker):
+    resp = app_file(name, cookie=ticket())
+    assert resp["statusCode"] == 200
+    assert resp["headers"]["content-type"].startswith(kind)
+    assert resp["headers"]["cache-control"] == "no-store"
+    assert marker in resp["body"]
+
+
+def test_the_pass_is_also_read_from_a_cookie_header(ddb):
+    t = ticket()
+    assert app_file("app.js", cookies=[], headers={"cookie": f"other=1; atl_app={t}"})["statusCode"] == 200
+
+
+@pytest.mark.parametrize("cookie", [None, "", "made-up", "x" * 300])
+def test_without_a_real_pass_every_file_is_a_bare_404(ddb, cookie):
+    ticket()
+    for name in ("app.html", "app.js", "lib.js", "app.css"):
+        resp = app_file(name, cookie=cookie)
+        assert resp["statusCode"] == 404
+        assert resp["body"] == "Not found"
+
+
+def test_only_the_four_files_exist(ddb):
+    t = ticket()
+    for name in ("api.py", "../api.py", "index.html", "app.JS", ""):
+        assert app_file(name, cookie=t)["statusCode"] == 404
+
+
+def test_a_pass_expires_after_two_minutes(ddb, monkeypatch):
+    t = ticket()
+    later = api._now() + api.timedelta(seconds=121)
+    monkeypatch.setattr(api, "_now", lambda: later)
+    assert app_file("app.js", cookie=t)["statusCode"] == 404
+
+
+def test_a_pass_dies_with_its_sign_in(ddb):
+    t = ticket(session="phone-1")
+    call("DELETE", "", route="/api/sessions/{id}", sid="phone-1", session="laptop-1")
+    assert app_file("app.js", cookie=t)["statusCode"] == 404
+
+
+def test_a_signed_out_device_cannot_get_a_pass(ddb):
+    call("GET", "/", session="phone-1")
+    call("DELETE", "", route="/api/sessions/{id}", sid="phone-1", session="laptop-1")
+    status, body, _ = call("POST", "", route="/api/app-ticket", session="phone-1")
+    assert status == 401 and body["error"] == "session_revoked"
+
+
+def test_passes_are_stored_only_as_hashes(ddb):
+    t = ticket()
+    items = ddb.scan(TableName=api.TICKETS_TABLE)["Items"]
+    assert len(items) == 1 and t not in json.dumps(items)
+
+
+def test_app_files_also_need_the_cloudfront_secret(ddb, monkeypatch):
+    t = ticket()
+    monkeypatch.setattr(api, "ORIGIN_SECRET", "s3cret")
+    assert app_file("app.js", cookie=t)["statusCode"] == 403
+    assert app_file("app.js", cookie=t, headers={"x-origin-verify": "s3cret"})["statusCode"] == 200
