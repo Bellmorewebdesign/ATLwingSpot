@@ -171,3 +171,36 @@ export function mapsUrl(loc) {
   const q = encodeURIComponent(`ATL Wing Spot, ${loc.street}, ${loc.city}, ${loc.state} ${loc.zip}`)
   return `https://www.google.com/maps/search/?api=1&query=${q}`
 }
+
+// The same search as a map that can sit in the page (no API key needed).
+export function mapEmbedUrl(loc) {
+  const q = encodeURIComponent(`ATL Wing Spot, ${loc.street}, ${loc.city}, ${loc.state} ${loc.zip}`)
+  return `https://www.google.com/maps?q=${q}&output=embed`
+}
+
+/*
+ * Each shop's own page: /locations/east-meadow-ny/. Shop id plus state, so two
+ * towns with the same name in different states can never collide, and the URL
+ * reads the way people search ("wings east meadow ny").
+ *
+ * locationPage() returns the same shape as an entry in PAGES (routes.js), so
+ * the Seo component, the prerender step and the sitemap treat a shop page like
+ * any other page. Title and description only say what the page itself shows.
+ */
+export const locationSlug = (loc) => `${loc.id}-${loc.state.toLowerCase()}`
+export const locationPath = (loc) => `/locations/${locationSlug(loc)}/`
+export const findLocationBySlug = (slug) => LOCATIONS.find((l) => locationSlug(l) === slug) || null
+
+export function locationPage(loc) {
+  return {
+    path: locationPath(loc),
+    parent: 'locations', // breadcrumb: Home > Locations > East Meadow
+    name: loc.name,
+    title: `Halal Wings in ${loc.name}, ${loc.state}`,
+    description: loc.tempClosed
+      ? `ATL Wing Spot ${loc.name}, ${loc.street}, ${loc.city}, ${loc.state}, is temporarily closed. Find the nearest open shop for fresh, never frozen halal wings.`
+      : `ATL Wing Spot ${loc.name} at ${loc.street}, ${loc.city}, ${loc.state}: fresh, never frozen halal wings in 25+ sauces. Hours, phone, directions and ordering.`,
+  }
+}
+
+export const LOCATION_PAGES = LOCATIONS.map(locationPage)

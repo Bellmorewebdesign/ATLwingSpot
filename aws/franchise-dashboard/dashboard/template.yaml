@@ -32,6 +32,15 @@ Parameters:
       app; the first login after switching it on shows a key to add to the
       app. Recommended for personal data. Can be switched at any redeploy.
 
+  EnableWaf:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: >
+      AWS WAF in front of the dashboard and the login: per-IP rate limits plus
+      AWS's lists of known-bad IPs and attack patterns. About $15 a month;
+      'false' removes it.
+
 Rules:
   DomainNeedsCertificate:
     RuleCondition: !Not [!Equals [!Ref DomainName, '']]
@@ -42,6 +51,7 @@ Rules:
 Conditions:
   HasDomain: !Not [!Equals [!Ref DomainName, '']]
   MfaOn: !Equals [!Ref RequireMfa, 'ON']
+  WafOn: !Equals [!Ref EnableWaf, 'true']
 
 Resources:
 
@@ -63,6 +73,49 @@ Resources:
       KeySchema:
         - { AttributeName: submissionId, KeyType: HASH }
         - { AttributeName: at,           KeyType: RANGE }
+
+  # One row per sign-in: when, from where (IP and place), on what (browser,
+  # OS). Signing a device out marks its row and the API refuses it from then
+  # on. Rows drop out of the log 30 days after the device was last seen.
+  SessionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: atl-franchise-sessions
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      AttributeDefinitions:
+        - { AttributeName: sid, AttributeType: S }
+      KeySchema:
+        - { AttributeName: sid, KeyType: HASH }
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+
+  # One-time passes (two minutes) that let a signed-in browser download the
+  # dashboard's private files from /api/app/. Stored only as hashes.
+  TicketsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: atl-franchise-app-tickets
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: tid, AttributeType: S }
+      KeySchema:
+        - { AttributeName: tid, KeyType: HASH }
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+
+  # Random value CloudFront adds to every API request and the API checks, so
+  # the API cannot be reached around CloudFront (and its firewall).
+  OriginSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: ATL franchise dashboard - CloudFront to API origin check
+      GenerateSecretString:
+        PasswordLength: 48
+        ExcludePunctuation: true
 
   # ------------------------------------------------------------------ login
   UserPool:
@@ -100,8 +153,10 @@ Resources:
       PreventUserExistenceErrors: ENABLED
       EnableTokenRevocation: true
       AuthSessionValidity: 5           # minutes to finish an MFA or new-password step
-      AccessTokenValidity: 60
-      IdTokenValidity: 60
+      # Short-lived: a stolen access token is only good for 15 minutes. The page
+      # refreshes quietly in the background.
+      AccessTokenValidity: 15
+      IdTokenValidity: 15
       RefreshTokenValidity: 12
       TokenValidityUnits:
         AccessToken: minutes
@@ -187,6 +242,53 @@ Resources:
       AuthorizerId: !Ref JwtAuthorizer
       Target: !Sub integrations/${ApiIntegration}
 
+  AppTicketRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: POST /api/app-ticket
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub integrations/${ApiIntegration}
+
+  # The dashboard's own files. No JWT on this one route because a <script>
+  # tag cannot send a header; the function checks the one-time pass cookie
+  # instead and answers 404 to anything else.
+  AppFileRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: GET /api/app/{file}
+      AuthorizationType: NONE
+      Target: !Sub integrations/${ApiIntegration}
+
+  SessionsListRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: GET /api/sessions
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub integrations/${ApiIntegration}
+
+  SessionsRevokeRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: DELETE /api/sessions/{id}
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub integrations/${ApiIntegration}
+
+  SessionsRevokeOthersRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: POST /api/sessions/revoke-others
+      AuthorizationType: JWT
+      AuthorizerId: !Ref JwtAuthorizer
+      Target: !Sub integrations/${ApiIntegration}
+
   ApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -210,6 +312,9 @@ Resources:
         Variables:
           TABLE_NAME: !Ref TableName
           AUDIT_TABLE: !Ref AuditTable
+          SESSIONS_TABLE: !Ref SessionsTable
+          TICKETS_TABLE: !Ref TicketsTable
+          ORIGIN_SECRET: !Sub '{{resolve:secretsmanager:${OriginSecret}}}'
       Policies:
         - Statement:
             # No DeleteItem anywhere: "archive" is a flag, so nothing can be
@@ -224,6 +329,14 @@ Resources:
               Effect: Allow
               Action: [dynamodb:PutItem, dynamodb:Query]
               Resource: !GetAtt AuditTable.Arn
+            - Sid: Sessions
+              Effect: Allow
+              Action: [dynamodb:GetItem, dynamodb:UpdateItem, dynamodb:Scan]
+              Resource: !GetAtt SessionsTable.Arn
+            - Sid: AppTickets
+              Effect: Allow
+              Action: [dynamodb:PutItem, dynamodb:GetItem]
+              Resource: !GetAtt TicketsTable.Arn
 
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
@@ -291,6 +404,61 @@ Resources:
           QueryStringsConfig: { QueryStringBehavior: all }
           CookiesConfig: { CookieBehavior: none }
 
+  # What reaches the API from the visitor: their browser (for the device log)
+  # and where CloudFront saw them come from. Authorization is forwarded by
+  # the cache policy above.
+  ApiOriginRequestPolicy:
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: !Sub atl-franchise-dashboard-api-${AWS::StackName}
+        HeadersConfig:
+          HeaderBehavior: whitelist
+          Headers:
+            - Content-Type
+            - User-Agent
+            - CloudFront-Viewer-Address
+            - CloudFront-Viewer-Country
+            - CloudFront-Viewer-Country-Region
+            - CloudFront-Viewer-City
+        QueryStringsConfig: { QueryStringBehavior: all }
+        CookiesConfig: { CookieBehavior: none }
+
+  # /api/app/: only the one-time pass cookie (and where the visitor is) goes
+  # through. Never cached.
+  AppOriginRequestPolicy:
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: !Sub atl-franchise-dashboard-app-${AWS::StackName}
+        HeadersConfig:
+          HeaderBehavior: whitelist
+          Headers: [User-Agent, CloudFront-Viewer-Address]
+        QueryStringsConfig: { QueryStringBehavior: none }
+        CookiesConfig:
+          CookieBehavior: whitelist
+          Cookies: [atl_app]
+
+  # Only the sign-in page's own files are public. Any other path gets a bare 404 with
+  # nothing in it, instead of S3's error document.
+  PathGuard:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub ${AWS::StackName}-path-guard
+      AutoPublish: true
+      FunctionConfig:
+        Comment: ATL dashboard - known files only
+        Runtime: cloudfront-js-2.0
+      FunctionCode: |
+        var FILES = { '/': 1, '/index.html': 1, '/signin.js': 1, '/styles.css': 1, '/config.js': 1, '/robots.txt': 1 };
+        function handler(event) {
+          var uri = event.request.uri;
+          if (FILES[uri] === 1 || /^\/(brand|fonts)\/[a-z0-9-]+\.(png|woff2)$/.test(uri)) {
+            return event.request;
+          }
+          return { statusCode: 404, statusDescription: 'Not Found', headers: { 'cache-control': { value: 'no-store' } } };
+        }
+
   SecurityHeaders:
     Type: AWS::CloudFront::ResponseHeadersPolicy
     Properties:
@@ -303,7 +471,8 @@ Resources:
               default-src 'none'; script-src 'self'; style-src 'self';
               img-src 'self' data:; font-src 'self';
               connect-src 'self' https://cognito-idp.${AWS::Region}.amazonaws.com;
-              form-action 'self'; base-uri 'none'; frame-ancestors 'none'
+              form-action 'self'; base-uri 'none'; frame-ancestors 'none';
+              require-trusted-types-for 'script'; trusted-types atl-loader
           StrictTransportSecurity:
             Override: true
             AccessControlMaxAgeSec: 63072000
@@ -314,7 +483,14 @@ Resources:
           ReferrerPolicy: { Override: true, ReferrerPolicy: no-referrer }
         CustomHeadersConfig:
           Items:
-            - { Header: X-Robots-Tag, Value: 'noindex, nofollow', Override: true }
+            # Keep it out of search engines, caches, previews and image search.
+            - { Header: X-Robots-Tag, Value: 'noindex, nofollow, noarchive, nosnippet, noimageindex', Override: true }
+            - { Header: Permissions-Policy, Value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()', Override: true }
+            - { Header: Cross-Origin-Opener-Policy, Value: same-origin, Override: true }
+            - { Header: Cross-Origin-Resource-Policy, Value: same-origin, Override: true }
+        RemoveHeadersConfig:
+          Items:
+            - { Header: Server }
 
   Distribution:
     Type: AWS::CloudFront::Distribution
@@ -331,6 +507,7 @@ Resources:
         HttpVersion: http2and3
         PriceClass: PriceClass_100
         DefaultRootObject: index.html
+        WebACLId: !If [WafOn, !GetAtt DashboardWebAcl.Arn, !Ref AWS::NoValue]
         Aliases: !If [HasDomain, [!Ref DomainName], !Ref AWS::NoValue]
         ViewerCertificate: !If
           - HasDomain
@@ -350,22 +527,113 @@ Resources:
             CustomOriginConfig:
               OriginProtocolPolicy: https-only
               OriginSSLProtocols: [TLSv1.2]
+            OriginCustomHeaders:
+              - HeaderName: X-Origin-Verify
+                HeaderValue: !Sub '{{resolve:secretsmanager:${OriginSecret}}}'
         DefaultCacheBehavior:
           TargetOriginId: web
           ViewerProtocolPolicy: redirect-to-https
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6   # Managed-CachingOptimized
           ResponseHeadersPolicyId: !Ref SecurityHeaders
           Compress: true
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt PathGuard.FunctionMetadata.FunctionARN
         CacheBehaviors:
+          # Listed before /api/*: CloudFront takes the first match.
+          - PathPattern: /api/app/*
+            TargetOriginId: api
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD]
+            CachedMethods: [GET, HEAD]
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad   # Managed-CachingDisabled
+            OriginRequestPolicyId: !Ref AppOriginRequestPolicy
+            ResponseHeadersPolicyId: !Ref SecurityHeaders
+            Compress: true
           - PathPattern: /api/*
             TargetOriginId: api
             ViewerProtocolPolicy: https-only
             AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
             CachedMethods: [GET, HEAD]
             CachePolicyId: !Ref ApiCachePolicy
-            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac  # Managed-AllViewerExceptHostHeader
+            OriginRequestPolicyId: !Ref ApiOriginRequestPolicy
             ResponseHeadersPolicyId: !Ref SecurityHeaders
             Compress: true
+
+  # ------------------------------------------------------------------- WAF
+  # Dashboard (page and API, through CloudFront): per-IP rate limit, AWS's
+  # bad-IP list, and known attack patterns.
+  DashboardWebAcl:
+    Type: AWS::WAFv2::WebACL
+    Condition: WafOn
+    Properties:
+      Name: !Sub ${AWS::StackName}-site
+      Scope: CLOUDFRONT
+      DefaultAction: { Allow: {} }
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub ${AWS::StackName}-site
+      Rules:
+        - Name: rate-limit-per-ip
+          Priority: 0
+          Action: { Block: {} }
+          Statement:
+            RateBasedStatement:
+              Limit: 1000
+              EvaluationWindowSec: 300
+              AggregateKeyType: IP
+          VisibilityConfig: { SampledRequestsEnabled: true, CloudWatchMetricsEnabled: true, MetricName: site-rate-limit }
+        - Name: aws-ip-reputation
+          Priority: 1
+          OverrideAction: { None: {} }
+          Statement:
+            ManagedRuleGroupStatement: { VendorName: AWS, Name: AWSManagedRulesAmazonIpReputationList }
+          VisibilityConfig: { SampledRequestsEnabled: true, CloudWatchMetricsEnabled: true, MetricName: site-ip-reputation }
+        - Name: aws-known-bad-inputs
+          Priority: 2
+          OverrideAction: { None: {} }
+          Statement:
+            ManagedRuleGroupStatement: { VendorName: AWS, Name: AWSManagedRulesKnownBadInputsRuleSet }
+          VisibilityConfig: { SampledRequestsEnabled: true, CloudWatchMetricsEnabled: true, MetricName: site-bad-inputs }
+
+  # Login (Cognito, which the sign-in form calls directly): a tight per-IP
+  # limit on top of Cognito's own lockout after repeated wrong passwords. A
+  # person signing in makes a handful of calls; 30 in 5 minutes is a script.
+  LoginWebAcl:
+    Type: AWS::WAFv2::WebACL
+    Condition: WafOn
+    Properties:
+      Name: !Sub ${AWS::StackName}-login
+      Scope: REGIONAL
+      DefaultAction: { Allow: {} }
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub ${AWS::StackName}-login
+      Rules:
+        - Name: login-rate-limit-per-ip
+          Priority: 0
+          Action: { Block: {} }
+          Statement:
+            RateBasedStatement:
+              Limit: 30
+              EvaluationWindowSec: 300
+              AggregateKeyType: IP
+          VisibilityConfig: { SampledRequestsEnabled: true, CloudWatchMetricsEnabled: true, MetricName: login-rate-limit }
+        - Name: aws-ip-reputation
+          Priority: 1
+          OverrideAction: { None: {} }
+          Statement:
+            ManagedRuleGroupStatement: { VendorName: AWS, Name: AWSManagedRulesAmazonIpReputationList }
+          VisibilityConfig: { SampledRequestsEnabled: true, CloudWatchMetricsEnabled: true, MetricName: login-ip-reputation }
+
+  LoginWebAclAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Condition: WafOn
+    Properties:
+      ResourceArn: !GetAtt UserPool.Arn
+      WebACLArn: !GetAtt LoginWebAcl.Arn
 
 Outputs:
   DashboardUrl:

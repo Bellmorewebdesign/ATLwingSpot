@@ -1,21 +1,17 @@
 /*
- * ATL Wing Spot franchise dashboard.
+ * The dashboard, served only to a signed-in browser (see signin.js, which
+ * loads this through /api/app/ and provides ATL_AUTH).
  *
- * Sign-in: the branded form on this page sends the username and password
- * straight to Amazon Cognito's API over HTTPS (InitiateAuth,
- * USER_PASSWORD_AUTH) and gets tokens back. Nothing else ever sees the
- * password, and it is cleared from the form as soon as it has been sent.
- * Tokens live in sessionStorage, so closing the tab signs out. Every API call
- * carries the access token, which API Gateway checks before any code runs.
- *
+ * Every API call carries the access token, which API Gateway checks before
+ * any code runs; the API also refuses a sign-in that has been signed out.
  * Everything from the API is put on the page with textContent, never as HTML.
  */
 (function () {
   'use strict';
 
-  var CFG = window.ATL_CONFIG || {};
   var L = window.ATL_LIB;
-  var IDP = 'https://cognito-idp.' + (CFG.region || 'us-east-1') + '.amazonaws.com/';
+  var A = window.ATL_AUTH;
+  var accessToken = A.accessToken, idp = A.idp, busy = A.busy, username = A.username, signOut = A.signOut, noop = A.noop;
 
   function $(id) { return document.getElementById(id); }
 
@@ -38,219 +34,11 @@
   }
   function show(id, msg) { var e = $(id); e.textContent = msg || ''; e.hidden = !msg; }
 
-  // ------------------------------------------------------------- storage
-  var session = {
-    get: function (k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
-    set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* private mode */ } },
-    del: function (k) { try { sessionStorage.removeItem(k); } catch (e) { /* ignore */ } },
-  };
-  // Only for the remembered sort order, a per-browser convenience.
   var prefs = {
     get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } },
   };
 
-  // ---------------------------------------------------------------- auth
-  function idp(action, body) {
-    return fetch(IDP, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-amz-json-1.1',
-        'X-Amz-Target': 'AWSCognitoIdentityProviderService.' + action,
-      },
-      body: JSON.stringify(body),
-    }).then(function (res) {
-      return res.json().catch(function () { return {}; }).then(function (data) {
-        if (!res.ok) {
-          var err = new Error(friendly(data));
-          err.code = String(data.__type || '').split('#').pop();
-          throw err;
-        }
-        return data;
-      });
-    }, function () {
-      throw new Error('Could not reach the sign-in service. Check your connection.');
-    });
-  }
-
-  function friendly(data) {
-    var type = String(data.__type || '').split('#').pop(), msg = String(data.message || '');
-    if (type === 'NotAuthorizedException') {
-      return /attempts exceeded/i.test(msg) ? 'Too many attempts. Wait a few minutes, then try again.'
-        : /expired/i.test(msg) ? 'That took too long. Start over.'
-          : 'Wrong username or password.';
-    }
-    if (type === 'TooManyRequestsException' || type === 'LimitExceededException') return 'Too many attempts. Wait a few minutes, then try again.';
-    if (type === 'CodeMismatchException' || type === 'EnableSoftwareTokenMFAException') return 'That code did not work. Try the newest one.';
-    if (type === 'ExpiredCodeException') return 'That code expired. Try the newest one.';
-    if (type === 'InvalidPasswordException') return 'Use at least 10 characters, including a number.';
-    if (type === 'PasswordResetRequiredException') return 'This login needs a new password. Run create-admin.sh to set one.';
-    return 'Sign-in failed. Try again.';
-  }
-
-  function keepTokens(r) {
-    session.set('access_token', r.AccessToken);
-    if (r.IdToken) session.set('id_token', r.IdToken);
-    if (r.RefreshToken) session.set('refresh_token', r.RefreshToken);
-    session.set('expires_at', String(Date.now() + (r.ExpiresIn || 3600) * 1000));
-  }
-  function clearTokens() {
-    ['access_token', 'id_token', 'refresh_token', 'expires_at'].forEach(session.del);
-  }
-
-  var refreshing = null;
-  function accessToken() {
-    var tok = session.get('access_token'), exp = Number(session.get('expires_at') || 0);
-    if (tok && Date.now() < exp - 60000) return Promise.resolve(tok);
-    var rt = session.get('refresh_token');
-    if (!rt) return Promise.resolve(null);
-    if (!refreshing) {
-      refreshing = idp('InitiateAuth', {
-        AuthFlow: 'REFRESH_TOKEN_AUTH', ClientId: CFG.clientId, AuthParameters: { REFRESH_TOKEN: rt },
-      }).then(function (r) { keepTokens(r.AuthenticationResult); })
-        .catch(clearTokens)
-        .then(function () { refreshing = null; });
-    }
-    return refreshing.then(function () { return session.get('access_token'); });
-  }
-
-  function username() {
-    var t = session.get('id_token');
-    if (!t) return '';
-    try {
-      var p = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-      return p['cognito:username'] || '';
-    } catch (e) { return ''; }
-  }
-
-  // The sign-in conversation: password first, then any extra step Cognito asks for.
-  var pending = null;   // { username, session, challenge }
-
-  function busy(form, on, label) {
-    var b = form.querySelector('button[type=submit]');
-    b.disabled = on;
-    b.querySelector('.label').textContent = on ? 'One moment…' : label;
-  }
-
-  function onSignIn(e) {
-    e.preventDefault();
-    var form = $('signin-form'), user = $('username').value.trim(), pass = $('password').value;
-    show('signin-error', '');
-    if (!user || !pass) { show('signin-error', 'Enter your username and password.'); return; }
-    busy(form, true);
-    idp('InitiateAuth', {
-      AuthFlow: 'USER_PASSWORD_AUTH', ClientId: CFG.clientId, AuthParameters: { USERNAME: user, PASSWORD: pass },
-    }).then(function (r) {
-      $('password').value = '';
-      return afterAuth(r, user);
-    }).catch(function (err) {
-      $('password').value = '';
-      show('signin-error', err.message);
-      $('password').focus();
-    }).then(function () { busy(form, false, 'Sign in'); });
-  }
-
-  function afterAuth(r, user) {
-    if (r.AuthenticationResult) {
-      keepTokens(r.AuthenticationResult);
-      pending = null;
-      return enterApp();
-    }
-    pending = {
-      username: (r.ChallengeParameters && r.ChallengeParameters.USER_ID_FOR_SRP) || user,
-      session: r.Session,
-      challenge: r.ChallengeName,
-    };
-    return showChallenge();
-  }
-
-  function showChallenge() {
-    var input = $('challenge-input');
-    $('signin-form').hidden = true;
-    $('challenge-form').hidden = false;
-    show('challenge-error', '');
-    $('challenge-key').hidden = true;
-    input.value = '';
-    if (pending.challenge === 'NEW_PASSWORD_REQUIRED') {
-      $('challenge-text').textContent = 'Choose a new password: at least 10 characters, including a number.';
-      $('challenge-label').textContent = 'New password';
-      input.type = 'password';
-      input.autocomplete = 'new-password';
-      input.removeAttribute('inputmode');
-    } else if (pending.challenge === 'SOFTWARE_TOKEN_MFA' || pending.challenge === 'MFA_SETUP') {
-      $('challenge-label').textContent = '6-digit code';
-      input.type = 'text';
-      input.autocomplete = 'one-time-code';
-      input.setAttribute('inputmode', 'numeric');
-      if (pending.challenge === 'SOFTWARE_TOKEN_MFA') {
-        $('challenge-text').textContent = 'Enter the 6-digit code from your authenticator app.';
-      } else {
-        $('challenge-text').textContent = 'One-time setup: add this key to an authenticator app (Google Authenticator, 1Password, Authy…), then enter the 6-digit code it shows.';
-        return idp('AssociateSoftwareToken', { Session: pending.session }).then(function (r) {
-          pending.session = r.Session;
-          $('challenge-key').textContent = r.SecretCode.replace(/(.{4})/g, '$1 ').trim();
-          $('challenge-key').hidden = false;
-          input.focus();
-        }).catch(function (err) { show('challenge-error', err.message); });
-      }
-    } else {
-      $('challenge-text').textContent = 'This login needs a step this page does not support (' + pending.challenge + ').';
-    }
-    input.focus();
-    return Promise.resolve();
-  }
-
-  function respond(extra) {
-    return idp('RespondToAuthChallenge', {
-      ChallengeName: pending.challenge, ClientId: CFG.clientId, Session: pending.session,
-      ChallengeResponses: Object.assign({ USERNAME: pending.username }, extra),
-    });
-  }
-
-  function onChallenge(e) {
-    e.preventDefault();
-    if (!pending) return;
-    var form = $('challenge-form'), raw = $('challenge-input').value, code = raw.replace(/\s/g, '');
-    var step;
-    show('challenge-error', '');
-    if (pending.challenge === 'NEW_PASSWORD_REQUIRED') {
-      if (raw.length < 10 || !/\d/.test(raw)) { show('challenge-error', 'Use at least 10 characters, including a number.'); return; }
-      step = respond({ NEW_PASSWORD: raw });
-    } else if (pending.challenge === 'SOFTWARE_TOKEN_MFA') {
-      step = respond({ SOFTWARE_TOKEN_MFA_CODE: code });
-    } else if (pending.challenge === 'MFA_SETUP') {
-      step = idp('VerifySoftwareToken', { Session: pending.session, UserCode: code, FriendlyDeviceName: 'ATL dashboard' })
-        .then(function (r) { pending.session = r.Session; return respond({}); });
-    } else {
-      return;
-    }
-    busy(form, true);
-    var user = pending.username;
-    step.then(function (r) {
-      $('challenge-input').value = '';
-      return afterAuth(r, user);
-    }).catch(function (err) {
-      show('challenge-error', err.message);
-    }).then(function () { busy(form, false, 'Continue'); });
-  }
-
-  function startOver() {
-    pending = null;
-    $('challenge-form').hidden = true;
-    $('signin-form').hidden = false;
-    show('signin-error', '');
-    $('password').value = '';
-    $('username').focus();
-  }
-
-  function signOut() {
-    var rt = session.get('refresh_token');
-    clearTokens();
-    if (rt) idp('RevokeToken', { Token: rt, ClientId: CFG.clientId }).catch(function () { /* best effort */ });
-    state.all = [];
-    state.archived = null;
-    showSignIn();
-  }
 
   // ----------------------------------------------------------------- API
   function ApiError(status, body) {
@@ -262,7 +50,7 @@
   function api(method, path, body) {
     return accessToken().then(function (tok) {
       if (!tok) {
-        showSignIn('Your session ended. Please sign in again.');
+        A.leave('Your session ended. Please sign in again.');
         throw new ApiError(401);
       }
       var headers = { Authorization: 'Bearer ' + tok };
@@ -271,8 +59,12 @@
     }).then(function (res) {
       return res.json().catch(function () { return null; }).then(function (data) {
         if (res.status === 401) {
-          clearTokens();
-          showSignIn('Your session ended. Please sign in again.');
+          A.leave(data && data.error === 'session_revoked'
+            ? 'This device was signed out. Sign in again.'
+            : 'Your session ended. Please sign in again.');
+        }
+        if (res.status === 403 && !(data && data.error)) {
+          data = { message: 'Too many requests from this network. Wait a few minutes, then try again.' };
         }
         if (!res.ok) throw new ApiError(res.status, data);
         return data;
@@ -332,7 +124,8 @@
   }
 
   // --------------------------------------------------------------- state
-  var state = { all: [], archived: null, showArchived: false, search: '', sortKey: 'createdAt', sortDir: 'desc', current: null };
+  var state = { all: [], archived: null, showArchived: false, search: '', sortKey: 'createdAt', sortDir: 'desc',
+    current: null, page: 1, pageSize: Number(prefs.get('atl.pageSize')) || 50 };
 
   (function restoreSort() {
     var saved = String(prefs.get('atl.sort') || '').split(':');
@@ -392,16 +185,25 @@
   // -------------------------------------------------------------- render
   function render() {
     var rows = visible();
-    $('rows').replaceChildren.apply($('rows'), rows.map(rowFor));
+    var pg = L.paginate(rows.length, state.page, state.pageSize);
+    state.page = pg.page;
+    state.pageSize = pg.size;
+    $('rows').replaceChildren.apply($('rows'), rows.slice(pg.start, pg.end).map(rowFor));
+    $('pager').hidden = rows.length <= L.PAGE_SIZES[0];
+    $('page-info').textContent = 'Page ' + pg.page + ' of ' + pg.pages;
+    $('page-prev').disabled = pg.page <= 1;
+    $('page-next').disabled = pg.page >= pg.pages;
+    $('page-size').value = String(pg.size);
     renderSort();
     $('archived-banner').hidden = !state.showArchived;
     $('view-archived').setAttribute('aria-pressed', state.showArchived ? 'true' : 'false');
 
     var total = (state.showArchived ? (state.archived || []) : state.all).length;
     var noun = state.showArchived ? 'archived lead' : 'lead';
-    $('count').textContent = state.search.trim()
+    $('count').textContent = (state.search.trim()
       ? rows.length + ' of ' + total + ' ' + noun + (total === 1 ? '' : 's') + ' match'
-      : total + ' ' + noun + (total === 1 ? '' : 's');
+      : total + ' ' + noun + (total === 1 ? '' : 's')) +
+      (pg.pages > 1 ? ' · showing ' + (pg.start + 1) + '–' + pg.end : '');
 
     var empty = !rows.length;
     $('empty').hidden = !empty;
@@ -422,7 +224,14 @@
     $('sort').value = state.sortKey + ':' + state.sortDir;
   }
 
+  function goToPage(n) {
+    state.page = n;
+    render();
+    window.scrollTo(0, 0);   // back to the toolbar, clear of the sticky header
+  }
+
   function setSort(key, dir) {
+    state.page = 1;
     state.sortKey = key;
     state.sortDir = dir;
     prefs.set('atl.sort', key + ':' + dir);
@@ -633,12 +442,130 @@
     setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
   }
 
+  // ------------------------------------------------------------- account
+  function ago(iso) {
+    var secs = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (isNaN(secs)) return '—';
+    if (secs < 90) return 'just now';
+    if (secs < 3600) return Math.round(secs / 60) + ' min ago';
+    if (secs < 86400) return Math.round(secs / 3600) + ' h ago';
+    var days = Math.round(secs / 86400);
+    return days + (days === 1 ? ' day ago' : ' days ago');
+  }
+
+  var STATUS_TEXT = { active: 'Active', signed_out: 'Signed out', expired: 'Expired' };
+
+  function deviceItem(s) {
+    var place = [s.city, s.region, s.country].filter(Boolean).join(', ');
+    var ip = s.lastIp ? 'IP\u00a0' + s.lastIp + (s.firstIp && s.firstIp !== s.lastIp ? ' (signed in from ' + s.firstIp + ')' : '') : '';
+    var kind = s.device && s.device !== 'Unknown' ? s.device : '';
+    var side = [s.current ? el('span', { class: 'tag current' }, 'This device') : null,
+      el('span', { class: 'tag ' + s.status }, STATUS_TEXT[s.status] || s.status)];
+    if (s.status === 'active') {
+      side.push(el('button', { class: 'btn btn-sm btn-outline', type: 'button',
+        onclick: function () { revokeDevice(s); } }, 'Sign out'));
+    }
+    return el('li', { class: 'device' + (s.current ? ' is-current' : '') + (s.status !== 'active' ? ' is-off' : '') },
+      el('div', { class: 'device-name' }, (s.browser || 'Unknown browser') + ' on ' + (s.os || 'unknown system')),
+      el('div', { class: 'device-side' }, side),
+      el('div', { class: 'device-meta' }, [kind, place, ip].filter(Boolean).join(' · ') || 'Location unknown'),
+      el('div', { class: 'device-meta' }, 'Signed in ' + when(s.signedInAt) + ' · active ' + ago(s.lastSeenAt) +
+        (s.username ? ' · ' + s.username : '')),
+      s.revokedAt ? el('div', { class: 'device-meta' }, 'Signed out ' + when(s.revokedAt) + (s.revokedBy ? ' by ' + s.revokedBy : '')) : null);
+  }
+
+  function loadSessions() {
+    $('device-list').replaceChildren(el('li', { class: 'muted' }, 'Loading…'));
+    return api('GET', '/sessions').then(function (res) {
+      // This device first, then other active ones, newest first; past
+      // sign-ins fold away under "Earlier sign-ins".
+      var list = (res.sessions || []).slice().sort(function (a, b) {
+        return (b.current - a.current) || ((b.status === 'active') - (a.status === 'active')) ||
+          String(b.lastSeenAt || '').localeCompare(String(a.lastSeenAt || ''));
+      });
+      var live = list.filter(function (x) { return x.status === 'active'; });
+      var past = list.filter(function (x) { return x.status !== 'active'; });
+      var items = live.map(deviceItem);
+      if (past.length) {
+        items.push(el('li', { class: 'past' }, el('details', { class: 'history' },
+          el('summary', null, 'Earlier sign-ins (' + past.length + ')'),
+          el('ul', { class: 'devices' }, past.map(deviceItem)))));
+      }
+      if (!items.length) items = [el('li', { class: 'muted' }, 'No sign-ins recorded yet.')];
+      $('device-list').replaceChildren.apply($('device-list'), items);
+      $('revoke-others').disabled = !list.some(function (s) { return !s.current && s.status === 'active'; });
+    }).catch(function (e) {
+      if (e.status !== 401) $('device-list').replaceChildren(el('li', { class: 'error' }, e.message));
+    });
+  }
+
+  function revokeDevice(s) {
+    if (s.current) { signOut('Signed out.', true); return; }
+    api('DELETE', '/sessions/' + encodeURIComponent(s.id)).then(function () {
+      toast('Device signed out');
+      return loadSessions();
+    }).catch(function (e) { if (e.status !== 401) toast(e.message, true); });
+  }
+
+  function revokeOthers() {
+    api('POST', '/sessions/revoke-others').then(function (r) {
+      toast(r.revoked === 1 ? '1 device signed out' : r.revoked + ' devices signed out');
+      return loadSessions();
+    }).catch(function (e) { if (e.status !== 401) toast(e.message, true); });
+  }
+
+  function openAccount() {
+    $('account-who').textContent = 'Signed in as ' + username();
+    $('pw-username').value = username();
+    show('pw-error', '');
+    $('account').showModal();
+    loadSessions();
+  }
+
+  // Change the password with Cognito. "Sign out every device" then signs
+  // every other device out in the log, revokes every refresh token with
+  // Cognito (GlobalSignOut) and signs this tab out, so the new password is
+  // needed everywhere, here included.
+  function onChangePassword(e) {
+    e.preventDefault();
+    var form = $('password-form'), cur = $('pw-current').value, nw = $('pw-new').value, again = $('pw-confirm').value;
+    show('pw-error', '');
+    if (!cur || !nw) { show('pw-error', 'Fill in your current and new password.'); return; }
+    if (nw.length < 10 || !/\d/.test(nw)) { show('pw-error', 'Use at least 10 characters, including a number.'); return; }
+    if (nw !== again) { show('pw-error', 'The two new passwords do not match.'); return; }
+    if (nw === cur) { show('pw-error', 'Pick a password you have not just used.'); return; }
+    var everywhere = $('pw-signout').checked;
+    busy(form, true);
+    accessToken().then(function (tok) {
+      if (!tok) throw new Error('Your session ended. Sign in again.');
+      return idp('ChangePassword', { AccessToken: tok, PreviousPassword: cur, ProposedPassword: nw });
+    }).then(function () {
+      ['pw-current', 'pw-new', 'pw-confirm'].forEach(function (id) { $(id).value = ''; });
+      if (!everywhere) { toast('Password changed'); return null; }
+      return api('POST', '/sessions/revoke-others').catch(noop)
+        .then(accessToken)
+        .then(function (tok) { return tok ? idp('GlobalSignOut', { AccessToken: tok }).catch(noop) : null; })
+        .then(function () { return signOut('Password changed. Sign in with your new password.', true); });
+    }).catch(function (err) {
+      var msg = err.message;
+      if (err.code === 'NotAuthorizedException' && !/attempts/i.test(msg)) msg = 'Your current password is not right.';
+      show('pw-error', msg);
+    }).then(function () { busy(form, false, 'Change password'); });
+  }
+
+  // Sign out after an hour without a click, tap or key press.
+  var IDLE_LIMIT_MS = 60 * 60 * 1000, lastActive = Date.now();
+  function noteActivity() { lastActive = Date.now(); }
+  function checkIdle() {
+    if (!$('app').hidden && Date.now() - lastActive > IDLE_LIMIT_MS) {
+      signOut('Signed out after an hour without activity.', true);
+    }
+  }
+
+
   // --------------------------------------------------------------- wiring
   function wire() {
-    $('signin-form').addEventListener('submit', onSignIn);
-    $('challenge-form').addEventListener('submit', onChallenge);
-    $('challenge-cancel').addEventListener('click', startOver);
-    $('signout').addEventListener('click', signOut);
+    $('signout').addEventListener('click', function () { signOut(); });
 
     var sel = $('sort');
     sel.replaceChildren.apply(sel, L.SORTS.map(function (s) { return el('option', { value: s[0] + ':' + s[1] }, s[2]); }));
@@ -654,15 +581,36 @@
       });
     });
 
-    $('search').addEventListener('input', function () { state.search = $('search').value; render(); });
+    $('search').addEventListener('input', function () { state.search = $('search').value; state.page = 1; render(); });
+    var size = $('page-size');
+    size.replaceChildren.apply(size, L.PAGE_SIZES.map(function (n) { return el('option', { value: String(n) }, String(n)); }));
+    size.addEventListener('change', function () {
+      state.pageSize = Number(size.value);
+      prefs.set('atl.pageSize', size.value);
+      state.page = 1;
+      render();
+    });
+    $('page-prev').addEventListener('click', function () { goToPage(state.page - 1); });
+    $('page-next').addEventListener('click', function () { goToPage(state.page + 1); });
+    $('account-btn').addEventListener('click', openAccount);
+    $('signout-2').addEventListener('click', function () { signOut(); });
+    $('revoke-others').addEventListener('click', revokeOthers);
+    $('password-form').addEventListener('submit', onChangePassword);
+    ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function (ev) {
+      document.addEventListener(ev, noteActivity, { capture: true, passive: true });
+    });
+    setInterval(checkIdle, 30000);
+    document.addEventListener('visibilitychange', checkIdle);
     $('refresh').addEventListener('click', refresh);
     $('export').addEventListener('click', exportCsv);
     $('view-archived').addEventListener('click', function () {
       state.showArchived = !state.showArchived;
+      state.page = 1;
       if (state.showArchived && !state.archived) refresh(); else render();
     });
     $('back-to-inbox').addEventListener('click', function () {
       state.showArchived = false;
+      state.page = 1;
       render();
     });
 
@@ -700,38 +648,15 @@
     $('import-go').addEventListener('click', runImport);
   }
 
-  function showSignIn(msg) {
-    document.querySelectorAll('dialog[open]').forEach(function (d) { d.close(); });
-    pending = null;
-    $('app').hidden = true;
-    $('signin').hidden = false;
-    $('challenge-form').hidden = true;
-    $('signin-form').hidden = false;
-    show('signin-error', msg || '');
-    setTimeout(function () { ($('username').value ? $('password') : $('username')).focus(); }, 0);
-  }
-
-  function enterApp() {
-    $('signin').hidden = true;
+  function start() {
+    wire();
+    renderSort();
+    document.title = 'Leads';
+    lastActive = Date.now();
     $('app').hidden = false;
     $('who').textContent = username();
     return refresh();
   }
 
-  function boot() {
-    if (!CFG.clientId) {
-      show('signin-error', 'This page is not set up yet (config.js is missing).');
-      $('signin').hidden = false;
-      $('signin-form').querySelector('button').disabled = true;
-      return;
-    }
-    wire();
-    renderSort();
-    accessToken().then(function (tok) {
-      if (tok) return enterApp();
-      showSignIn();
-    });
-  }
-
-  boot();
+  window.ATL_APP = { start: start };
 })();

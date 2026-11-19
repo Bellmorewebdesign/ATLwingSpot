@@ -69,15 +69,45 @@ def ddb(monkeypatch):
                 {"AttributeName": "at", "KeyType": "RANGE"},
             ],
         )
+        client.create_table(
+            TableName=api.TICKETS_TABLE,
+            BillingMode="PAY_PER_REQUEST",
+            AttributeDefinitions=[{"AttributeName": "tid", "AttributeType": "S"}],
+            KeySchema=[{"AttributeName": "tid", "KeyType": "HASH"}],
+        )
+        client.create_table(
+            TableName=api.SESSIONS_TABLE,
+            BillingMode="PAY_PER_REQUEST",
+            AttributeDefinitions=[{"AttributeName": "sid", "AttributeType": "S"}],
+            KeySchema=[{"AttributeName": "sid", "KeyType": "HASH"}],
+        )
         monkeypatch.setattr(api, "_ddb", client)
+        monkeypatch.setattr(api, "PRIVATE_DIR", os.path.join(os.path.dirname(HERE), "web", "app"))
+        api._app_cache.clear()
         yield client
 
 
-def call(method, path, body=None, qs=None, sid=None, user=ADMIN, raw=None):
-    route_path = "/api/submissions/{id}" if sid is not None else "/api/submissions"
+CHROME_WIN = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+              "Chrome/131.0.0.0 Safari/537.36")
+VIEWER = {"user-agent": CHROME_WIN, "cloudfront-viewer-address": "203.0.113.7:51234",
+          "cloudfront-viewer-country": "US", "cloudfront-viewer-country-region": "NY",
+          "cloudfront-viewer-city": "Bellmore"}
+
+
+def call(method, path, body=None, qs=None, sid=None, user=ADMIN, raw=None, session="sess-1",
+         headers=None, route=None, auth_time="now"):
+    route_path = route or ("/api/submissions/{id}" if sid is not None else "/api/submissions")
+    if auth_time == "now":
+        auth_time = str(int(api._now().timestamp()) - 60)    # signed in a minute ago
+    claims = {"username": user, "origin_jti": session, "auth_time": auth_time}
+    if session is None:
+        del claims["origin_jti"]
+    if auth_time is None:
+        del claims["auth_time"]
     event = {
         "routeKey": f"{method} {route_path}",
-        "requestContext": {"authorizer": {"jwt": {"claims": {"username": user}}}} if user else {},
+        "requestContext": {"authorizer": {"jwt": {"claims": claims}}} if user else {},
+        "headers": dict(VIEWER, **(headers or {})),
         "queryStringParameters": qs,
         "pathParameters": {"id": sid} if sid is not None else None,
         "body": raw if raw is not None else (json.dumps(body) if body is not None else None),
@@ -385,3 +415,214 @@ def test_logs_carry_no_applicant_details(ddb, caplog):
     text = caplog.text
     for secret in ("Ada", "Lovelace", "ada@example.com", "404-555-0100", "Two units", "Secret note"):
         assert secret not in text
+
+
+# ------------------------------------------------------- origin lock
+
+def test_requests_without_the_cloudfront_secret_are_refused(ddb, monkeypatch):
+    monkeypatch.setattr(api, "ORIGIN_SECRET", "s3cret-from-cloudfront")
+    assert call("GET", "/")[0] == 403
+    assert call("GET", "/", headers={"x-origin-verify": "guess"})[0] == 403
+    assert call("GET", "/", headers={"X-Origin-Verify": "s3cret-from-cloudfront"})[0] == 200
+
+
+def test_origin_is_checked_before_anything_else(ddb, monkeypatch):
+    monkeypatch.setattr(api, "ORIGIN_SECRET", "s3cret")
+    status, body, _ = call("GET", "/", user=None)
+    assert status == 403 and body["error"] == "forbidden"
+
+
+# ---------------------------------------------------------- sessions
+
+def sessions(**kw):
+    status, body, _ = call("GET", "", route="/api/sessions", **kw)
+    assert status == 200
+    return body["sessions"]
+
+
+def test_a_sign_in_is_recorded_with_ip_place_browser_and_os(ddb):
+    signed_in = int(api._now().timestamp()) - 300
+    call("GET", "/", auth_time=str(signed_in))
+    [s] = sessions()
+    assert s["id"] == "sess-1" and s["current"] is True and s["status"] == "active"
+    assert s["username"] == ADMIN
+    assert (s["firstIp"], s["lastIp"]) == ("203.0.113.7", "203.0.113.7")
+    assert (s["browser"], s["os"], s["device"]) == ("Chrome", "Windows", "Computer")
+    assert (s["city"], s["region"], s["country"]) == ("Bellmore", "NY", "US")
+    assert s["signedInAt"] == api._iso(api.datetime.fromtimestamp(signed_in, tz=api.timezone.utc))
+
+
+def test_last_seen_follows_the_device_but_first_ip_is_kept(ddb):
+    call("GET", "/")
+    call("GET", "/", headers={"cloudfront-viewer-address": "[2001:db8::7]:443"})
+    [s] = sessions(headers={"cloudfront-viewer-address": "2001:db8::9:5555"})
+    assert s["firstIp"] == "203.0.113.7"
+    assert s["lastIp"] == "2001:db8::9"
+
+
+def test_two_devices_are_two_sessions(ddb):
+    call("GET", "/", session="phone-1", headers={"user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1"})
+    call("GET", "/", session="laptop-1")
+    rows = {s["id"]: s for s in sessions(session="laptop-1")}
+    assert set(rows) == {"phone-1", "laptop-1"}
+    assert (rows["phone-1"]["browser"], rows["phone-1"]["os"], rows["phone-1"]["device"]) == ("Safari", "iOS", "Phone")
+    assert rows["laptop-1"]["current"] and not rows["phone-1"]["current"]
+
+
+def test_signing_a_device_out_locks_it_out_immediately(ddb):
+    call("GET", "/", session="phone-1")
+    status, body, _ = call("DELETE", "", route="/api/sessions/{id}", sid="phone-1", session="laptop-1")
+    assert status == 200 and body == {"revoked": "phone-1", "current": False}
+    status, body, _ = call("GET", "/", session="phone-1")
+    assert status == 401 and body["error"] == "session_revoked"
+    assert call("GET", "/", session="laptop-1")[0] == 200
+    phone = [s for s in sessions(session="laptop-1") if s["id"] == "phone-1"][0]
+    assert phone["status"] == "signed_out" and phone["revokedBy"] == ADMIN
+
+
+def test_sign_out_everywhere_else_keeps_this_device(ddb):
+    for sid in ("a", "b", "c"):
+        call("GET", "/", session=sid)
+    status, body, _ = call("POST", "", route="/api/sessions/revoke-others", session="b")
+    assert status == 200 and body == {"revoked": 2}
+    assert call("GET", "/", session="a")[0] == 401
+    assert call("GET", "/", session="c")[0] == 401
+    assert call("GET", "/", session="b")[0] == 200
+    status, body, _ = call("POST", "", route="/api/sessions/revoke-others", session="b")
+    assert body == {"revoked": 0}
+
+
+def test_signing_out_an_unknown_device_is_404_and_bad_ids_are_refused(ddb):
+    call("GET", "/")
+    assert call("DELETE", "", route="/api/sessions/{id}", sid="nope")[0] == 404
+    assert call("DELETE", "", route="/api/sessions/{id}", sid="../../x")[0] == 404
+
+
+def test_revoking_twice_keeps_the_first_time(ddb):
+    call("GET", "/", session="old")
+    call("DELETE", "", route="/api/sessions/{id}", sid="old", session="me")
+    first = [s for s in sessions(session="me") if s["id"] == "old"][0]["revokedAt"]
+    call("DELETE", "", route="/api/sessions/{id}", sid="old", session="me")
+    assert [s for s in sessions(session="me") if s["id"] == "old"][0]["revokedAt"] == first
+
+
+def test_old_sign_ins_show_as_expired(ddb, monkeypatch):
+    call("GET", "/", session="old", auth_time="1700000000")
+    rows = {s["id"]: s for s in sessions(session="new", auth_time=str(int(api._now().timestamp())))}
+    assert rows["old"]["status"] == "expired"
+    assert rows["new"]["status"] == "active"
+
+
+def test_session_rows_expire_from_the_log_after_30_days(ddb):
+    call("GET", "/")
+    item = ddb.get_item(TableName=api.SESSIONS_TABLE, Key={"sid": {"S": "sess-1"}})["Item"]
+    days = (int(item["expiresAt"]["N"]) - api._now().timestamp()) / 86400
+    assert 29.9 < days <= 30
+
+
+def test_without_a_session_id_the_request_is_refused(ddb):
+    assert call("GET", "/", session=None, auth_time=None)[0] == 401
+
+
+def test_auth_time_is_the_fallback_session_id(ddb):
+    assert call("GET", "/", session=None, auth_time="1795000000")[0] == 200
+    assert sessions(session=None, auth_time="1795000000")[0]["id"] == f"{ADMIN}@1795000000"
+
+
+@pytest.mark.parametrize("ua,expected", [
+    ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0", ("Edge", "Windows", "Computer")),
+    ("Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15", ("Safari", "macOS", "Computer")),
+    ("Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36", ("Chrome", "Android", "Phone")),
+    ("Mozilla/5.0 (Linux; Android 14; SM-S921U) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/26.0 Chrome/122.0.0.0 Mobile Safari/537.36", ("Samsung Internet", "Android", "Phone")),
+    ("Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/131.0 Mobile/15E148 Safari/604.1", ("Chrome", "iPadOS", "Tablet")),
+    ("Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0", ("Firefox", "Linux", "Computer")),
+    ("Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36", ("Chrome", "ChromeOS", "Computer")),
+    ("", ("Unknown", "Unknown", "Unknown")),
+])
+def test_user_agents_are_described_plainly(ua, expected):
+    assert api.describe_user_agent(ua) == expected
+
+
+# ------------------------------------------------------- private app files
+
+def app_file(name, cookie=None, cookies=None, headers=None):
+    event = {
+        "routeKey": "GET /api/app/{file}",
+        "pathParameters": {"file": name},
+        "headers": dict(headers or {}),
+        "cookies": cookies if cookies is not None else ([f"atl_app={cookie}"] if cookie else []),
+    }
+    return api.handler(event, None)
+
+
+def ticket(session="sess-1"):
+    status, body, _ = call("POST", "", route="/api/app-ticket", session=session)
+    assert status == 200 and body["expiresIn"] == 120
+    return body["ticket"]
+
+
+@pytest.mark.parametrize("name,kind,marker", [
+    ("app.html", "text/html", "<dialog"),
+    ("app.js", "text/javascript", "ATL_APP"),
+    ("lib.js", "text/javascript", "ATL_LIB"),
+    ("app.css", "text/css", ".pager"),
+])
+def test_signed_in_browser_gets_the_app_files(ddb, name, kind, marker):
+    resp = app_file(name, cookie=ticket())
+    assert resp["statusCode"] == 200
+    assert resp["headers"]["content-type"].startswith(kind)
+    assert resp["headers"]["cache-control"] == "no-store"
+    assert marker in resp["body"]
+
+
+def test_the_pass_is_also_read_from_a_cookie_header(ddb):
+    t = ticket()
+    assert app_file("app.js", cookies=[], headers={"cookie": f"other=1; atl_app={t}"})["statusCode"] == 200
+
+
+@pytest.mark.parametrize("cookie", [None, "", "made-up", "x" * 300])
+def test_without_a_real_pass_every_file_is_a_bare_404(ddb, cookie):
+    ticket()
+    for name in ("app.html", "app.js", "lib.js", "app.css"):
+        resp = app_file(name, cookie=cookie)
+        assert resp["statusCode"] == 404
+        assert resp["body"] == "Not found"
+
+
+def test_only_the_four_files_exist(ddb):
+    t = ticket()
+    for name in ("api.py", "../api.py", "index.html", "app.JS", ""):
+        assert app_file(name, cookie=t)["statusCode"] == 404
+
+
+def test_a_pass_expires_after_two_minutes(ddb, monkeypatch):
+    t = ticket()
+    later = api._now() + api.timedelta(seconds=121)
+    monkeypatch.setattr(api, "_now", lambda: later)
+    assert app_file("app.js", cookie=t)["statusCode"] == 404
+
+
+def test_a_pass_dies_with_its_sign_in(ddb):
+    t = ticket(session="phone-1")
+    call("DELETE", "", route="/api/sessions/{id}", sid="phone-1", session="laptop-1")
+    assert app_file("app.js", cookie=t)["statusCode"] == 404
+
+
+def test_a_signed_out_device_cannot_get_a_pass(ddb):
+    call("GET", "/", session="phone-1")
+    call("DELETE", "", route="/api/sessions/{id}", sid="phone-1", session="laptop-1")
+    status, body, _ = call("POST", "", route="/api/app-ticket", session="phone-1")
+    assert status == 401 and body["error"] == "session_revoked"
+
+
+def test_passes_are_stored_only_as_hashes(ddb):
+    t = ticket()
+    items = ddb.scan(TableName=api.TICKETS_TABLE)["Items"]
+    assert len(items) == 1 and t not in json.dumps(items)
+
+
+def test_app_files_also_need_the_cloudfront_secret(ddb, monkeypatch):
+    t = ticket()
+    monkeypatch.setattr(api, "ORIGIN_SECRET", "s3cret")
+    assert app_file("app.js", cookie=t)["statusCode"] == 403
+    assert app_file("app.js", cookie=t, headers={"x-origin-verify": "s3cret"})["statusCode"] == 200

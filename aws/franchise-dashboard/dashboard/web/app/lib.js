@@ -258,7 +258,22 @@
     };
   }
 
+  /* ------------------------------------------------------------ pages
+     Search, sort and the Archived view work on every lead; pages only cut
+     the result into screens. */
+  var PAGE_SIZES = [25, 50, 100];
+
+  function paginate(total, page, size) {
+    size = PAGE_SIZES.indexOf(size) === -1 ? 50 : size;
+    var pages = Math.max(1, Math.ceil(total / size));
+    page = Math.min(Math.max(1, Math.floor(page) || 1), pages);
+    var start = total ? (page - 1) * size : 0;
+    return { page: page, pages: pages, size: size, start: start, end: Math.min(start + size, total) };
+  }
+
   var lib = {
+    PAGE_SIZES: PAGE_SIZES,
+    paginate: paginate,
     replyDraft: replyDraft,
     SORT_KEYS: SORT_KEYS,
     SORTS: SORTS,

@@ -59,7 +59,9 @@ npm run build    # compiles app/dist, then publishes the site to the repo root
 1. `vite build` compiles the app to `app/dist`.
 2. `vite build --ssr` compiles the same app for Node, to `app/dist-ssr` (not committed).
 3. `scripts/prerender-pages.mjs` writes a real `index.html` for every page in
-   `app/src/data/routes.js` (`menu/index.html`, `about-us/index.html`, …). Each file has
+   `app/src/data/routes.js` (`menu/index.html`, `about-us/index.html`, …), plus one page
+   per shop in `app/src/data/locations.js` (`locations/east-meadow-ny/index.html`, …:
+   address, hours, phone, map, its own `Restaurant` structured data). Each file has
    that page's own title, description and canonical URL **and its finished content**: the
    script runs the app once per page and puts the resulting HTML inside the file. It also
    writes `404.html`, `sitemap.xml` and `robots.txt`.
@@ -134,10 +136,14 @@ exists, so search results, map listings and old shared links keep working:
 | Our Story (old "About Us") | `/about-us/` |
 | Franchise | `/franchise/` |
 | Contact (new) | `/contact/` |
+| One page per shop (new) | `/locations/<shop>-<state>/`, e.g. `/locations/east-meadow-ny/` |
 
 All of them are defined once, in `app/src/data/routes.js`. The router, navigation, page
 titles and canonicals, the per-page HTML files, `sitemap.xml` and the publish step read
-from it, so **to add or rename a page, change it there**.
+from it, so **to add or rename a page, change it there**. Shop pages are the exception:
+they come from the shop list in `app/src/data/locations.js`, so adding, moving or closing a
+shop there (then rebuilding) updates its page, the locations list, the sitemap and the
+structured data together.
 
 GitHub Pages is a plain file server, so each path needs its own file to answer with HTTP
 200 on a direct visit or refresh. That is what the per-page `index.html` files are for.

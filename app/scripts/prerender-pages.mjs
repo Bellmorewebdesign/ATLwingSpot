@@ -15,6 +15,10 @@
 //   dist/404.html           the not-found page, for unknown paths: GitHub Pages
 //                           serves it with status 404. Marked noindex, with no
 //                           canonical.
+//   dist/locations/<shop>-<state>/index.html
+//                           one page per shop. These come from the shop list
+//                           (data/locations.js) rather than routes.js; the
+//                           compiled app hands them over as `extraPages`.
 //   dist/sitemap.xml        every page's canonical URL and the build date.
 //
 // THE CONTENT IS PRERENDERED. Each file holds the finished HTML of its page
@@ -65,7 +69,7 @@ if (!fs.existsSync(ssrEntry)) {
 }
 // React's production build: same HTML, without development-only warnings.
 process.env.NODE_ENV = 'production'
-const { render: renderApp } = await import(pathToFileURL(ssrEntry).href)
+const { render: renderApp, extraPages = [] } = await import(pathToFileURL(ssrEntry).href)
 
 const ROOT = '<div id="root"></div>'
 if (template.split(ROOT).length !== 2) fail(`expected exactly one ${ROOT} in dist/index.html`)
@@ -117,7 +121,13 @@ function render({ path: pagePath, title, description, canonical, notFound = fals
 }
 
 // Paths must be absolute and end in "/" so they map onto <dir>/index.html.
-const pages = Object.entries(PAGES)
+// routes.js pages first, then the pages that come from data (one per shop).
+const pages = [...Object.entries(PAGES), ...extraPages.map((p) => [p.path, p])]
+const seen = new Set()
+for (const [, p] of pages) {
+  if (seen.has(p.path)) fail(`two pages share the path ${p.path}`)
+  seen.add(p.path)
+}
 for (const [key, page] of pages) {
   if (!/^\/([a-z0-9-]+\/)*$/.test(page.path)) fail(`PAGES.${key}.path "${page.path}" must look like /a/b/`)
 }

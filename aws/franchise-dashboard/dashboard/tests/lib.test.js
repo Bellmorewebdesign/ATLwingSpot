@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const L = require(path.join(__dirname, '..', 'web', 'lib.js'));
+const L = require(path.join(__dirname, '..', 'web', 'app', 'lib.js'));
 
 test('parseCsv handles quotes, escaped quotes, commas and newlines in fields', () => {
   const rows = L.parseCsv('a,b,c\r\n"x, y","He said ""hi""","line1\nline2"\n\n1,2,3');
@@ -172,4 +172,15 @@ test('replyDraft copes with no message, no first name, no email, and long messag
   assert.ok(long.body.length < 900, 'quote trimmed');
   assert.ok(long.body.endsWith(' …'));
   assert.ok(long.mailto.length < 2000, 'mailto stays under common length limits, got ' + long.mailto.length);
+});
+
+test('paginate splits any number of leads into pages', () => {
+  assert.deepEqual(L.paginate(0, 1, 50), { page: 1, pages: 1, size: 50, start: 0, end: 0 });
+  assert.deepEqual(L.paginate(312, 1, 50), { page: 1, pages: 7, size: 50, start: 0, end: 50 });
+  assert.deepEqual(L.paginate(312, 7, 50), { page: 7, pages: 7, size: 50, start: 300, end: 312 });
+  assert.equal(L.paginate(312, 99, 50).page, 7, 'past the end clamps to the last page');
+  assert.equal(L.paginate(312, -3, 50).page, 1);
+  assert.equal(L.paginate(312, 'x', 50).page, 1);
+  assert.equal(L.paginate(100, 1, 33).size, 50, 'unknown page size falls back to 50');
+  assert.deepEqual(L.paginate(101, 2, 100), { page: 2, pages: 2, size: 100, start: 100, end: 101 });
 });

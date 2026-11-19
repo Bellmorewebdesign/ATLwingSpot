@@ -19,3 +19,7 @@ npm-debug.log*
 # NOTE: the compiled production site IS committed at the repo root
 # (index.html, 404.html, .nojekyll, /assets, /static) so GitHub Pages can
 # serve main:/root directly. Do not ignore those.
+
+# Dashboard build output: the private app files are copied into the API
+# package at deploy time (aws/franchise-dashboard/dashboard/deploy.sh).
+aws/franchise-dashboard/dashboard/src/api/private/
