@@ -6,6 +6,11 @@ import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom/server'
 import App from './App'
+import { LOCATION_PAGES } from './data/locations'
+
+// Pages that are not in routes.js because they come from data: one per shop.
+// The prerender step writes a file for each and lists them in the sitemap.
+export const extraPages = LOCATION_PAGES
 
 export function render(path) {
   return renderToString(

@@ -1,5 +1,6 @@
+import { Link } from 'react-router-dom'
 import { ORDER_URL, ORDER_LABEL } from '../data/site'
-import { mapsUrl, formatPhone } from '../data/locations'
+import { mapsUrl, formatPhone, locationPath } from '../data/locations'
 import { ArrowUpRight } from './Icons'
 import './LocationCard.css'
 
@@ -9,7 +10,9 @@ export function LocationCard({ loc }) {
   return (
     <li className="loc">
       <div className="loc__main">
-        <h3 className="dsp loc__name">{loc.name}</h3>
+        <h3 className="dsp loc__name">
+          <Link to={locationPath(loc)} className="loc__link">{loc.name}</Link>
+        </h3>
         {loc.tempClosed && <span className="loc__closed">Temporarily closed</span>}
         <address className="loc__addr">
           {loc.street}, {loc.city}, {loc.state} {loc.zip}

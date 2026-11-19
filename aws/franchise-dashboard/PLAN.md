@@ -156,8 +156,11 @@ while the dashboard is built.
   the sign-in stays in it. A crawler or an AI fetching the address sees a
   sign-in form and nothing else; the browser test fetches every public file
   and fails if any of them mentions what the dashboard does.
-- `robots.txt` disallows everything; every response carries
-  `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex`.
+- Every response carries
+  `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex`, and
+  `robots.txt` deliberately allows crawling: a search engine has to fetch a
+  page to see its noindex (blocked by robots.txt, a known URL can still be
+  listed). What it fetches is the sign-in form.
 - Neutral wording before sign-in: the tab says "Sign in", the page "Sign in."
   with the logo.
 - Only the dashboard's own files exist. A CloudFront Function answers any

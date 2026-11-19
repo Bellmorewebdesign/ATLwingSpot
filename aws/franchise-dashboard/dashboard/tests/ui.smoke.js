@@ -318,8 +318,10 @@ async function main() {
     assert.equal(await page.title(), 'Sign in');
     assert.equal(await page.textContent('.signin h1'), 'Sign in.');
     assert.match(await page.getAttribute('meta[name=robots]', 'content'), /noindex.*nofollow.*noarchive.*nosnippet/);
+    // Crawling is allowed on purpose: a crawler has to fetch a page to see its
+    // noindex. Blocked by robots.txt, a known URL can still be listed.
     const robots = await page.request.get(base + '/robots.txt');
-    assert.equal(await robots.text(), 'User-agent: *\nDisallow: /\n');
+    assert.equal(await robots.text(), 'User-agent: *\nAllow: /\n');
 
     // Empty, then wrong password.
     await page.click('#signin-form button[type=submit]');

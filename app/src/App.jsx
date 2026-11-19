@@ -13,6 +13,7 @@ import Home from './pages/Home'
 import Menu from './pages/Menu'
 import Flavors from './pages/Flavors'
 import Locations from './pages/Locations'
+import LocationPage from './pages/LocationPage'
 import Catering from './pages/Catering'
 import BookCatering from './pages/BookCatering'
 import Story from './pages/Story'
@@ -60,6 +61,8 @@ export default function App() {
           <Route path={PAGES.menu.path} element={<Menu />} />
           <Route path={PAGES.flavors.path} element={<Flavors />} />
           <Route path={PAGES.locations.path} element={<Locations />} />
+          {/* One page per shop; an unknown shop falls back to the not-found page. */}
+          <Route path="/locations/:slug/" element={<LocationPage fallback={<NotFound />} />} />
           <Route path={PAGES.catering.path} element={<Catering />} />
           <Route path={PAGES.bookCatering.path} element={<BookCatering />} />
           <Route path={PAGES.story.path} element={<Story />} />

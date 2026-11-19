@@ -10,7 +10,7 @@
 
 import { PAGES, SITE_ORIGIN, SITE_NAME, canonicalUrl } from './routes'
 import { ORDER_URL, SOCIAL } from './site'
-import { LOCATIONS, mapsUrl } from './locations'
+import { LOCATIONS, mapsUrl, locationPath } from './locations'
 import { MENU_CATEGORIES, MENU_ITEMS } from './menu'
 import { parseHours } from './hours'
 
@@ -53,14 +53,18 @@ const e164 = (phone) => {
   return d.length === 10 ? `+1${d}` : null
 }
 
+// Each shop is one Restaurant, identified by its own page's URL. The shop page
+// and the locations list both describe it under that same @id, so search
+// engines see one restaurant, not two.
 function restaurant(loc) {
   const hours = parseHours(loc.hours)
   const phone = loc.phone && e164(loc.phone)
+  const page = canonicalUrl(locationPath(loc))
   return {
     '@type': 'Restaurant',
-    '@id': `${canonicalUrl(PAGES.locations.path)}#${loc.id}`,
+    '@id': `${page}#restaurant`,
     name: `${SITE_NAME} ${loc.name}`,
-    url: canonicalUrl(PAGES.locations.path),
+    url: page,
     image: HERO_IMAGE,
     address: {
       '@type': 'PostalAddress',
@@ -95,6 +99,13 @@ export function locationsData() {
     '@context': 'https://schema.org',
     '@graph': LOCATIONS.filter((l) => !l.tempClosed).map(restaurant),
   }
+}
+
+// One shop, for its own page. Nothing for a temporarily closed shop, for the
+// same reason as above.
+export function locationData(loc) {
+  if (loc.tempClosed) return null
+  return { '@context': 'https://schema.org', ...restaurant(loc) }
 }
 
 // The menu: sections and dishes, with photos where there is one. No prices,
