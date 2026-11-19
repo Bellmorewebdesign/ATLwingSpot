@@ -73,17 +73,16 @@ say "Uploading the page"
 BUCKET="$(output WebBucketName)"
 DIST="$(output DistributionId)"
 CLIENT="$(output UserPoolClientId)"
-COGNITO="$(output CognitoDomain)"
 URL="$(output DashboardUrl)"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-cp web/index.html web/app.js web/lib.js web/styles.css "$TMP/"
-# The only per-deploy values the page needs. Neither is a secret: the client
-# id and login domain are visible to anyone who opens the login page.
-python3 - "$COGNITO" "$CLIENT" > "$TMP/config.js" <<'PY'
+cp -R web/. "$TMP/"
+# The only per-deploy values the page needs. Neither is a secret: the app
+# client id is sent with every sign-in and is visible to anyone using the page.
+python3 - "$REGION" "$CLIENT" > "$TMP/config.js" <<'PY'
 import json, sys
-print("window.ATL_CONFIG = " + json.dumps({"cognitoDomain": sys.argv[1], "clientId": sys.argv[2]}) + ";")
+print("window.ATL_CONFIG = " + json.dumps({"region": sys.argv[1], "clientId": sys.argv[2]}) + ";")
 PY
 
 # no-cache: browsers and CloudFront re-check on every load, so a deploy is

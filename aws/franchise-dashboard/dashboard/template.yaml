@@ -29,8 +29,8 @@ Parameters:
     AllowedValues: ['ON', 'OFF']
     Description: >
       ON makes every login also ask for a 6-digit code from an authenticator
-      app; the first login after switching it on walks through setting the app
-      up. Recommended for personal data. Can be switched at any redeploy.
+      app; the first login after switching it on shows a key to add to the
+      app. Recommended for personal data. Can be switched at any redeploy.
 
 Rules:
   DomainNeedsCertificate:
@@ -88,34 +88,18 @@ Resources:
       MfaConfiguration: !If [MfaOn, 'ON', 'OFF']
       EnabledMfas: !If [MfaOn, [SOFTWARE_TOKEN_MFA], !Ref AWS::NoValue]
 
-  UserPoolDomain:
-    Type: AWS::Cognito::UserPoolDomain
-    Properties:
-      UserPoolId: !Ref UserPool
-      Domain: !Sub atlwingspot-admin-${AWS::AccountId}
-      ManagedLoginVersion: 2
-
+  # The dashboard's own branded form signs in through Cognito's API
+  # (USER_PASSWORD_AUTH over HTTPS). No OAuth redirects and no hosted page.
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
       ClientName: dashboard
       UserPoolId: !Ref UserPool
-      GenerateSecret: false            # a browser app cannot keep a secret; PKCE instead
-      AllowedOAuthFlowsUserPoolClient: true
-      AllowedOAuthFlows: [code]
-      AllowedOAuthScopes: [openid]
-      SupportedIdentityProviders: [COGNITO]
-      CallbackURLs: !If
-        - HasDomain
-        - [!Sub 'https://${Distribution.DomainName}/', !Sub 'https://${DomainName}/']
-        - [!Sub 'https://${Distribution.DomainName}/']
-      LogoutURLs: !If
-        - HasDomain
-        - [!Sub 'https://${Distribution.DomainName}/', !Sub 'https://${DomainName}/']
-        - [!Sub 'https://${Distribution.DomainName}/']
-      ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
+      GenerateSecret: false            # a browser app cannot keep a secret
+      ExplicitAuthFlows: [ALLOW_USER_PASSWORD_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
       PreventUserExistenceErrors: ENABLED
       EnableTokenRevocation: true
+      AuthSessionValidity: 5           # minutes to finish an MFA or new-password step
       AccessTokenValidity: 60
       IdTokenValidity: 60
       RefreshTokenValidity: 12
@@ -123,13 +107,6 @@ Resources:
         AccessToken: minutes
         IdToken: minutes
         RefreshToken: hours
-
-  ManagedLoginBranding:
-    Type: AWS::Cognito::ManagedLoginBranding
-    Properties:
-      UserPoolId: !Ref UserPool
-      ClientId: !Ref UserPoolClient
-      UseCognitoProvidedValues: true
 
   # -------------------------------------------------------------------- API
   # Written out as plain API Gateway resources rather than SAM's HttpApi on
@@ -325,7 +302,7 @@ Resources:
             ContentSecurityPolicy: !Sub >-
               default-src 'none'; script-src 'self'; style-src 'self';
               img-src 'self' data:; font-src 'self';
-              connect-src 'self' https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com;
+              connect-src 'self' https://cognito-idp.${AWS::Region}.amazonaws.com;
               form-action 'self'; base-uri 'none'; frame-ancestors 'none'
           StrictTransportSecurity:
             Override: true
@@ -404,5 +381,3 @@ Outputs:
     Value: !Ref UserPool
   UserPoolClientId:
     Value: !Ref UserPoolClient
-  CognitoDomain:
-    Value: !Sub https://${UserPoolDomain}.auth.${AWS::Region}.amazoncognito.com

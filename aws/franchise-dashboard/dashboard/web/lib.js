@@ -180,7 +180,56 @@
     return lines.join('\r\n') + '\r\n';
   }
 
+  /* ------------------------------------------------------------ sorting
+     File Explorer style: click a column to sort by it, click again to flip.
+     Dates start newest first, text starts A to Z. Blank values always sort
+     last, whichever way round, so they never crowd the top of the list. */
+  var SORT_KEYS = ['createdAt', 'name', 'territory', 'email', 'phone', 'message'];
+  var SORTS = [
+    ['createdAt', 'desc', 'Newest first'], ['createdAt', 'asc', 'Oldest first'],
+    ['name', 'asc', 'Name A–Z'], ['name', 'desc', 'Name Z–A'],
+    ['territory', 'asc', 'State A–Z'], ['territory', 'desc', 'State Z–A'],
+    ['email', 'asc', 'Email A–Z'], ['email', 'desc', 'Email Z–A'],
+    ['phone', 'asc', 'Phone 0–9'], ['phone', 'desc', 'Phone 9–0'],
+    ['message', 'asc', 'Message A–Z'], ['message', 'desc', 'Message Z–A'],
+  ];
+  function defaultDir(key) { return key === 'createdAt' ? 'desc' : 'asc'; }
+
+  var collator = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
+
+  function sortValue(row, key) {
+    if (key === 'name') return ((row.firstName || '') + ' ' + (row.lastName || '')).trim();
+    if (key === 'phone') {
+      // Digits only, without a leading US country code, so "1-212-…" sorts
+      // with the other 212 numbers instead of after every 10-digit one.
+      var digits = String(row.phone || '').replace(/\D/g, '');
+      return digits.length === 11 && digits[0] === '1' ? digits.slice(1) : digits;
+    }
+    if (key === 'message') return String(row.message || '').replace(/\s+/g, ' ').trim();
+    return row[key] == null ? '' : String(row[key]).trim();
+  }
+
+  function sortRows(rows, key, dir) {
+    var mult = dir === 'asc' ? 1 : -1;
+    return rows.map(function (r, i) { return [sortValue(r, key), i, r]; }).sort(function (a, b) {
+      var ae = a[0] === '', be = b[0] === '';
+      if (ae !== be) return ae ? 1 : -1;
+      var c = key === 'createdAt' ? (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0) : collator.compare(a[0], b[0]);
+      return c ? c * mult : a[1] - b[1];          // stable for ties
+    }).map(function (x) { return x[2]; });
+  }
+
+  /* One line of message for the list: whitespace collapsed. */
+  function preview(text) {
+    return String(text || '').replace(/\s+/g, ' ').trim();
+  }
+
   var lib = {
+    SORT_KEYS: SORT_KEYS,
+    SORTS: SORTS,
+    defaultDir: defaultDir,
+    sortRows: sortRows,
+    preview: preview,
     STATUSES: STATUSES,
     parseCsv: parseCsv,
     normalizeDate: normalizeDate,

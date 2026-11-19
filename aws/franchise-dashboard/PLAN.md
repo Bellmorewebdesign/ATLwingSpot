@@ -46,7 +46,7 @@ browser ─▶ API Gateway ─▶ atl-franchise-form  (existing Lambda)
                  └── /api/*   ─▶ HTTP API, Cognito JWT authorizer ─▶ Lambda atl-franchise-dashboard-api
                                                                       ├─▶ atl-franchise-submissions
                                                                       └─▶ atl-franchise-audit
-   login: Cognito hosted login (authorization code + PKCE); the page never sees the password
+   login: the dashboard's own branded form → Cognito API (USER_PASSWORD_AUTH, HTTPS) → tokens
 ```
 
 Why a queue rather than the form Lambda writing straight to DynamoDB:
@@ -65,7 +65,7 @@ Why a queue rather than the form Lambda writing straight to DynamoDB:
 | `createdAt` | S | UTC ISO-8601, e.g. `2026-11-18T15:04:05Z` |
 | `firstName`, `lastName`, `email`, `phone`, `territory` | S | exactly the form's fields |
 | `message` | S | optional |
-| `status` | S | `new` → `contacted` → `qualified` → `discovery` → `fdd_sent` → `signed` / `declined` |
+| `status` | S | always `new` today; kept in the data and API, not shown in the dashboard |
 | `entity` | S | constant `SUB`, for the "newest first" index |
 | `schemaVersion` | N | currently `1` |
 
@@ -83,7 +83,7 @@ territory, message) and has no delete permission at all.
 when, and the before and after values.
 
 Indexes: `by-created` (entity, createdAt) for the main list; `by-status`
-(status, createdAt) for the pipeline filter.
+(status, createdAt), unused by the dashboard today.
 
 No IP address is stored. The form Lambda already keeps only a keyed hash for
 rate limiting, and the dashboard has no need for it.
@@ -108,15 +108,22 @@ while the dashboard is built.
 - **Login:** one Cognito user, `ATLWingSpotAdmin` (usernames are case
   sensitive). No self sign-up. Password: at least 10 characters including a
   number, set at a hidden prompt by `create-admin.sh`, never stored in the repo.
-  Cognito's hosted login handles the password; repeated wrong passwords are
-  throttled by Cognito. Optional authenticator-app codes (`REQUIRE_MFA=ON`).
-  Tokens last an hour (refreshed for up to 12) and are dropped when the tab
-  closes.
-- **Page:** list newest first, counts per status, search, filter by status or
-  archived, a detail view with email/phone links, status, last-contacted date,
-  notes, archive, and a change history. Add one by hand, import a CSV of past
-  submissions, export what is on screen to CSV (with spreadsheet-formula
-  injection blocked). Works on a phone.
+  The sign-in form is the dashboard's own, in ATL Wing Spot branding: it sends
+  the username and password straight to Cognito's API over HTTPS and clears
+  the password from the page. Cognito throttles repeated wrong passwords.
+  Optional authenticator-app codes (`REQUIRE_MFA=ON`); the form handles the
+  code, first-time setup and a forced new password. Tokens last an hour
+  (refreshed for up to 12) and are dropped when the tab closes.
+- **Page:** a list of every lead with a one-line message preview, sortable
+  like a file browser (click a column header, click again to flip; dates start
+  newest first) plus a Sort menu, and search. Click a lead for the full
+  message, Email and Call buttons, private notes and Archive. On a phone the
+  list becomes cards and a lead opens full screen. Import a CSV of past
+  submissions and export what is on screen (with spreadsheet-formula injection
+  blocked). The sort choice is remembered per browser.
+- **Branding:** the logo, favicons, colours (orange #f47c20, blue #29c1db,
+  cream) and fonts (Anton, Manrope) are the public site's own files, served
+  from the dashboard so the strict CSP stays intact.
 - **API:** `GET/POST /api/submissions`, `GET/PATCH /api/submissions/{id}` behind
   a Cognito JWT authorizer, served through the same CloudFront hostname so no
   CORS is needed.
@@ -124,8 +131,10 @@ while the dashboard is built.
   (scripts only from the dashboard itself), HSTS, no framing, no referrer,
   `noindex`.
 - Tests: 54 API tests (against an in-memory DynamoDB with the real indexes),
-  9 for the CSV/date helpers, and a browser run of the real page under the
-  production CSP (`tests/ui.smoke.js`).
+  16 for the CSV, date and sorting helpers, and a browser run of the real page
+  under the production CSP with Cognito faked (`tests/ui.smoke.js`): sign-in
+  incl. MFA and new-password steps, sorting, previews, notes, archive,
+  import/export, token refresh, sign-out, phone layout down to 320px.
 
 ### Phase 3: hardening (not started)
 
@@ -263,7 +272,7 @@ negligible.
 | Script injected through form text | Page inserts all data as text, never HTML; CSP allows only the dashboard's own scripts |
 | Bad CSV export opened in Excel | Cells starting with `= + - @` are prefixed so they show as text |
 | Form Lambda compromised | Can only send to one queue; cannot read the leads |
-| Replies aren't mirrored | Out of scope. Staff record `lastContactedAt`/notes in the dashboard |
+| Replies aren't mirrored | Out of scope. Staff keep notes on each lead in the dashboard |
 
 ## Decisions
 
@@ -271,5 +280,10 @@ negligible.
 2. **Logins:** one shared login, `ATLWingSpotAdmin`. More can be added with
    `./create-admin.sh <name>`; every login has full access.
 3. **History:** past submissions are imported by hand through **Import CSV**.
-4. **Statuses:** New, Contacted, Qualified, Discovery call, FDD sent, Signed,
-   Declined.
+4. **No sales pipeline in the UI.** The dashboard is a sortable list of leads
+   with full messages, notes and archive. Status values stay in the data and
+   API (all `new`) in case they are wanted later.
+5. **Branded sign-in** on the dashboard itself rather than Cognito's hosted
+   page, which could not carry the ATL Wing Spot logo and colours.
+6. **Release:** changes are reviewed on the live cloudfront.net address from
+   the branch, merged once approved, then moved to the custom domain.

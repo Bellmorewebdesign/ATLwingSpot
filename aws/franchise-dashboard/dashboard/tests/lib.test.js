@@ -99,3 +99,53 @@ test('an export re-imports to the same data', () => {
     notes: '=not a formula',
   });
 });
+
+const ROWS = [
+  { submissionId: 'a', createdAt: '2026-11-01T10:00:00Z', firstName: 'dana', lastName: 'Okafor', territory: 'New Jersey', phone: '(516) 555-0142', message: 'Two units' },
+  { submissionId: 'b', createdAt: '2026-11-03T10:00:00Z', firstName: 'Ana', lastName: 'Diaz', territory: '', phone: '404-555-0100', message: '' },
+  { submissionId: 'c', createdAt: '2026-10-20T10:00:00Z', firstName: 'Lee', lastName: 'Park', territory: 'Georgia', phone: '', message: 'about 10 stores' },
+  { submissionId: 'd', createdAt: '2026-11-02T10:00:00Z', firstName: 'Lee', lastName: 'Adams', territory: 'georgia', phone: '1-212-555-0199', message: 'about 9 stores' },
+];
+const ids = (rows) => rows.map((r) => r.submissionId).join('');
+
+test('sortRows by date both ways', () => {
+  assert.equal(ids(L.sortRows(ROWS, 'createdAt', 'desc')), 'bdac');
+  assert.equal(ids(L.sortRows(ROWS, 'createdAt', 'asc')), 'cadb');
+});
+
+test('sortRows by name ignores case and is stable for ties', () => {
+  assert.equal(ids(L.sortRows(ROWS, 'name', 'asc')), 'badc');
+  assert.equal(ids(L.sortRows(ROWS, 'name', 'desc')), 'cdab');
+});
+
+test('blank values sort last whichever way round', () => {
+  assert.equal(ids(L.sortRows(ROWS, 'territory', 'asc')), 'cdab');
+  assert.equal(ids(L.sortRows(ROWS, 'territory', 'desc')).slice(-1), 'b');
+  assert.equal(ids(L.sortRows(ROWS, 'message', 'asc')).slice(-1), 'b');
+  assert.equal(ids(L.sortRows(ROWS, 'message', 'desc')).slice(-1), 'b');
+});
+
+test('numbers inside text sort naturally, phone sorts by digits', () => {
+  assert.equal(ids(L.sortRows(ROWS, 'message', 'asc')).slice(0, 2), 'dc');   // 9 before 10
+  assert.equal(ids(L.sortRows(ROWS, 'phone', 'asc')), 'dbac');
+});
+
+test('sortRows does not change the input', () => {
+  const copy = ROWS.slice();
+  L.sortRows(ROWS, 'name', 'asc');
+  assert.deepEqual(ROWS, copy);
+});
+
+test('every sort option is a known key and direction', () => {
+  for (const [k, d] of L.SORTS) {
+    assert.ok(L.SORT_KEYS.includes(k));
+    assert.ok(d === 'asc' || d === 'desc');
+  }
+  assert.equal(L.defaultDir('createdAt'), 'desc');
+  assert.equal(L.defaultDir('name'), 'asc');
+});
+
+test('preview collapses whitespace', () => {
+  assert.equal(L.preview('  Hi,\n\n  two units\tplease '), 'Hi, two units please');
+  assert.equal(L.preview(null), '');
+});

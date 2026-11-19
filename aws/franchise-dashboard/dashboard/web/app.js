@@ -1,10 +1,12 @@
 /*
  * ATL Wing Spot franchise dashboard.
  *
- * Sign-in is Cognito's hosted login with the OAuth 2 authorization-code flow
- * and PKCE: this page never sees the password. Tokens live in sessionStorage,
- * so closing the tab signs out. Every API call carries the access token and
- * is checked by API Gateway before it reaches any code.
+ * Sign-in: the branded form on this page sends the username and password
+ * straight to Amazon Cognito's API over HTTPS (InitiateAuth,
+ * USER_PASSWORD_AUTH) and gets tokens back. Nothing else ever sees the
+ * password, and it is cleared from the form as soon as it has been sent.
+ * Tokens live in sessionStorage, so closing the tab signs out. Every API call
+ * carries the access token, which API Gateway checks before any code runs.
  *
  * Everything from the API is put on the page with textContent, never as HTML.
  */
@@ -13,9 +15,7 @@
 
   var CFG = window.ATL_CONFIG || {};
   var L = window.ATL_LIB;
-  var REDIRECT = location.origin + '/';
-  var STATUS_LABEL = {};
-  L.STATUSES.forEach(function (s) { STATUS_LABEL[s[0]] = s[1]; });
+  var IDP = 'https://cognito-idp.' + (CFG.region || 'us-east-1') + '.amazonaws.com/';
 
   function $(id) { return document.getElementById(id); }
 
@@ -36,99 +36,86 @@
     if (Array.isArray(kid)) { kid.forEach(function (k) { append(n, k); }); return; }
     n.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
   }
+  function show(id, msg) { var e = $(id); e.textContent = msg || ''; e.hidden = !msg; }
 
   // ------------------------------------------------------------- storage
-  var store = {
+  var session = {
     get: function (k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
     set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* private mode */ } },
     del: function (k) { try { sessionStorage.removeItem(k); } catch (e) { /* ignore */ } },
   };
+  // Only for the remembered sort order, a per-browser convenience.
+  var prefs = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } },
+  };
 
   // ---------------------------------------------------------------- auth
-  function b64url(bytes) {
-    var s = '';
-    for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
-    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  }
-  function randomToken(n) {
-    var a = new Uint8Array(n);
-    crypto.getRandomValues(a);
-    return b64url(a);
-  }
-  function challengeFor(verifier) {
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
-      .then(function (d) { return b64url(new Uint8Array(d)); });
-  }
-
-  function startSignIn() {
-    var verifier = randomToken(48), state = randomToken(18);
-    store.set('pkce_verifier', verifier);
-    store.set('pkce_state', state);
-    return challengeFor(verifier).then(function (challenge) {
-      var q = new URLSearchParams({
-        response_type: 'code', client_id: CFG.clientId, redirect_uri: REDIRECT, scope: 'openid',
-        state: state, code_challenge_method: 'S256', code_challenge: challenge,
-      });
-      location.assign(CFG.cognitoDomain + '/oauth2/authorize?' + q);
-    });
-  }
-
-  function tokenCall(params) {
-    return fetch(CFG.cognitoDomain + '/oauth2/token', {
+  function idp(action, body) {
+    return fetch(IDP, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(params),
+      headers: {
+        'Content-Type': 'application/x-amz-json-1.1',
+        'X-Amz-Target': 'AWSCognitoIdentityProviderService.' + action,
+      },
+      body: JSON.stringify(body),
     }).then(function (res) {
-      if (!res.ok) throw new Error('Sign-in failed (' + res.status + '). Please try again.');
-      return res.json();
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) {
+          var err = new Error(friendly(data));
+          err.code = String(data.__type || '').split('#').pop();
+          throw err;
+        }
+        return data;
+      });
+    }, function () {
+      throw new Error('Could not reach the sign-in service. Check your connection.');
     });
   }
 
-  function keepTokens(t) {
-    store.set('access_token', t.access_token);
-    if (t.id_token) store.set('id_token', t.id_token);
-    if (t.refresh_token) store.set('refresh_token', t.refresh_token);
-    store.set('expires_at', String(Date.now() + (t.expires_in || 3600) * 1000));
+  function friendly(data) {
+    var type = String(data.__type || '').split('#').pop(), msg = String(data.message || '');
+    if (type === 'NotAuthorizedException') {
+      return /attempts exceeded/i.test(msg) ? 'Too many attempts. Wait a few minutes, then try again.'
+        : /expired/i.test(msg) ? 'That took too long. Start over.'
+          : 'Wrong username or password.';
+    }
+    if (type === 'TooManyRequestsException' || type === 'LimitExceededException') return 'Too many attempts. Wait a few minutes, then try again.';
+    if (type === 'CodeMismatchException' || type === 'EnableSoftwareTokenMFAException') return 'That code did not work. Try the newest one.';
+    if (type === 'ExpiredCodeException') return 'That code expired. Try the newest one.';
+    if (type === 'InvalidPasswordException') return 'Use at least 10 characters, including a number.';
+    if (type === 'PasswordResetRequiredException') return 'This login needs a new password. Run create-admin.sh to set one.';
+    return 'Sign-in failed. Try again.';
+  }
+
+  function keepTokens(r) {
+    session.set('access_token', r.AccessToken);
+    if (r.IdToken) session.set('id_token', r.IdToken);
+    if (r.RefreshToken) session.set('refresh_token', r.RefreshToken);
+    session.set('expires_at', String(Date.now() + (r.ExpiresIn || 3600) * 1000));
   }
   function clearTokens() {
-    ['access_token', 'id_token', 'refresh_token', 'expires_at', 'pkce_verifier', 'pkce_state'].forEach(store.del);
-  }
-
-  /* Coming back from the login page with ?code=… (or ?error=…). */
-  function finishSignIn() {
-    var q = new URLSearchParams(location.search);
-    if (!q.has('code') && !q.has('error')) return Promise.resolve();
-    history.replaceState(null, '', '/');
-    if (q.has('error')) return Promise.reject(new Error(q.get('error_description') || q.get('error')));
-    var state = store.get('pkce_state'), verifier = store.get('pkce_verifier');
-    store.del('pkce_state');
-    store.del('pkce_verifier');
-    if (!state || state !== q.get('state') || !verifier) {
-      return Promise.reject(new Error('That sign-in link expired. Please sign in again.'));
-    }
-    return tokenCall({
-      grant_type: 'authorization_code', client_id: CFG.clientId, code: q.get('code'),
-      redirect_uri: REDIRECT, code_verifier: verifier,
-    }).then(keepTokens);
+    ['access_token', 'id_token', 'refresh_token', 'expires_at'].forEach(session.del);
   }
 
   var refreshing = null;
   function accessToken() {
-    var tok = store.get('access_token'), exp = Number(store.get('expires_at') || 0);
+    var tok = session.get('access_token'), exp = Number(session.get('expires_at') || 0);
     if (tok && Date.now() < exp - 60000) return Promise.resolve(tok);
-    var rt = store.get('refresh_token');
+    var rt = session.get('refresh_token');
     if (!rt) return Promise.resolve(null);
     if (!refreshing) {
-      refreshing = tokenCall({ grant_type: 'refresh_token', client_id: CFG.clientId, refresh_token: rt })
-        .then(keepTokens)
+      refreshing = idp('InitiateAuth', {
+        AuthFlow: 'REFRESH_TOKEN_AUTH', ClientId: CFG.clientId, AuthParameters: { REFRESH_TOKEN: rt },
+      }).then(function (r) { keepTokens(r.AuthenticationResult); })
         .catch(clearTokens)
         .then(function () { refreshing = null; });
     }
-    return refreshing.then(function () { return store.get('access_token'); });
+    return refreshing.then(function () { return session.get('access_token'); });
   }
 
   function username() {
-    var t = store.get('id_token');
+    var t = session.get('id_token');
     if (!t) return '';
     try {
       var p = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
@@ -136,20 +123,133 @@
     } catch (e) { return ''; }
   }
 
-  function signOut() {
-    var rt = store.get('refresh_token');
-    clearTokens();
-    var revoke = rt
-      ? fetch(CFG.cognitoDomain + '/oauth2/revoke', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ token: rt, client_id: CFG.clientId }),
-      }).catch(function () { /* best effort */ })
-      : Promise.resolve();
-    revoke.then(function () {
-      location.assign(CFG.cognitoDomain + '/logout?' +
-        new URLSearchParams({ client_id: CFG.clientId, logout_uri: REDIRECT }));
+  // The sign-in conversation: password first, then any extra step Cognito asks for.
+  var pending = null;   // { username, session, challenge }
+
+  function busy(form, on, label) {
+    var b = form.querySelector('button[type=submit]');
+    b.disabled = on;
+    b.querySelector('.label').textContent = on ? 'One moment…' : label;
+  }
+
+  function onSignIn(e) {
+    e.preventDefault();
+    var form = $('signin-form'), user = $('username').value.trim(), pass = $('password').value;
+    show('signin-error', '');
+    if (!user || !pass) { show('signin-error', 'Enter your username and password.'); return; }
+    busy(form, true);
+    idp('InitiateAuth', {
+      AuthFlow: 'USER_PASSWORD_AUTH', ClientId: CFG.clientId, AuthParameters: { USERNAME: user, PASSWORD: pass },
+    }).then(function (r) {
+      $('password').value = '';
+      return afterAuth(r, user);
+    }).catch(function (err) {
+      $('password').value = '';
+      show('signin-error', err.message);
+      $('password').focus();
+    }).then(function () { busy(form, false, 'Sign in'); });
+  }
+
+  function afterAuth(r, user) {
+    if (r.AuthenticationResult) {
+      keepTokens(r.AuthenticationResult);
+      pending = null;
+      return enterApp();
+    }
+    pending = {
+      username: (r.ChallengeParameters && r.ChallengeParameters.USER_ID_FOR_SRP) || user,
+      session: r.Session,
+      challenge: r.ChallengeName,
+    };
+    return showChallenge();
+  }
+
+  function showChallenge() {
+    var input = $('challenge-input');
+    $('signin-form').hidden = true;
+    $('challenge-form').hidden = false;
+    show('challenge-error', '');
+    $('challenge-key').hidden = true;
+    input.value = '';
+    if (pending.challenge === 'NEW_PASSWORD_REQUIRED') {
+      $('challenge-text').textContent = 'Choose a new password: at least 10 characters, including a number.';
+      $('challenge-label').textContent = 'New password';
+      input.type = 'password';
+      input.autocomplete = 'new-password';
+      input.removeAttribute('inputmode');
+    } else if (pending.challenge === 'SOFTWARE_TOKEN_MFA' || pending.challenge === 'MFA_SETUP') {
+      $('challenge-label').textContent = '6-digit code';
+      input.type = 'text';
+      input.autocomplete = 'one-time-code';
+      input.setAttribute('inputmode', 'numeric');
+      if (pending.challenge === 'SOFTWARE_TOKEN_MFA') {
+        $('challenge-text').textContent = 'Enter the 6-digit code from your authenticator app.';
+      } else {
+        $('challenge-text').textContent = 'One-time setup: add this key to an authenticator app (Google Authenticator, 1Password, Authy…), then enter the 6-digit code it shows.';
+        return idp('AssociateSoftwareToken', { Session: pending.session }).then(function (r) {
+          pending.session = r.Session;
+          $('challenge-key').textContent = r.SecretCode.replace(/(.{4})/g, '$1 ').trim();
+          $('challenge-key').hidden = false;
+          input.focus();
+        }).catch(function (err) { show('challenge-error', err.message); });
+      }
+    } else {
+      $('challenge-text').textContent = 'This login needs a step this page does not support (' + pending.challenge + ').';
+    }
+    input.focus();
+    return Promise.resolve();
+  }
+
+  function respond(extra) {
+    return idp('RespondToAuthChallenge', {
+      ChallengeName: pending.challenge, ClientId: CFG.clientId, Session: pending.session,
+      ChallengeResponses: Object.assign({ USERNAME: pending.username }, extra),
     });
+  }
+
+  function onChallenge(e) {
+    e.preventDefault();
+    if (!pending) return;
+    var form = $('challenge-form'), raw = $('challenge-input').value, code = raw.replace(/\s/g, '');
+    var step;
+    show('challenge-error', '');
+    if (pending.challenge === 'NEW_PASSWORD_REQUIRED') {
+      if (raw.length < 10 || !/\d/.test(raw)) { show('challenge-error', 'Use at least 10 characters, including a number.'); return; }
+      step = respond({ NEW_PASSWORD: raw });
+    } else if (pending.challenge === 'SOFTWARE_TOKEN_MFA') {
+      step = respond({ SOFTWARE_TOKEN_MFA_CODE: code });
+    } else if (pending.challenge === 'MFA_SETUP') {
+      step = idp('VerifySoftwareToken', { Session: pending.session, UserCode: code, FriendlyDeviceName: 'ATL dashboard' })
+        .then(function (r) { pending.session = r.Session; return respond({}); });
+    } else {
+      return;
+    }
+    busy(form, true);
+    var user = pending.username;
+    step.then(function (r) {
+      $('challenge-input').value = '';
+      return afterAuth(r, user);
+    }).catch(function (err) {
+      show('challenge-error', err.message);
+    }).then(function () { busy(form, false, 'Continue'); });
+  }
+
+  function startOver() {
+    pending = null;
+    $('challenge-form').hidden = true;
+    $('signin-form').hidden = false;
+    show('signin-error', '');
+    $('password').value = '';
+    $('username').focus();
+  }
+
+  function signOut() {
+    var rt = session.get('refresh_token');
+    clearTokens();
+    if (rt) idp('RevokeToken', { Token: rt, ClientId: CFG.clientId }).catch(function () { /* best effort */ });
+    state.all = [];
+    state.archived = null;
+    showSignIn();
   }
 
   // ----------------------------------------------------------------- API
@@ -191,44 +291,48 @@
   }
 
   // ---------------------------------------------------------- formatting
-  var dtf = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
-  var df = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
-  function fmtDateTime(iso) {
+  var longFmt = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  var dayFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
+  var yearFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  function when(iso) {
     var d = new Date(iso);
-    return isNaN(d) ? '—' : dtf.format(d);
+    return isNaN(d) ? '—' : longFmt.format(d);
   }
-  function fmtDate(value) {
-    var p = String(value || '').split('-').map(Number);
-    return p[0] ? df.format(new Date(p[0], p[1] - 1, p[2])) : '—';
+  function whenShort(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '—';
+    return d.getFullYear() === new Date().getFullYear() ? dayFmt.format(d) : yearFmt.format(d);
   }
   function fullName(s) {
     return ((s.firstName || '') + ' ' + (s.lastName || '')).trim() || '(no name)';
   }
-  function pill(status) {
-    return el('span', { class: 'pill ' + status }, STATUS_LABEL[status] || status || '—');
-  }
 
-  // The toast is a popover, so it sits in the top layer above an open
-  // dialog; re-showing it moves it to the top of that layer.
   var toastTimer;
   function toast(msg, bad) {
     var t = $('toast');
     t.textContent = msg;
     if (t.showPopover) {
       try { t.hidePopover(); } catch (e) { /* was not showing */ }
-      t.showPopover();
+      t.showPopover();   // top layer, so it shows above an open dialog
     }
     t.className = 'toast show' + (bad ? ' bad' : '');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () {
       t.className = 'toast';
       if (t.hidePopover) setTimeout(function () { try { t.hidePopover(); } catch (e) { /* ignore */ } }, 250);
-    }, 3500);
+    }, 3200);
   }
-  function setLine(msg) { $('status-line').textContent = msg; }
 
   // --------------------------------------------------------------- state
-  var state = { open: [], archived: null, view: 'open', search: '', current: null };
+  var state = { all: [], archived: null, showArchived: false, search: '', sortKey: 'createdAt', sortDir: 'desc', current: null };
+
+  (function restoreSort() {
+    var saved = String(prefs.get('atl.sort') || '').split(':');
+    if (L.SORT_KEYS.indexOf(saved[0]) !== -1 && (saved[1] === 'asc' || saved[1] === 'desc')) {
+      state.sortKey = saved[0];
+      state.sortDir = saved[1];
+    }
+  })();
 
   function loadAll(archived) {
     var out = [];
@@ -246,91 +350,92 @@
   }
 
   function refresh() {
-    setLine('Loading…');
-    return loadAll(false).then(function (open) {
-      state.open = open;
-      return state.view === 'archived' ? loadAll(true) : null;
-    }).then(function (archived) {
-      state.archived = archived;
+    $('count').textContent = 'Loading…';
+    return (state.showArchived ? loadAll(true) : loadAll(false)).then(function (rows) {
+      if (state.showArchived) state.archived = rows; else state.all = rows;
       render();
     }).catch(function (e) {
-      if (e.status !== 401) { setLine(''); toast(e.message, true); }
+      if (e.status !== 401) { $('count').textContent = ''; toast(e.message, true); }
     });
   }
 
   var SEARCHED = ['firstName', 'lastName', 'email', 'phone', 'territory', 'message', 'notes'];
   function visible() {
-    var base = state.view === 'archived'
-      ? (state.archived || [])
-      : state.open.filter(function (s) { return state.view === 'open' || s.status === state.view; });
+    var base = state.showArchived ? (state.archived || []) : state.all;
     var q = state.search.trim().toLowerCase();
-    if (!q) return base;
-    return base.filter(function (s) {
-      return fullName(s).toLowerCase().indexOf(q) !== -1 || SEARCHED.some(function (k) {
-        return String(s[k] || '').toLowerCase().indexOf(q) !== -1;
+    if (q) {
+      base = base.filter(function (s) {
+        return fullName(s).toLowerCase().indexOf(q) !== -1 || SEARCHED.some(function (k) {
+          return String(s[k] || '').toLowerCase().indexOf(q) !== -1;
+        });
       });
-    });
+    }
+    return L.sortRows(base, state.sortKey, state.sortDir);
   }
 
-  function insertSorted(list, s) {
-    var i = list.findIndex(function (x) { return x.createdAt < s.createdAt; });
-    if (i === -1) list.push(s); else list.splice(i, 0, s);
-  }
   function replaceLocal(s) {
     function notIt(x) { return x.submissionId !== s.submissionId; }
-    state.open = state.open.filter(notIt);
+    state.all = state.all.filter(notIt);
     if (state.archived) state.archived = state.archived.filter(notIt);
-    if (s.archivedAt) { if (state.archived) insertSorted(state.archived, s); }
-    else insertSorted(state.open, s);
+    if (s.archivedAt) { if (state.archived) state.archived.push(s); }
+    else state.all.push(s);
   }
 
   // -------------------------------------------------------------- render
   function render() {
-    renderChips();
     var rows = visible();
     $('rows').replaceChildren.apply($('rows'), rows.map(rowFor));
-    $('empty').hidden = rows.length > 0;
-    var total = state.view === 'archived' ? (state.archived || []).length
-      : state.view === 'open' ? state.open.length
-        : state.open.filter(function (s) { return s.status === state.view; }).length;
-    setLine(rows.length === total ? rows.length + ' shown' : rows.length + ' of ' + total + ' shown');
+    renderSort();
+    $('archived-banner').hidden = !state.showArchived;
+    $('view-archived').setAttribute('aria-pressed', state.showArchived ? 'true' : 'false');
+
+    var total = (state.showArchived ? (state.archived || []) : state.all).length;
+    var noun = state.showArchived ? 'archived lead' : 'lead';
+    $('count').textContent = state.search.trim()
+      ? rows.length + ' of ' + total + ' ' + noun + (total === 1 ? '' : 's') + ' match'
+      : total + ' ' + noun + (total === 1 ? '' : 's');
+
+    var empty = !rows.length;
+    $('empty').hidden = !empty;
+    if (empty) {
+      $('empty').textContent = state.search.trim() ? 'No leads match “' + state.search.trim() + '”.'
+        : state.showArchived ? 'Nothing archived.' : 'No leads yet. New franchise inquiries will show up here.';
+    }
   }
 
-  function renderChips() {
-    var counts = {};
-    state.open.forEach(function (s) { counts[s.status] = (counts[s.status] || 0) + 1; });
-    function chip(key, label, n) {
-      return el('button', {
-        type: 'button', class: 'chip' + (state.view === key ? ' on' : ''),
-        'aria-pressed': state.view === key ? 'true' : 'false',
-        onclick: function () { setView(key); },
-      }, el('b', null, String(n)), label);
-    }
-    var chips = [chip('open', 'All open', state.open.length)].concat(
-      L.STATUSES.map(function (s) { return chip(s[0], s[1], counts[s[0]] || 0); }));
-    $('chips').replaceChildren.apply($('chips'), chips);
+  function renderSort() {
+    document.querySelectorAll('.list th').forEach(function (th) {
+      var key = th.querySelector('button').dataset.sort;
+      if (key === state.sortKey) th.setAttribute('aria-sort', state.sortDir === 'asc' ? 'ascending' : 'descending');
+      else th.removeAttribute('aria-sort');
+    });
+    $('sort').value = state.sortKey + ':' + state.sortDir;
+  }
+
+  function setSort(key, dir) {
+    state.sortKey = key;
+    state.sortDir = dir;
+    prefs.set('atl.sort', key + ':' + dir);
+    render();
   }
 
   function rowFor(s) {
     function open() { openDetail(s.submissionId); }
+    var meta = [s.territory, s.phone].filter(Boolean).join(' · ') || s.email || '';
     return el('tr', {
       tabindex: '0',
       onclick: open,
       onkeydown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } },
     },
-    el('td', { 'data-label': 'Received', class: 'nowrap' }, fmtDateTime(s.createdAt)),
-    el('td', { 'data-label': 'Name', class: 'name' }, fullName(s)),
-    el('td', { 'data-label': 'State' }, s.territory || '—'),
-    el('td', { 'data-label': 'Email' }, s.email || '—'),
-    el('td', { 'data-label': 'Phone', class: 'nowrap' }, s.phone || '—'),
-    el('td', { 'data-label': 'Status' }, pill(s.status)),
-    el('td', { 'data-label': 'Last contacted', class: 'nowrap' }, s.lastContactedAt ? fmtDate(s.lastContactedAt) : '—'));
-  }
-
-  function setView(v) {
-    state.view = v;
-    $('filter').value = v;
-    if (v === 'archived' && !state.archived) refresh(); else render();
+    el('td', { class: 'c-date' },
+      el('span', { class: 'd-long' }, when(s.createdAt)),
+      el('span', { class: 'd-short' }, whenShort(s.createdAt))),
+    el('td', { class: 'c-name' }, fullName(s)),
+    el('td', { class: 'c-state' }, s.territory || '—'),
+    el('td', { class: 'c-email' }, s.email || '—'),
+    el('td', { class: 'c-phone' }, s.phone || '—'),
+    el('td', { class: 'c-meta' }, meta),
+    el('td', { class: 'c-msg' }, L.preview(s.message) || 'No message'));
   }
 
   // -------------------------------------------------------------- detail
@@ -338,57 +443,53 @@
     return api('GET', '/submissions/' + encodeURIComponent(id)).then(function (res) {
       state.current = res.submission;
       fillDetail(res.submission, res.history || []);
-      if (!$('detail').open) $('detail').showModal();
+      if (!$('detail').open) {
+        $('detail').showModal();
+        $('detail').scrollTop = 0;
+      }
     }).catch(function (e) { if (e.status !== 401) toast(e.message, true); });
   }
 
   function fillDetail(s, history) {
     $('d-name').textContent = fullName(s);
-    $('d-received').textContent = 'Received ' + fmtDateTime(s.createdAt) + (s.archivedAt ? ' · Archived' : '');
-    var em = $('d-email');
-    em.textContent = s.email || '—';
-    if (s.email) em.href = 'mailto:' + s.email; else em.removeAttribute('href');
-    var ph = $('d-phone');
-    ph.textContent = s.phone || '—';
-    if (s.phone) ph.href = 'tel:' + s.phone.replace(/[^\d+]/g, ''); else ph.removeAttribute('href');
+    $('d-received').textContent = 'Received ' + when(s.createdAt) + (s.archivedAt ? ' · Archived' : '');
+    var mail = $('d-email-btn'), call = $('d-call-btn');
+    mail.hidden = !s.email;
+    if (s.email) mail.href = 'mailto:' + s.email;
+    var digits = String(s.phone || '').replace(/[^\d+]/g, '');
+    call.hidden = !digits;
+    if (digits) call.href = 'tel:' + digits;
+    $('d-email').textContent = s.email || '—';
+    $('d-phone').textContent = s.phone || '—';
     $('d-territory').textContent = s.territory || '—';
-    $('d-source').textContent = s.source === 'import' ? 'Imported by ' + (s.createdBy || 'staff')
-      : s.source === 'manual' ? 'Added by ' + (s.createdBy || 'staff') : 'Website form';
-    $('d-message').textContent = s.message || '(no message)';
-    $('d-status').value = s.status || 'new';
-    $('d-contacted').value = s.lastContactedAt || '';
+    $('d-source').textContent = s.source === 'import' ? 'Imported' : s.source === 'manual' ? 'Added by hand' : 'Website form';
+    $('d-message').textContent = s.message || 'No message.';
     $('d-notes').value = s.notes || '';
-    $('d-archive').textContent = s.archivedAt ? 'Move back to open' : 'Archive';
+    $('d-archive').textContent = s.archivedAt ? 'Move back to leads' : 'Archive';
     var items = history.length ? history.map(historyItem) : [el('li', { class: 'muted' }, 'No changes yet.')];
     $('d-history').replaceChildren.apply($('d-history'), items);
   }
 
   function describeChange(k, c) {
-    if (k === 'status') return 'Status: ' + (STATUS_LABEL[c.from] || c.from || '—') + ' → ' + (STATUS_LABEL[c.to] || c.to);
-    if (k === 'lastContactedAt') return 'Last contacted: ' + (c.to ? fmtDate(c.to) : 'cleared');
     if (k === 'notes') return c.to ? 'Notes updated' : 'Notes cleared';
-    if (k === 'archived') return c.to ? 'Archived' : 'Moved back to open';
+    if (k === 'archived') return c.to ? 'Archived' : 'Moved back to leads';
+    if (k === 'status') return 'Status changed';
+    if (k === 'lastContactedAt') return 'Last contacted changed';
     return k;
   }
 
   function historyItem(h) {
     var what = h.action === 'create'
-      ? ((h.changes || {}).source === 'import' ? 'Imported' : 'Added by hand')
+      ? ((h.changes || {}).source === 'import' ? 'Imported' : 'Added')
       : Object.keys(h.changes || {}).map(function (k) { return describeChange(k, h.changes[k]); }).join('; ');
     return el('li', null,
       el('div', null, what),
-      el('div', { class: 'when' }, fmtDateTime(String(h.at || '').split('#')[0]) + ' · ' + (h.actor || '')));
+      el('div', { class: 'when' }, when(String(h.at || '').split('#')[0]) + ' · ' + (h.actor || '')));
   }
 
-  function pendingEdits() {
-    var s = state.current, patch = {};
-    var st = $('d-status').value;
-    if (st !== s.status) patch.status = st;
-    var lc = $('d-contacted').value;
-    if (lc !== (s.lastContactedAt || '')) patch.lastContactedAt = lc;
+  function notesEdit() {
     var notes = $('d-notes').value.replace(/\s+$/, '');
-    if (notes !== (s.notes || '')) patch.notes = notes;
-    return patch;
+    return notes !== (state.current.notes || '') ? { notes: notes } : {};
   }
 
   function saveChange(patch, msg) {
@@ -477,18 +578,18 @@
   // -------------------------------------------------------------- export
   var EXPORT_COLUMNS = [
     ['createdAt', 'Received'], ['firstName', 'First name'], ['lastName', 'Last name'], ['email', 'Email'],
-    ['phone', 'Phone'], ['territory', 'State / territory'], ['message', 'Message'], ['status', 'Status'],
-    ['lastContactedAt', 'Last contacted'], ['notes', 'Notes'], ['source', 'Source'], ['submissionId', 'ID'],
+    ['phone', 'Phone'], ['territory', 'State'], ['message', 'Message'], ['notes', 'Notes'],
+    ['source', 'Source'], ['submissionId', 'ID'],
   ];
 
   function exportCsv() {
     var rows = visible();
     if (!rows.length) { toast('Nothing to export'); return; }
     var csv = L.toCsv(rows.map(function (s) {
-      return Object.assign({}, s, { status: STATUS_LABEL[s.status] || s.status, source: s.source || 'website form' });
+      return Object.assign({}, s, { source: s.source || 'website form' });
     }), EXPORT_COLUMNS);
     var url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
-    var a = el('a', { href: url, download: 'franchise-submissions-' + new Date().toISOString().slice(0, 10) + '.csv' });
+    var a = el('a', { href: url, download: 'atl-franchise-leads-' + new Date().toISOString().slice(0, 10) + '.csv' });
     document.body.append(a);
     a.click();
     a.remove();
@@ -496,23 +597,37 @@
   }
 
   // --------------------------------------------------------------- wiring
-  function statusOptions(select, extra) {
-    var opts = (extra || []).concat(L.STATUSES);
-    select.replaceChildren.apply(select, opts.map(function (s) { return el('option', { value: s[0] }, s[1]); }));
-  }
-
   function wire() {
-    statusOptions($('filter'), [['open', 'All open']]);
-    $('filter').append(el('option', { value: 'archived' }, 'Archived'));
-    statusOptions($('d-status'));
-    statusOptions($('add-status'));
-
-    $('signin-btn').addEventListener('click', startSignIn);
+    $('signin-form').addEventListener('submit', onSignIn);
+    $('challenge-form').addEventListener('submit', onChallenge);
+    $('challenge-cancel').addEventListener('click', startOver);
     $('signout').addEventListener('click', signOut);
-    $('refresh').addEventListener('click', refresh);
-    $('filter').addEventListener('change', function () { setView($('filter').value); });
+
+    var sel = $('sort');
+    sel.replaceChildren.apply(sel, L.SORTS.map(function (s) { return el('option', { value: s[0] + ':' + s[1] }, s[2]); }));
+    sel.addEventListener('change', function () {
+      var v = sel.value.split(':');
+      setSort(v[0], v[1]);
+    });
+    document.querySelectorAll('.list th button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var key = b.dataset.sort;
+        if (key === state.sortKey) setSort(key, state.sortDir === 'asc' ? 'desc' : 'asc');
+        else setSort(key, L.defaultDir(key));
+      });
+    });
+
     $('search').addEventListener('input', function () { state.search = $('search').value; render(); });
+    $('refresh').addEventListener('click', refresh);
     $('export').addEventListener('click', exportCsv);
+    $('view-archived').addEventListener('click', function () {
+      state.showArchived = !state.showArchived;
+      if (state.showArchived && !state.archived) refresh(); else render();
+    });
+    $('back-to-inbox').addEventListener('click', function () {
+      state.showArchived = false;
+      render();
+    });
 
     document.querySelectorAll('[data-close]').forEach(function (b) {
       b.addEventListener('click', function () { b.closest('dialog').close(); });
@@ -524,39 +639,15 @@
     $('d-form').addEventListener('submit', function (e) {
       e.preventDefault();
       if (!state.current) return;
-      var patch = pendingEdits();
+      var patch = notesEdit();
       if (!Object.keys(patch).length) { toast('Nothing changed'); return; }
-      saveChange(patch, 'Saved');
+      saveChange(patch, 'Notes saved');
     });
     $('d-archive').addEventListener('click', function () {
       if (!state.current) return;
-      var patch = pendingEdits();               // keep anything typed but not saved
+      var patch = notesEdit();                  // keep anything typed but not saved
       patch.archived = !state.current.archivedAt;
-      saveChange(patch, patch.archived ? 'Archived' : 'Moved back to open');
-    });
-
-    $('add').addEventListener('click', function () {
-      $('add-form').reset();
-      $('add-error').hidden = true;
-      $('add-dialog').showModal();
-    });
-    $('add-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-      var body = {};
-      new FormData($('add-form')).forEach(function (v, k) {
-        var t = String(v).trim();
-        if (t) body[k] = t;
-      });
-      api('POST', '/submissions', body).then(function (res) {
-        replaceLocal(res.submission);
-        $('add-dialog').close();
-        render();
-        toast('Added');
-      }).catch(function (err) {
-        if (err.status === 401) return;
-        $('add-error').textContent = err.status === 409 ? 'That one is already in the list.' : describeErr(err);
-        $('add-error').hidden = false;
-      });
+      saveChange(patch, patch.archived ? 'Archived' : 'Moved back to leads');
     });
 
     $('import').addEventListener('click', function () {
@@ -574,29 +665,35 @@
 
   function showSignIn(msg) {
     document.querySelectorAll('dialog[open]').forEach(function (d) { d.close(); });
+    pending = null;
     $('app').hidden = true;
     $('signin').hidden = false;
-    $('signin-error').textContent = msg || '';
-    $('signin-error').hidden = !msg;
+    $('challenge-form').hidden = true;
+    $('signin-form').hidden = false;
+    show('signin-error', msg || '');
+    setTimeout(function () { ($('username').value ? $('password') : $('username')).focus(); }, 0);
   }
-  function showApp() {
+
+  function enterApp() {
     $('signin').hidden = true;
     $('app').hidden = false;
     $('who').textContent = username();
+    return refresh();
   }
 
   function boot() {
-    if (!CFG.cognitoDomain || !CFG.clientId) {
-      showSignIn('This page is not set up yet (config.js is missing).');
-      $('signin-btn').disabled = true;
+    if (!CFG.clientId) {
+      show('signin-error', 'This page is not set up yet (config.js is missing).');
+      $('signin').hidden = false;
+      $('signin-form').querySelector('button').disabled = true;
       return;
     }
     wire();
-    finishSignIn().then(accessToken).then(function (tok) {
-      if (!tok) { showSignIn(); return; }
-      showApp();
-      return refresh();
-    }).catch(function (e) { showSignIn(e.message); });
+    renderSort();
+    accessToken().then(function (tok) {
+      if (tok) return enterApp();
+      showSignIn();
+    });
   }
 
   boot();
