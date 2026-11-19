@@ -149,3 +149,27 @@ test('preview collapses whitespace', () => {
   assert.equal(L.preview('  Hi,\n\n  two units\tplease '), 'Hi, two units please');
   assert.equal(L.preview(null), '');
 });
+
+test('replyDraft builds a mailto and a Gmail compose link with the message quoted', () => {
+  const d = L.replyDraft({ firstName: 'Lee', lastName: 'Park', email: 'lee+atl@example.com', message: 'Two units.\nCall me.' },
+    'Nov 10, 2026, 3:00 PM');
+  assert.equal(d.to, 'lee+atl@example.com');
+  assert.equal(d.subject, 'Re: Your ATL Wing Spot franchise inquiry');
+  assert.equal(d.body, 'Hi Lee,\n\n\n\nOn Nov 10, 2026, 3:00 PM, Lee Park wrote:\n> Two units.\n> Call me.');
+  assert.ok(d.mailto.startsWith('mailto:lee%2Batl@example.com?subject=Re%3A%20Your%20ATL'));
+  assert.ok(d.mailto.includes('%0D%0A%3E%20Call%20me.'), 'CRLF line breaks in mailto');
+  const g = new URL(d.gmail);
+  assert.equal(g.origin + g.pathname, 'https://mail.google.com/mail/');
+  assert.equal(g.searchParams.get('view'), 'cm');
+  assert.equal(g.searchParams.get('to'), 'lee+atl@example.com');
+  assert.equal(g.searchParams.get('body'), d.body);
+});
+
+test('replyDraft copes with no message, no first name, no email, and long messages', () => {
+  assert.equal(L.replyDraft({ email: 'a@b.co' }).body, 'Hi there,\n\n\n');
+  assert.equal(L.replyDraft({ firstName: 'A', email: '' }), null);
+  const long = L.replyDraft({ firstName: 'A', email: 'a@b.co', message: 'word '.repeat(400) });
+  assert.ok(long.body.length < 900, 'quote trimmed');
+  assert.ok(long.body.endsWith(' …'));
+  assert.ok(long.mailto.length < 2000, 'mailto stays under common length limits, got ' + long.mailto.length);
+});

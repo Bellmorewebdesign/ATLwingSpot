@@ -224,7 +224,42 @@
     return String(text || '').replace(/\s+/g, ' ').trim();
   }
 
+  /* ------------------------------------------------------------ replying
+     The same draft two ways: a mailto: link (opens the device's email app,
+     e.g. the Gmail app on a phone) and a Gmail compose link (opens Gmail in
+     the browser). The original message is quoted underneath, trimmed so the
+     link stays short enough for every mail app to accept. */
+  var QUOTE_LIMIT = 800;
+  var REPLY_SUBJECT = 'Re: Your ATL Wing Spot franchise inquiry';
+
+  function enc(v) { return encodeURIComponent(v); }
+
+  function replyDraft(row, receivedText) {
+    var email = String(row.email || '').trim();
+    if (!email) return null;
+    var first = String(row.firstName || '').trim();
+    var name = ((row.firstName || '') + ' ' + (row.lastName || '')).trim() || email;
+    var msg = String(row.message || '').trim();
+    if (msg.length > QUOTE_LIMIT) msg = msg.slice(0, QUOTE_LIMIT).replace(/\s+\S*$/, '') + ' …';
+    var lines = ['Hi ' + (first || 'there') + ',', '', '', ''];
+    if (msg) {
+      lines.push((receivedText ? 'On ' + receivedText + ', ' : '') + name + ' wrote:');
+      msg.split(/\r?\n/).forEach(function (l) { lines.push('> ' + l); });
+    }
+    return {
+      to: email,
+      subject: REPLY_SUBJECT,
+      body: lines.join('\n'),
+      // RFC 6068: line breaks in a mailto body are CRLF.
+      mailto: 'mailto:' + enc(email).replace(/%40/g, '@') +
+        '?subject=' + enc(REPLY_SUBJECT) + '&body=' + enc(lines.join('\r\n')),
+      gmail: 'https://mail.google.com/mail/?view=cm&fs=1&to=' + enc(email) +
+        '&su=' + enc(REPLY_SUBJECT) + '&body=' + enc(lines.join('\n')),
+    };
+  }
+
   var lib = {
+    replyDraft: replyDraft,
     SORT_KEYS: SORT_KEYS,
     SORTS: SORTS,
     defaultDir: defaultDir,

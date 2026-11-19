@@ -294,6 +294,14 @@
   var longFmt = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
   var dayFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
   var yearFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  var dayTimeFmt = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  // List column, like an inbox: this year's leads show day and time, older
+  // ones just the date. The full date and time are in the tooltip and the lead.
+  function whenList(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '—';
+    return d.getFullYear() === new Date().getFullYear() ? dayTimeFmt.format(d) : yearFmt.format(d);
+  }
   function when(iso) {
     var d = new Date(iso);
     return isNaN(d) ? '—' : longFmt.format(d);
@@ -405,7 +413,9 @@
 
   function renderSort() {
     document.querySelectorAll('.list th').forEach(function (th) {
-      var key = th.querySelector('button').dataset.sort;
+      var b = th.querySelector('button');
+      if (!b) return;
+      var key = b.dataset.sort;
       if (key === state.sortKey) th.setAttribute('aria-sort', state.sortDir === 'asc' ? 'ascending' : 'descending');
       else th.removeAttribute('aria-sort');
     });
@@ -419,23 +429,47 @@
     render();
   }
 
+  // Reply: Gmail in a new tab on a computer; the device's mail app (the Gmail
+  // app, usually) on a phone. Either way the draft is addressed, titled and
+  // quotes their message.
+  var desktop = window.matchMedia('(hover: hover) and (pointer: fine)');
+  function onReply(draft) {
+    return function (e) {
+      e.stopPropagation();                     // a list row would open the lead
+      if (desktop.matches) {
+        e.preventDefault();
+        window.open(draft.gmail, '_blank', 'noopener,noreferrer');
+      }
+    };
+  }
+  function replyButton(s, cls) {
+    var draft = L.replyDraft(s, when(s.createdAt));
+    if (!draft) return null;
+    return el('a', { class: cls, href: draft.mailto, onclick: onReply(draft),
+      'aria-label': 'Reply to ' + fullName(s) }, 'Reply');
+  }
+
   function rowFor(s) {
     function open() { openDetail(s.submissionId); }
     var meta = [s.territory, s.phone].filter(Boolean).join(' · ') || s.email || '';
     return el('tr', {
       tabindex: '0',
       onclick: open,
-      onkeydown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } },
+      onkeydown: function (e) {
+        if (e.target !== e.currentTarget) return;   // Enter on the Reply button
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      },
     },
     el('td', { class: 'c-date' },
-      el('span', { class: 'd-long' }, when(s.createdAt)),
+      el('span', { class: 'd-long', title: when(s.createdAt) }, whenList(s.createdAt)),
       el('span', { class: 'd-short' }, whenShort(s.createdAt))),
     el('td', { class: 'c-name' }, fullName(s)),
     el('td', { class: 'c-state' }, s.territory || '—'),
     el('td', { class: 'c-email' }, s.email || '—'),
     el('td', { class: 'c-phone' }, s.phone || '—'),
     el('td', { class: 'c-meta' }, meta),
-    el('td', { class: 'c-msg' }, L.preview(s.message) || 'No message'));
+    el('td', { class: 'c-msg' }, L.preview(s.message) || 'No message'),
+    el('td', { class: 'c-reply' }, replyButton(s, 'btn btn-sm reply')));
   }
 
   // -------------------------------------------------------------- detail
@@ -453,13 +487,16 @@
   function fillDetail(s, history) {
     $('d-name').textContent = fullName(s);
     $('d-received').textContent = 'Received ' + when(s.createdAt) + (s.archivedAt ? ' · Archived' : '');
-    var mail = $('d-email-btn'), call = $('d-call-btn');
-    mail.hidden = !s.email;
-    if (s.email) mail.href = 'mailto:' + s.email;
+    var reply = $('d-reply-btn'), call = $('d-call-btn'), draft = L.replyDraft(s, when(s.createdAt));
+    reply.hidden = !draft;
+    if (draft) {
+      reply.href = draft.mailto;
+      reply.onclick = onReply(draft);
+    }
     var digits = String(s.phone || '').replace(/[^\d+]/g, '');
     call.hidden = !digits;
     if (digits) call.href = 'tel:' + digits;
-    $('d-email').textContent = s.email || '—';
+    $('d-email').replaceChildren(s.email ? el('a', { href: 'mailto:' + s.email }, s.email) : '—');
     $('d-phone').textContent = s.phone || '—';
     $('d-territory').textContent = s.territory || '—';
     $('d-source').textContent = s.source === 'import' ? 'Imported' : s.source === 'manual' ? 'Added by hand' : 'Website form';

@@ -72,8 +72,14 @@ async function main() {
   let db = seed();
   const history = {};
 
-  async function newPage(viewport) {
-    const ctx = await browser.newContext({ viewport: viewport || { width: 1366, height: 860 }, acceptDownloads: true });
+  async function newPage(viewport, extra) {
+    const ctx = await browser.newContext(Object.assign(
+      { viewport: viewport || { width: 1366, height: 860 }, acceptDownloads: true }, extra || {}));
+    // Gmail compose opens in a new tab: answer it locally, record the URL.
+    await ctx.route('https://mail.google.com/**', (route) => {
+      calls.push({ gmail: route.request().url() });
+      return route.fulfill({ status: 200, contentType: 'text/html', body: '<p>gmail compose</p>' });
+    });
     const page = await ctx.newPage();
     page.on('pageerror', (e) => problems.push('pageerror: ' + e.message));
     page.on('console', (m) => {
@@ -254,6 +260,25 @@ async function main() {
     assert.deepEqual(await names(page), ['Ana Diaz', 'Lee Park', 'Zoe Brown', 'Dana Okafor']);
     await page.selectOption('#sort', 'createdAt:desc');
 
+    // Reply straight from the list: Gmail compose in a new tab, addressed,
+    // titled and quoting the message. The lead itself does not open.
+    const [gmail] = await Promise.all([
+      page.context().waitForEvent('page'),
+      page.click('#rows tr:has-text("Lee Park") .reply'),
+    ]);
+    await gmail.waitForLoadState();
+    const g = new URL(gmail.url());
+    assert.equal(g.hostname, 'mail.google.com');
+    assert.equal(g.searchParams.get('view'), 'cm');
+    assert.equal(g.searchParams.get('to'), 'lee@example.com');
+    assert.equal(g.searchParams.get('su'), 'Re: Your ATL Wing Spot franchise inquiry');
+    assert.match(g.searchParams.get('body'), /^Hi Lee,\n[\s\S]*Lee Park wrote:\n> Hi! I own two restaurants/);
+    assert.equal(await gmail.evaluate(() => window.opener), null, 'no window.opener handed to Gmail');
+    await gmail.close();
+    assert.equal(await page.isVisible('#detail'), false, 'Reply does not open the lead');
+    // Rows without an email get no Reply button; every other row has one.
+    assert.equal(await page.locator('#rows tr .reply').count(), 4);
+
     // Search.
     await page.fill('#search', 'savannah');
     assert.deepEqual(await names(page), ['Lee Park']);
@@ -264,8 +289,13 @@ async function main() {
     await page.click('#rows tr:has-text("Lee Park")');
     await page.waitForSelector('#detail[open]');
     assert.equal(await page.textContent('#d-message'), LONG);
-    assert.equal(await page.getAttribute('#d-email-btn', 'href'), 'mailto:lee@example.com');
+    assert.match(await page.getAttribute('#d-reply-btn', 'href'), /^mailto:lee@example\.com\?subject=Re%3A%20Your%20ATL/);
+    assert.equal(await page.getAttribute('#d-email a', 'href'), 'mailto:lee@example.com');
     assert.equal(await page.getAttribute('#d-call-btn', 'href'), 'tel:4045550199');
+    const [gmail2] = await Promise.all([page.context().waitForEvent('page'), page.click('#d-reply-btn')]);
+    await gmail2.waitForLoadState();
+    assert.equal(new URL(gmail2.url()).searchParams.get('to'), 'lee@example.com');
+    await gmail2.close();
     await page.fill('#d-notes', 'Strong candidate, call Monday.');
     await page.click('#d-form button[type=submit]');
     // History sits in a collapsed <details>, so it is attached but not visible.
@@ -384,7 +414,7 @@ async function main() {
   // ================================================================ phone
   {
     db = seed();
-    const { ctx, page } = await newPage({ width: 390, height: 844 });
+    const { ctx, page } = await newPage({ width: 390, height: 844 }, { isMobile: true, hasTouch: true });
     await page.goto(base + '/');
     await page.waitForSelector('#signin:not([hidden])');
     await page.evaluate(() => document.fonts.ready);
@@ -401,6 +431,22 @@ async function main() {
     assert.ok(await page.isVisible('#rows tr:has-text("Lee Park") td.c-msg'), 'message preview on the card');
     overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     assert.ok(overflow <= 0, 'list: no sideways scroll, got ' + overflow);
+    // Reply on the card: hands a mailto: draft to the phone's mail app (no
+    // Gmail tab) and does not open the lead.
+    assert.ok(await page.isVisible('#rows tr:has-text("Lee Park") .reply'));
+    const href = await page.getAttribute('#rows tr:has-text("Lee Park") .reply', 'href');
+    assert.match(href, /^mailto:lee@example\.com\?subject=/);
+    const followed = await page.evaluate(() => new Promise((resolve) => {
+      // On the button itself (the page's handler stops the click bubbling to
+      // the row), registered after the page's, so it runs second. It reads
+      // whether the page let the mailto: through, then stops the real
+      // navigation so the test browser does not try to open a mail app.
+      const a = [...document.querySelectorAll('#rows tr')].find((tr) => tr.textContent.includes('Lee Park')).querySelector('.reply');
+      a.addEventListener('click', (e) => { const p = e.defaultPrevented; e.preventDefault(); resolve(p); }, { once: true });
+      a.click();
+    }));
+    assert.equal(followed, false, 'phone: the mailto link is followed, not swapped for Gmail');
+    assert.equal(await page.isVisible('#detail'), false);
     await page.selectOption('#sort', 'name:asc');
     assert.deepEqual(await names(page), ['Ana Diaz', 'Dana Okafor', 'Lee Park', 'Zoe Brown']);
     await page.selectOption('#sort', 'createdAt:desc');

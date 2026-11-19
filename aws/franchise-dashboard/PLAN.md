@@ -116,8 +116,11 @@ while the dashboard is built.
   (refreshed for up to 12) and are dropped when the tab closes.
 - **Page:** a list of every lead with a one-line message preview, sortable
   like a file browser (click a column header, click again to flip; dates start
-  newest first) plus a Sort menu, and search. Click a lead for the full
-  message, Email and Call buttons, private notes and Archive. On a phone the
+  newest first) plus a Sort menu, and search. Every lead has a **Reply**
+  button: on a computer it opens a Gmail draft in a new tab, on a phone the
+  mail app, addressed to the applicant with a subject and their message
+  quoted. Click a lead for the full message, Reply and Call buttons, private
+  notes and Archive. On a phone the
   list becomes cards and a lead opens full screen. Import a CSV of past
   submissions and export what is on screen (with spreadsheet-formula injection
   blocked). The sort choice is remembered per browser.
@@ -131,7 +134,7 @@ while the dashboard is built.
   (scripts only from the dashboard itself), HSTS, no framing, no referrer,
   `noindex`.
 - Tests: 54 API tests (against an in-memory DynamoDB with the real indexes),
-  16 for the CSV, date and sorting helpers, and a browser run of the real page
+  18 for the CSV, date, sorting and reply helpers, and a browser run of the real page
   under the production CSP with Cognito faked (`tests/ui.smoke.js`): sign-in
   incl. MFA and new-password steps, sorting, previews, notes, archive,
   import/export, token refresh, sign-out, phone layout down to 320px.
